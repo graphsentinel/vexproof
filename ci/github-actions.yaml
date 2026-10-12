@@ -1,0 +1,38 @@
+# vexproof CI recipe (draft): evidence chain + OpenVEX for a Go workload, gated before release.
+# Mode A only (coverage rebuild). Mode B (uprobes on shipped binaries) needs privileged nodes; run it in-cluster.
+name: vexproof
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4            # the project under test, at the PR head
+        with: {path: src}
+      - uses: actions/checkout@v4            # the recipe (pin a release when published)
+        with: {repository: graphsentinel/vexproof, path: vexproof}
+      - name: Install k3d
+        run: |
+          curl -fsSLo k3d https://github.com/k3d-io/k3d/releases/download/v5.9.0/k3d-linux-amd64
+          curl -fsSL https://github.com/k3d-io/k3d/releases/download/v5.9.0/checksums.txt | grep '/k3d-linux-amd64$' \
+            | awk '{print $1"  k3d"}' | sha256sum -c -
+          sudo install -m 0755 k3d /usr/local/bin/k3d
+      - name: Vendor modules (symbol to source mapping)
+        run: cd src && go mod vendor
+      - name: Run recipe
+        run: |
+          mkdir -p $HOME/.cache/{go,gomod,gobin,trivy}
+          curl -fsSLo components.yaml https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
+          jq --arg src "$PWD/src" --arg out "$PWD/out" --arg c "$HOME/.cache" --arg m "$PWD/components.yaml" \
+             '.src=$src | .out=$out | .gocache=($c+"/go") | .gomod=($c+"/gomod") | .gobin=($c+"/gobin")
+              | .trivycache=($c+"/trivy") | .manifest=$m | .covdir=($PWD+"/covdata") | .engine="docker"
+              | .delete_cluster=true' --arg PWD "$PWD" \
+             vexproof/ci/metrics-server.json > cfg.json
+          docker run --rm -v $HOME/.cache/gobin:/gobin -e GOBIN=/gobin golang:1.26.8 \
+             go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+          python3 vexproof/ci/vexproof.py cfg.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: vex-evidence, path: out/}   # OpenVEX, chains, raw evidence

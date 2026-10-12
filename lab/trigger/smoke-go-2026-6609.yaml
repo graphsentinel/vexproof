@@ -1,0 +1,93 @@
+# Fast-path trigger check (scripts/lab.sh test): the official kube-apiserver v1.28.2 only. With more than 200
+# ranges a fixed Go answers 200; the shipped binary (go1.20.8) answers 206 and its CPU grows with the count.
+# Lab only: the runner starts the target itself with its own CA and token (lab/trigger/runner.py).
+apiVersion: vexproof.graphsentinel.github.io/v1alpha1
+kind: TriggerTest
+metadata:
+  name: kube-apiserver-v1-28-2-go-2026-6609-smoke
+  namespace: vexproof
+spec:
+  target:
+    binary:
+      url: https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kube-apiserver
+      sha256: a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c
+    source:
+      repo: https://github.com/kubernetes/kubernetes
+      ref: v1.28.2
+      mainPackage: ./cmd/kube-apiserver
+  vulnerability:
+    osv: GO-2026-6609
+  build:
+    go: auto
+    tags: auto
+    goMod: unchanged
+    extraLdflags: -checklinkname=0
+  arms:
+  - name: shipped
+    from: target
+  recordDefaultGODEBUG: true
+  runtime:
+    sidecars:
+    - name: etcd
+      image: registry.k8s.io/etcd:3.5.9-0@sha256:e013d0d5e4e25d00c61a7ff839927a1f36479678f11e49502b53a5e0b14f10c3
+      args:
+      - etcd
+      - --data-dir=/tmp/etcd
+      - --listen-client-urls=http://127.0.0.1:2379
+      - --advertise-client-urls=http://127.0.0.1:2379
+    args:
+    - --etcd-servers=http://127.0.0.1:2379
+    - --service-account-issuer=https://kubernetes.default.svc
+    - --service-account-key-file=/pki/sa.pub
+    - --service-account-signing-key-file=/pki/sa.key
+    - --service-cluster-ip-range=10.96.0.0/16
+    - --tls-cert-file=/pki/server.pem
+    - --tls-private-key-file=/pki/server.key
+    - --token-auth-file=/pki/tokens.csv
+    - --authorization-mode=RBAC
+    - --secure-port=6443
+    port: 6443
+    readiness:
+      path: /readyz
+      expectStatus: 200
+    auth:
+      type: bearer
+      tokenSource: lab-generated
+  trigger:
+    request:
+      method: GET
+      path: /openapi/v2
+      headers:
+        Accept: application/json
+      payload:
+        generator: http-range
+        header: Range
+        count: '{{n}}'
+    parameters:
+      n:
+      - 150
+      - 50000
+    repeats: 3
+    controls:
+    - name: anonymous
+      auth: none
+      expectStatus: 403
+  measure:
+  - status
+  - bodyBytes
+  - seconds
+  - serverCPU
+  oracle:
+  - arms:
+    - shipped
+    when: n > 200
+    expect:
+      status: 206
+      serverCPU: growsWith(n)
+  safety:
+    environment: lab-only
+    maxRequestBytes: 1Mi
+    timeoutSeconds: 600
+    onUnexpectedTrigger: stop-and-report
+  output:
+    evidenceDir: results/trigger-smoke

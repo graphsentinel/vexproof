@@ -1,0 +1,101 @@
+# VexScan: build the evidence chain (L1 scanner, P shipped-binary symbols, L3 govulncheck, T CodeQL, L4 runtime) for
+# every finding of one Go workload and publish OpenVEX. Only an image and its source are required; the build settings
+# come from the binary's buildinfo.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: vexscans.vexproof.graphsentinel.github.io
+spec:
+  group: vexproof.graphsentinel.github.io
+  scope: Namespaced
+  names:
+    kind: VexScan
+    listKind: VexScanList
+    plural: vexscans
+    singular: vexscan
+    shortNames: [vs]
+    categories: [vexproof]
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - {name: Image, type: string, jsonPath: .spec.image}
+        - {name: Phase, type: string, jsonPath: .status.phase}
+        - {name: Affected, type: integer, jsonPath: .status.counts.affected}
+        - {name: Candidates, type: integer, jsonPath: .status.counts.candidate}
+        - {name: Investigating, type: integer, jsonPath: .status.counts.under_investigation}
+        - {name: NotAffected, type: integer, jsonPath: .status.counts.not_affected}
+        - {name: Age, type: date, jsonPath: .metadata.creationTimestamp}
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [image, source]
+              properties:
+                image: {type: string, description: "the shipped OCI image"}
+                binary: {type: string, description: "path in the image; default: the image entrypoint"}
+                source:
+                  type: object
+                  required: [repo, ref]
+                  properties:
+                    repo: {type: string}
+                    ref: {type: string, description: "checked against buildinfo (vcs.revision or ldflags gitCommit)"}
+                    mainPackage: {type: string, description: "default: buildinfo path"}
+                layers:
+                  type: object
+                  description: which evidence layers to run
+                  properties:
+                    scanner: {type: boolean, default: true}
+                    symbols: {type: boolean, default: true}
+                    govulncheck: {type: boolean, default: true}
+                    codeql:
+                      type: object
+                      properties:
+                        enabled: {type: boolean, default: false}
+                        mode: {type: string, enum: [all-args, llm], default: all-args}
+                        model: {type: string, description: "llm mode only; the proposal is never evidence"}
+                    runtime:
+                      type: object
+                      description: "uprobes on the running workload (no rebuild) or a coverage rebuild in CI"
+                      properties:
+                        mode: {type: string, enum: [none, uprobe, coverage], default: none}
+                        workload:
+                          type: object
+                          properties:
+                            namespace: {type: string}
+                            selector: {type: string}
+                        duration: {type: string, default: 10m}
+                reviews:
+                  type: object
+                  properties:
+                    configMapRef: {type: string, description: "reviewed candidates (confirmed / plausible / rejected)"}
+                output:
+                  type: object
+                  properties:
+                    openvexConfigMap: {type: string}
+            status:
+              type: object
+              properties:
+                phase: {type: string, enum: [Pending, Scanning, Measuring, Succeeded, Failed]}
+                resolved:
+                  type: object
+                  description: "buildinfo: Go version, tags, GOOS, DefaultGODEBUG, revision"
+                  x-kubernetes-preserve-unknown-fields: true
+                counts:
+                  type: object
+                  properties:
+                    affected: {type: integer}
+                    candidate: {type: integer}
+                    under_investigation: {type: integer}
+                    not_affected: {type: integer}
+                    static_not_reached: {type: integer}
+                warnings:
+                  type: array
+                  items: {type: string}
+                openvex: {type: string, description: "ConfigMap holding the OpenVEX document"}

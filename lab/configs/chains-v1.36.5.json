@@ -1,0 +1,54 @@
+{
+ "measurements": "evidence/measurements/measurements-v1.36.5.tsv",
+ "govulncheck": {
+  "kubelet": "evidence/c4-v1.36.5/govulncheck-kubelet.json",
+  "kube-apiserver": "evidence/c4-v1.36.5/govulncheck-kube-apiserver.json"
+ },
+ "pclnsym": {
+  "kubelet": [
+   "evidence/c4-v1.36.5/pclnsym-otel-kubelet.txt",
+   "evidence/c4-v1.36.5/pclnsym-otel-resource-all-kubelet.txt"
+  ],
+  "kube-apiserver": [
+   "evidence/c4-v1.36.5/pclnsym-otel-kube-apiserver.txt",
+   "evidence/c4-v1.36.5/pclnsym-otel-resource-all-kube-apiserver.txt"
+  ]
+ },
+ "uprobe_profiles": [],
+ "products": {
+  "kubelet": "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kubelet",
+  "kube-apiserver": "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kube-apiserver"
+ },
+ "evidence_base": "results/chains-v1.36.5",
+ "vex_id": "https://example.invalid/vexproof/kubernetes-v1.36.5-lab",
+ "author": "vexproof lab run (not an official Kubernetes statement)",
+ "openvex_out": "results/chains-v1.36.5/openvex.json",
+ "chains": [
+  {
+   "target": "kubelet",
+   "osv": "GO-2026-5426",
+   "symbols_shipped": [
+    "go.opentelemetry.io/otel/sdk/resource.(*hostIDReaderBSD).read",
+    "go.opentelemetry.io/otel/sdk/resource.execCommand"
+   ],
+   "ground_truth": "not affected (k/k #138329, dims: BSD/Solaris only; no binaries shipped for them)",
+   "inventory_control": [
+    "go.opentelemetry.io/otel/sdk/resource.New",
+    "go.opentelemetry.io/otel/sdk/resource.(*hostIDReaderLinux).read"
+   ]
+  },
+  {
+   "target": "kube-apiserver",
+   "osv": "GO-2026-5426",
+   "symbols_shipped": [
+    "go.opentelemetry.io/otel/sdk/resource.(*hostIDReaderBSD).read",
+    "go.opentelemetry.io/otel/sdk/resource.execCommand"
+   ],
+   "ground_truth": "not affected (k/k #138329)",
+   "inventory_control": [
+    "go.opentelemetry.io/otel/sdk/resource.New",
+    "go.opentelemetry.io/otel/sdk/resource.(*hostIDReaderLinux).read"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+# Mode B in a cluster: kernel uprobes on the *shipped* binary of a running workload, no rebuild.
+# A privileged DaemonSet finds the target process (hostPID), registers entry uprobes at file offsets resolved offline
+# from .gopclntab (lab/pclnsym + readelf), waits, prints the hit counts and removes the probes.
+# Lab use only: privileged + hostPID is node-root.
+apiVersion: v1
+kind: Namespace
+metadata: {name: vexproof-probe}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: probe-offsets, namespace: vexproof-probe}
+data:
+  target: /metrics-server            # process command line to match
+  binary: /metrics-server            # path inside the target's root filesystem
+  seconds: "120"
+  offsets: |                         # name offset (from evidence/c7-modeB-*/offsets.txt)
+    REPLACED_BY_SCRIPT
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: {name: uprobe, namespace: vexproof-probe}
+spec:
+  selector: {matchLabels: {app: vexproof-uprobe}}
+  template:
+    metadata: {labels: {app: vexproof-uprobe}}
+    spec:
+      hostPID: true
+      containers:
+        - name: probe
+          image: docker.io/library/busybox:1.36
+          imagePullPolicy: IfNotPresent
+          securityContext: {privileged: true}
+          volumeMounts:
+            - {name: offsets, mountPath: /cfg}
+            - {name: sys, mountPath: /host-sys}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -u
+              T=/host-sys/kernel/tracing
+              [ -f $T/uprobe_events ] || { mkdir -p /t && mount -t tracefs nodev /t && T=/t; }
+              TARGET=$(cat /cfg/target)
+              while :; do
+                PID=$(for p in /proc/[0-9]*; do tr '\0' ' ' < $p/cmdline 2>/dev/null | grep -q "^$TARGET" && echo ${p#/proc/} && break; done)
+                [ -n "$PID" ] && break; sleep 2
+              done
+              BIN=/proc/$PID/root$(cat /cfg/binary)
+              echo "target pid=$PID bin=$BIN"
+              while read n off; do
+                [ -z "$n" ] && continue
+                echo "p:vxbk/$n $BIN:$off" >> $T/uprobe_events || echo "register failed: $n"
+              done < /cfg/offsets
+              echo 1 > $T/events/vxbk/enable
+              echo "probes enabled; waiting $(cat /cfg/seconds)s"
+              sleep $(cat /cfg/seconds)
+              echo "=== uprobe_profile"
+              grep " vxb_" $T/uprobe_profile | awk '{print $2, $3}'
+              echo 0 > $T/events/vxbk/enable
+              grep -o 'vxbk/[a-z_]*' $T/uprobe_events | while read e; do echo "-:$e" >> $T/uprobe_events; done
+              echo "=== removed"; sleep 3600
+      volumes:
+        - {name: offsets, configMap: {name: probe-offsets}}
+        - {name: sys, hostPath: {path: /sys}}

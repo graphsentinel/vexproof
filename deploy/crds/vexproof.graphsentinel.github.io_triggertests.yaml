@@ -1,0 +1,217 @@
+# TriggerTest: run a known vulnerability's trigger against the shipped binary and against rebuilds that differ only
+# in the fix, and compare the result with an oracle written before the run (L6 in the evidence chain).
+# Fields marked "auto" are resolved from the shipped binary's buildinfo and from the OSV entry.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: triggertests.vexproof.graphsentinel.github.io
+spec:
+  group: vexproof.graphsentinel.github.io
+  scope: Namespaced
+  names:
+    kind: TriggerTest
+    listKind: TriggerTestList
+    plural: triggertests
+    singular: triggertest
+    shortNames: [tt]
+    categories: [vexproof]
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - {name: OSV, type: string, jsonPath: .spec.vulnerability.osv}
+        - {name: Phase, type: string, jsonPath: .status.phase}
+        - {name: Verdict, type: string, jsonPath: .status.verdict}
+        - {name: Age, type: date, jsonPath: .metadata.creationTimestamp}
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [target, vulnerability, arms, runtime, trigger, oracle, safety]
+              properties:
+                target:
+                  type: object
+                  description: The shipped artefact under test and the source it was built from.
+                  required: [binary, source]
+                  properties:
+                    binary:
+                      type: object
+                      description: Exactly one of image (+path) or url (+sha256).
+                      properties:
+                        image: {type: string, description: "OCI image that contains the binary"}
+                        path: {type: string, description: "path of the binary inside the image"}
+                        url: {type: string}
+                        sha256: {type: string, pattern: "^[0-9a-f]{64}$"}
+                    source:
+                      type: object
+                      required: [repo, ref, mainPackage]
+                      properties:
+                        repo: {type: string, description: "git URL, e.g. https://github.com/kubernetes/kubernetes"}
+                        ref: {type: string, description: "tag or commit; checked against the binary's buildinfo"}
+                        mainPackage: {type: string, description: "e.g. ./cmd/kube-apiserver"}
+                        localPath: {type: string, description: "lab override: an existing checkout instead of a clone"}
+                vulnerability:
+                  type: object
+                  required: [osv]
+                  properties:
+                    osv: {type: string, pattern: "^GO-[0-9]{4}-[0-9]{4,}$"}
+                build:
+                  type: object
+                  description: Settings for the rebuilt arms. "auto" reads the shipped binary's buildinfo.
+                  properties:
+                    go: {type: string, default: auto}
+                    tags: {type: string, default: auto}
+                    goMod:
+                      type: string
+                      enum: [unchanged]
+                      default: unchanged
+                      description: go.mod is never edited; its go version decides DefaultGODEBUG (compatibility trap)
+                    extraLdflags: {type: string}
+                arms:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: object
+                    required: [name]
+                    properties:
+                      name: {type: string}
+                      from: {type: string, enum: [target], description: "the shipped binary, untouched"}
+                      go:
+                        type: string
+                        description: "lastVulnerable | firstFixed | an explicit version such as 1.26.8"
+                      godebug: {type: string, description: "optional GODEBUG for this arm's process"}
+                recordDefaultGODEBUG: {type: boolean, default: true}
+                runtime:
+                  type: object
+                  required: [readiness]
+                  properties:
+                    sidecars:
+                      type: array
+                      items:
+                        type: object
+                        required: [name, image]
+                        properties:
+                          name: {type: string}
+                          image: {type: string}
+                          args: {type: array, items: {type: string}}
+                    args: {type: array, items: {type: string}}
+                    files:
+                      type: array
+                      description: project files mounted read-only into the target container (the run's /pki is mounted by the runner)
+                      items:
+                        type: object
+                        required: [hostPath, mountPath]
+                        properties:
+                          hostPath: {type: string}
+                          mountPath: {type: string}
+                    port: {type: integer, default: 6443}
+                    readiness:
+                      type: object
+                      required: [path]
+                      properties:
+                        path: {type: string}
+                        expectStatus: {type: integer, default: 200}
+                    auth:
+                      type: object
+                      properties:
+                        type: {type: string, enum: [bearer, none]}
+                        tokenSource: {type: string, enum: [lab-generated], description: "the runner creates a CA, a server certificate and a bearer credential for each run"}
+                trigger:
+                  type: object
+                  required: [request, repeats]
+                  properties:
+                    request:
+                      type: object
+                      required: [method, path]
+                      properties:
+                        method: {type: string, enum: [GET, POST, PUT, PATCH, DELETE]}
+                        path: {type: string}
+                        headers:
+                          type: object
+                          additionalProperties: {type: string}
+                        payload:
+                          type: object
+                          required: [generator]
+                          properties:
+                            generator:
+                              type: string
+                              enum: [http-range, query-params]
+                            header: {type: string, description: "http-range: the header to fill"}
+                            count: {type: string, description: "number or {{parameter}}"}
+                    parameters:
+                      type: object
+                      additionalProperties:
+                        type: array
+                        items: {type: integer}
+                    repeats: {type: integer, minimum: 1, maximum: 50}
+                    controls:
+                      type: array
+                      items:
+                        type: object
+                        required: [name, expectStatus]
+                        properties:
+                          name: {type: string}
+                          auth: {type: string, enum: [none, bearer]}
+                          expectStatus: {type: integer}
+                measure:
+                  type: array
+                  items:
+                    type: string
+                    enum: [status, bodyBytes, seconds, serverCPU]
+                oracle:
+                  type: array
+                  description: written before the run
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [arms, expect]
+                    properties:
+                      arms: {type: array, items: {type: string}}
+                      when: {type: string, description: "e.g. n > 200"}
+                      expect:
+                        type: object
+                        properties:
+                          status: {type: integer}
+                          serverCPU: {type: string, description: "growsWith(<parameter>)"}
+                          serverCPUMax: {type: string, description: "e.g. 0.05s"}
+                safety:
+                  type: object
+                  required: [environment]
+                  properties:
+                    environment: {type: string, enum: [lab-only]}
+                    maxRequestBytes: {type: string, default: 1Mi}
+                    timeoutSeconds: {type: integer, default: 600}
+                    onUnexpectedTrigger:
+                      type: string
+                      enum: [stop-and-report]
+                      default: stop-and-report
+                output:
+                  type: object
+                  properties:
+                    evidenceDir: {type: string}
+                    review: {type: string, description: "review file updated when the oracle holds"}
+            status:
+              type: object
+              properties:
+                phase: {type: string, enum: [Pending, Building, Running, Succeeded, Failed]}
+                verdict:
+                  type: string
+                  enum: [triggered, not-triggered, inconclusive]
+                  description: "not-triggered is not not_affected: failing to trigger proves nothing"
+                resolved:
+                  type: object
+                  description: values that "auto" resolved to
+                  x-kubernetes-preserve-unknown-fields: true
+                oracle:
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                summary: {type: string}
+                evidence: {type: string}

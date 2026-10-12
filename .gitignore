@@ -1,0 +1,18 @@
+# Produced by the lab (scripts/lab.sh): inputs unpacked from evidence/reference, downloads, work dirs, keys of the
+# trigger runs (deleted after each run), test results
+lab/.runtime/
+results/
+__pycache__/
+.pytest_cache/
+lab/p0-coverage/cov.txt
+lab/codeql/.codeql/
+lab/codeql/codeql-pack.lock.yml
+
+# Never commit credentials or built artefacts
+.env
+*.key
+*.pem
+*.kubeconfig
+*.tar
+.mypy_cache/
+.ruff_cache/

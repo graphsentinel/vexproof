@@ -1,0 +1,57 @@
+{
+ "measurements": "evidence/c6-ci-metrics-server-v0.9.0-{run}/measurements.tsv",
+ "govulncheck": {
+  "metrics-server": "evidence/c6-ci-metrics-server-v0.9.0-{run}/govulncheck.json"
+ },
+ "pclnsym": [],
+ "uprobe_profiles": [],
+ "products": {
+  "metrics-server": "pkg:golang/sigs.k8s.io/metrics-server@v0.9.0#cmd/metrics-server"
+ },
+ "evidence_base": "results/chains-ci-metrics-server-v0.9.0-{run}",
+ "vex_id": "https://example.invalid/vexproof/metrics-server-v0.9.0-ci",
+ "author": "vexproof CI recipe (lab run)",
+ "openvex_out": "results/chains-ci-metrics-server-v0.9.0-{run}/openvex.json",
+ "chains": [
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-5970",
+   "untrusted_by_rule": null
+  },
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-6061",
+   "untrusted_by_rule": null
+  },
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-6348",
+   "untrusted_by_rule": null
+  },
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-6603",
+   "untrusted_by_rule": null
+  },
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-6610",
+   "untrusted_by_rule": null
+  },
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-6611",
+   "untrusted_by_rule": null
+  },
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-6612",
+   "untrusted_by_rule": null
+  },
+  {
+   "target": "metrics-server",
+   "osv": "GO-2026-6617",
+   "untrusted_by_rule": null
+  }
+ ]
+}

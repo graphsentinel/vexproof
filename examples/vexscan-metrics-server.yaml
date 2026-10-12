@@ -1,0 +1,19 @@
+# A VexScan for the official metrics-server image: only the image and its source are given.
+apiVersion: vexproof.graphsentinel.github.io/v1alpha1
+kind: VexScan
+metadata:
+  name: metrics-server-v0-9-0
+  namespace: vexproof
+spec:
+  image: registry.k8s.io/metrics-server/metrics-server:v0.9.0
+  source:
+    repo: https://github.com/kubernetes-sigs/metrics-server
+    ref: v0.9.0
+  layers:
+    codeql: {enabled: true, mode: all-args}
+    runtime:
+      mode: uprobe
+      workload: {namespace: kube-system, selector: k8s-app=metrics-server}
+      duration: 10m
+  output:
+    openvexConfigMap: metrics-server-openvex

@@ -1,0 +1,113 @@
+{
+ "measurements": "evidence/measurements/measurements-v1.28.2.tsv",
+ "govulncheck": {
+  "kube-apiserver": "evidence/c0-apiserver-v1.28.2/govulncheck-source.json",
+  "kubectl": "evidence/c0-apiserver-v1.28.2/govulncheck-kubectl.json"
+ },
+ "pclnsym": {
+  "kube-apiserver": [
+   "evidence/c2-shipped-binary/pclnsym.txt",
+   "evidence/c2-shipped-binary/pclnsym-html-all.txt",
+   "evidence/c2-shipped-binary/pclnsym-ssh.txt",
+   "evidence/c2-shipped-binary/pclnsym-xcrypto-control.txt"
+  ]
+ },
+ "uprobe_profiles": {
+  "kube-apiserver": [
+   "evidence/c2-shipped-binary/profile-phase2.txt"
+  ]
+ },
+ "products": {
+  "kube-apiserver": "pkg:golang/k8s.io/kubernetes@v1.28.2#cmd/kube-apiserver",
+  "kubectl": "pkg:golang/k8s.io/kubernetes@v1.28.2#cmd/kubectl"
+ },
+ "evidence_base": "results/chains-v1.28.2",
+ "vex_id": "https://example.invalid/vexproof/kubernetes-v1.28.2-lab",
+ "author": "vexproof lab run (not an official Kubernetes statement)",
+ "openvex_out": "results/chains-v1.28.2/openvex.json",
+ "chains": [
+  {
+   "target": "kube-apiserver",
+   "osv": "GO-2023-2102",
+   "uprobes": [
+    "vxb_serveconn",
+    "vxb_processheaders"
+   ],
+   "symbols_shipped": [
+    "golang.org/x/net/http2.(*Server).ServeConn"
+   ],
+   "ground_truth": "affected; fixed in the API server (k/k #121120, #121201)",
+   "action": "Upgrade golang.org/x/net to v0.17.0+ and Go to 1.20.10+ (Kubernetes v1.28.3+).",
+   "untrusted_by_rule": {
+    "entry": "net/http.*conn.serve",
+    "reason": "the call path passes net/http's connection handler and reaches http2.(*Server).ServeConn; the input is the network peer's frames"
+   },
+   "runtime_entry": "secure serving :6443 (TLS, ALPN h2)\\n10 client connections \u2192 ServeConn 10",
+   "inventory_control": [
+    "golang.org/x/net/http2.(*serverConn).processHeaders"
+   ]
+  },
+  {
+   "target": "kube-apiserver",
+   "osv": "GO-2025-3595",
+   "uprobes": [
+    "vxb_next",
+    "vxb_readstarttag"
+   ],
+   "symbols_shipped": [
+    "golang.org/x/net/html.(*Tokenizer).Next",
+    "golang.org/x/net/html.(*Tokenizer).readStartTag"
+   ],
+   "taint_sarif": "evidence/c3-codeql/go-2025-3595-taint.sarif",
+   "ground_truth": "no not_affected claim; x/net bumped on master (k/k #131128, #131103)",
+   "action": "Upgrade golang.org/x/net to v0.38.0+; exposure requires a service proxy to an HTML-serving backend.",
+   "runtime_entry": "GET /api/v1/namespaces/default/services/htmlsvc:http/proxy/\\nbackend replies text/html",
+   "taint_sink_sites": 3,
+   "uprobes_context": [
+    "vxb_rewritehtml"
+   ],
+   "inventory_control": [
+    "golang.org/x/net/html.(*Tokenizer).Next"
+   ]
+  },
+  {
+   "target": "kube-apiserver",
+   "osv": "GO-2024-3333",
+   "symbols_shipped": [
+    "golang.org/x/net/html.Parse",
+    "golang.org/x/net/html.ParseFragment",
+    "golang.org/x/net/html.ParseWithOptions",
+    "golang.org/x/net/html.ParseFragmentWithOptions",
+    "golang.org/x/net/html.inBodyIM",
+    "golang.org/x/net/html.inTableIM"
+   ],
+   "taint_sarif": "evidence/c3-codeql/go-2024-3333-calls.sarif",
+   "ground_truth": "not affected (k/k #129347)",
+   "taint_sink_sites": 2,
+   "inventory_control": [
+    "golang.org/x/net/html.(*Tokenizer).Next"
+   ]
+  },
+  {
+   "target": "kube-apiserver",
+   "osv": "GO-2024-3321",
+   "ground_truth": "not affected (k/k #129164: only a test suite uses the package)",
+   "symbols_shipped": [
+    "~golang.org/x/crypto/ssh."
+   ],
+   "inventory_control": [
+    "~golang.org/x/crypto/"
+   ]
+  },
+  {
+   "target": "kubectl",
+   "osv": "GO-2025-3595",
+   "ground_truth": "no not_affected claim (k/k #131128)"
+  },
+  {
+   "target": "kubectl",
+   "osv": "GO-2024-3333",
+   "ground_truth": "not affected (k/k #129347)"
+  }
+ ]
+}
