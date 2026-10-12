@@ -1,0 +1,31 @@
+{
+ "osv": "GO-2025-3751",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": "configured-llm",
+ "packages": {
+  "net/http": {
+   "symbols": [
+    "Client.Do",
+    "Client.Get",
+    "Client.PostForm"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 1,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 1,
+ "taint_sinks_by_source": {
+  "response": 1
+ },
+ "taint_path_rows": 1,
+ "taint_sinks": [
+  "cloud.google.com/go/compute/metadata/metadata.go:319"
+ ],
+ "sink_sites_outside_pkg": 63
+}

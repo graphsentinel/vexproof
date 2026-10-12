@@ -1,0 +1,70 @@
+[
+ {
+  "arm": "go1.26.9 as built (DefaultGODEBUG urlmaxqueryparams=0)",
+  "check": "20000 query params",
+  "repeat": 1,
+  "status": 200,
+  "seconds": 0.034,
+  "server_cpu_s": 0.18,
+  "body": "{\"kind\":\"NamespaceList\",\"apiVersion\":\"v1\",\"metadata\":{\"resourceVersion\":\"191\"},\"items\":[{\"metadata\":{\"name\":\"default\",\"uid\":\"40b4d295-30ab-4530-a18e-f954d714efb8\",\"resourceVersion\":\"34\",\"creationTimes"
+ },
+ {
+  "arm": "go1.26.9 as built (DefaultGODEBUG urlmaxqueryparams=0)",
+  "check": "20000 query params",
+  "repeat": 2,
+  "status": 200,
+  "seconds": 0.037,
+  "server_cpu_s": 0.05,
+  "body": "{\"kind\":\"NamespaceList\",\"apiVersion\":\"v1\",\"metadata\":{\"resourceVersion\":\"191\"},\"items\":[{\"metadata\":{\"name\":\"default\",\"uid\":\"40b4d295-30ab-4530-a18e-f954d714efb8\",\"resourceVersion\":\"34\",\"creationTimes"
+ },
+ {
+  "arm": "go1.26.9 as built (DefaultGODEBUG urlmaxqueryparams=0)",
+  "check": "20000 query params",
+  "repeat": 3,
+  "status": 200,
+  "seconds": 0.032,
+  "server_cpu_s": 0.04,
+  "body": "{\"kind\":\"NamespaceList\",\"apiVersion\":\"v1\",\"metadata\":{\"resourceVersion\":\"191\"},\"items\":[{\"metadata\":{\"name\":\"default\",\"uid\":\"40b4d295-30ab-4530-a18e-f954d714efb8\",\"resourceVersion\":\"34\",\"creationTimes"
+ },
+ {
+  "arm": "go1.26.9 as built (DefaultGODEBUG urlmaxqueryparams=0)",
+  "check": "anonymous /openapi/v2",
+  "status": 403,
+  "seconds": 0.004,
+  "body": "{\"kind\":\"Status\",\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failure\",\"message\":\"forbidden: User \\\"system:anonymous\\\" cannot get path \\\"/openapi/v2\\\"\",\"reason\":\"Forbidden\",\"details\":{},\"code\":403}\n"
+ },
+ {
+  "arm": "go1.26.9 with GODEBUG=urlmaxqueryparams=10000",
+  "check": "20000 query params",
+  "repeat": 1,
+  "status": 200,
+  "seconds": 0.011,
+  "server_cpu_s": 0.02,
+  "body": "{\"kind\":\"NamespaceList\",\"apiVersion\":\"v1\",\"metadata\":{\"resourceVersion\":\"191\"},\"items\":[{\"metadata\":{\"name\":\"default\",\"uid\":\"89af39a8-b9fa-4572-a00d-b1c6207d1971\",\"resourceVersion\":\"34\",\"creationTimes"
+ },
+ {
+  "arm": "go1.26.9 with GODEBUG=urlmaxqueryparams=10000",
+  "check": "20000 query params",
+  "repeat": 2,
+  "status": 200,
+  "seconds": 0.011,
+  "server_cpu_s": 0.02,
+  "body": "{\"kind\":\"NamespaceList\",\"apiVersion\":\"v1\",\"metadata\":{\"resourceVersion\":\"191\"},\"items\":[{\"metadata\":{\"name\":\"default\",\"uid\":\"89af39a8-b9fa-4572-a00d-b1c6207d1971\",\"resourceVersion\":\"34\",\"creationTimes"
+ },
+ {
+  "arm": "go1.26.9 with GODEBUG=urlmaxqueryparams=10000",
+  "check": "20000 query params",
+  "repeat": 3,
+  "status": 200,
+  "seconds": 0.006,
+  "server_cpu_s": 0.01,
+  "body": "{\"kind\":\"NamespaceList\",\"apiVersion\":\"v1\",\"metadata\":{\"resourceVersion\":\"191\"},\"items\":[{\"metadata\":{\"name\":\"default\",\"uid\":\"89af39a8-b9fa-4572-a00d-b1c6207d1971\",\"resourceVersion\":\"34\",\"creationTimes"
+ },
+ {
+  "arm": "go1.26.9 with GODEBUG=urlmaxqueryparams=10000",
+  "check": "anonymous /openapi/v2",
+  "status": 403,
+  "seconds": 0.009,
+  "body": "{\"kind\":\"Status\",\"apiVersion\":\"v1\",\"metadata\":{},\"status\":\"Failure\",\"message\":\"forbidden: User \\\"system:anonymous\\\" cannot get path \\\"/openapi/v2\\\"\",\"reason\":\"Forbidden\",\"details\":{},\"code\":403}\n"
+ }
+]

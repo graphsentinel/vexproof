@@ -1,0 +1,182 @@
+{
+ "osv": "GO-2026-6612",
+ "group": "under_investigation",
+ "severity": "unknown",
+ "model": "configured-llm",
+ "packages": {
+  "golang.org/x/net/http2": {
+   "symbols": [
+    "ConfigureServer",
+    "ConfigureTransports",
+    "ConnectionError.Error",
+    "ErrCode.String",
+    "FrameHeader.String",
+    "FrameType.String",
+    "FrameWriteRequest.String",
+    "Framer.ReadFrame",
+    "Framer.ReadFrameForHeader",
+    "Framer.ReadFrameHeader",
+    "Framer.WriteContinuation",
+    "Framer.WriteGoAway",
+    "Framer.WriteHeaders",
+    "Framer.WritePing",
+    "Framer.WriteRSTStream",
+    "Framer.WriteSettings",
+    "Framer.WriteSettingsAck",
+    "Framer.WriteWindowUpdate",
+    "GoAwayError.Error",
+    "Server.ServeConn",
+    "Setting.String",
+    "SettingID.String",
+    "SettingsFrame.ForeachSetting",
+    "StreamError.Error",
+    "Transport.NewClientConn",
+    "Transport.RoundTrip",
+    "bufferedWriterTimeoutWriter.Write",
+    "chunkWriter.Write",
+    "connError.Error",
+    "duplicatePseudoHeaderError.Error",
+    "gzipReader.Close",
+    "gzipReader.Read",
+    "headerFieldNameError.Error",
+    "headerFieldValueError.Error",
+    "netHTTPClientConn.RoundTrip",
+    "noDialH2RoundTripper.NewClientConn",
+    "noDialH2RoundTripper.RoundTrip",
+    "pseudoHeaderError.Error",
+    "requestBody.Close",
+    "requestBody.Read"
+   ],
+   "truncated": true,
+   "seconds": 6.1,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 2,
+   "per_sample": [
+    [
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Server).ServeConn",
+      null
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Server).ServeConn",
+      null
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Server).ServeConn",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*Server).ServeConn"
+     }
+    ]
+   }
+  },
+  "net/http": {
+   "symbols": [
+    "CanonicalHeaderKey",
+    "Client.Do",
+    "Error",
+    "HandleFunc",
+    "Header.Add",
+    "Header.Del",
+    "Header.Get",
+    "Header.Set",
+    "NewRequest",
+    "NewRequestWithContext",
+    "ReadResponse",
+    "Request.UserAgent",
+    "Request.Write",
+    "Response.Write",
+    "ServeMux.HandleFunc",
+    "Server.Close",
+    "Server.Serve",
+    "Server.Shutdown",
+    "body.Close",
+    "body.Read",
+    "bodyEOFSignal.Close",
+    "bodyEOFSignal.Read",
+    "bodyLocked.Read",
+    "bufioFlushWriter.Write",
+    "cancelTimerBody.Close",
+    "cancelTimerBody.Read",
+    "checkConnErrorWriter.Write",
+    "chunkWriter.Write",
+    "connReader.Read",
+    "expectContinueReader.Close",
+    "expectContinueReader.Read",
+    "gzipReader.Close",
+    "gzipReader.Read",
+    "http2ConnectionError.Error",
+    "http2ErrCode.String",
+    "http2FrameHeader.String",
+    "http2FrameType.String",
+    "http2FrameWriteRequest.String",
+    "http2GoAwayError.Error",
+    "http2Setting.String"
+   ],
+   "truncated": true,
+   "seconds": 5.1,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 2,
+   "per_sample": [
+    [
+     [
+      "receiver",
+      "net/http.(*http2serverConn).processData",
+      null
+     ],
+     [
+      "receiver",
+      "net/http.(*http2serverConn).processResetStream",
+      null
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "net/http.(*http2serverConn).processResetStream",
+      0
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "net/http.(*http2serverConn).processResetStream",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "receiver",
+      "function": "net/http.(*http2serverConn).processResetStream"
+     },
+     {
+      "kind": "receiver",
+      "function": "net/http.(*http2serverConn).processData"
+     }
+    ]
+   }
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 0
+}

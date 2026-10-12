@@ -1,0 +1,129 @@
+{
+ "osv": "GO-2026-6348",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "google.golang.org/grpc/mem": {
+   "symbols": [
+    "IsBelowBufferPoolingThreshold",
+    "NewBuffer",
+    "writer.Write"
+   ],
+   "truncated": false,
+   "seconds": 7.0,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [
+     [
+      "arg",
+      "google.golang.org/grpc/mem.(*writer).Write",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "google.golang.org/grpc/mem.(*writer).Write",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "google.golang.org/grpc/mem.(*writer).Write",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "arg",
+      "function": "google.golang.org/grpc/mem.(*writer).Write",
+      "index": 0
+     }
+    ]
+   }
+  },
+  "google.golang.org/grpc/internal/transport": {
+   "symbols": [
+    "NewHTTP2Client",
+    "http2Client.Close",
+    "http2Client.GracefulClose"
+   ],
+   "truncated": false,
+   "seconds": 5.7,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 3,
+   "per_sample": [
+    [
+     [
+      "arg",
+      "google.golang.org/grpc/internal/transport.NewHTTP2Client",
+      3
+     ],
+     [
+      "receiver",
+      "google.golang.org/grpc/internal/transport.(*http2Client).Close",
+      null
+     ],
+     [
+      "receiver",
+      "google.golang.org/grpc/internal/transport.(*http2Client).GracefulClose",
+      null
+     ]
+    ],
+    [
+     [
+      "arg",
+      "google.golang.org/grpc/internal/transport.NewHTTP2Client",
+      3
+     ]
+    ],
+    [
+     [
+      "arg",
+      "google.golang.org/grpc/internal/transport.NewHTTP2Client",
+      3
+     ],
+     [
+      "receiver",
+      "google.golang.org/grpc/internal/transport.(*http2Client).Close",
+      0
+     ],
+     [
+      "receiver",
+      "google.golang.org/grpc/internal/transport.(*http2Client).GracefulClose",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "arg",
+      "function": "google.golang.org/grpc/internal/transport.NewHTTP2Client",
+      "index": 3
+     },
+     {
+      "kind": "receiver",
+      "function": "google.golang.org/grpc/internal/transport.(*http2Client).Close"
+     },
+     {
+      "kind": "receiver",
+      "function": "google.golang.org/grpc/internal/transport.(*http2Client).GracefulClose"
+     }
+    ]
+   }
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 1
+}

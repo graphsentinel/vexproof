@@ -1,0 +1,18 @@
+NAME                     CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+k3d-vex-reach-server-0   98m          0%       795Mi           0%          
+NAMESPACE     NAME                                      CPU(cores)   MEMORY(bytes)   
+kube-system   coredns-577d995dff-8wb5k                  3m           14Mi            
+kube-system   local-path-provisioner-6858d854cf-jmqtk   1m           8Mi             
+kube-system   metrics-server-84c99cb944-q7czf           3m           19Mi            
+kube-system   svclb-traefik-c145c423-8l9ss              0m           0Mi             
+kube-system   traefik-77b898c5c8-qh2lf                  1m           21Mi            
+GET /apis/metrics.k8s.io/v1beta1/nodes ok
+GET /apis/metrics.k8s.io/v1beta1/pods ok
+GET /apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods ok
+NAMESPACE     POD                                       NAME                     CPU(cores)   MEMORY(bytes)   
+kube-system   coredns-577d995dff-8wb5k                  coredns                  3m           14Mi            
+kube-system   local-path-provisioner-6858d854cf-jmqtk   local-path-provisioner   1m           8Mi             
+kube-system   metrics-server-84c99cb944-q7czf           metrics-server           3m           19Mi            
+kube-system   svclb-traefik-c145c423-8l9ss              lb-tcp-443               0m           0Mi             
+kube-system   svclb-traefik-c145c423-8l9ss              lb-tcp-80                0m           0Mi             
+kube-system   traefik-77b898c5c8-qh2lf                  traefik                  1m           21Mi            

@@ -1,0 +1,30 @@
+{
+ "shipped_sha256": "a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c",
+ "shipped_go": "1.20.8",
+ "tags": "selinux,notest",
+ "goos": "linux",
+ "git_version": "v1.28.2",
+ "git_commit": "89a4ea3e1e4ddd7f7572286090359983e0387b2f",
+ "ref_check": "match",
+ "osv_fixed_go": [
+  "1.26.9",
+  "1.27.2"
+ ],
+ "arms": {
+  "shipped": {
+   "go": "1.20.8",
+   "default_godebug": null,
+   "godebug_env": null
+  },
+  "vulnerable-rebuild": {
+   "go": "1.26.8",
+   "default_godebug": "asynctimerchan=1,containermaxprocs=0,cryptocustomrand=1,decoratemappings=0,gotestjsonbuildtext=1,gotypesalias=0,httpcookiemaxnum=0,httplaxcontentlength=1,httpmuxgo121=1,httpservecontentkeepheaders=1,multipathtcp=0,panicnil=1,randseednop=0,rsa1024min=0,tls10server=1,tls3des=1,tlsmlkem=0,tlsrsakex=1,tlssecpmlkem=0,tlssha1=1,tlsunsafeekm=1,updatemaxprocs=0,urlmaxqueryparams=0,urlstrictcolons=0,winreadlinkvolume=0,winsymlink=0,x509keypairleaf=0,x509negativeserial=1,x509rsacrt=0,x509sha256skid=0,x509usepolicies=0",
+   "godebug_env": null
+  },
+  "fixed-rebuild": {
+   "go": "1.26.9",
+   "default_godebug": "asynctimerchan=1,containermaxprocs=0,cryptocustomrand=1,decoratemappings=0,gotestjsonbuildtext=1,gotypesalias=0,httpcookiemaxnum=0,httplaxcontentlength=1,httpmuxgo121=1,httpservecontentkeepheaders=1,httpservecontentmaxranges=1,multipathtcp=0,panicnil=1,randseednop=0,rsa1024min=0,tls10server=1,tls3des=1,tlsmlkem=0,tlsrsakex=1,tlssecpmlkem=0,tlssha1=1,tlsunsafeekm=1,updatemaxprocs=0,urlmaxqueryparams=0,urlstrictcolons=0,winreadlinkvolume=0,winsymlink=0,x509keypairleaf=0,x509negativeserial=1,x509rsacrt=0,x509sha256skid=0,x509usepolicies=0",
+   "godebug_env": null
+  }
+ }
+}

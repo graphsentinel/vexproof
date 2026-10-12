@@ -1,0 +1,15 @@
+{
+ "seconds": 120,
+ "symbol_level_osv": 8,
+ "statuses": [
+  "metrics-server  GO-2026-5970  under_investigation  ",
+  "metrics-server  GO-2026-6061  under_investigation  ",
+  "metrics-server  GO-2026-6348  under_investigation  ",
+  "metrics-server  GO-2026-6603  under_investigation  ",
+  "metrics-server  GO-2026-6610  under_investigation  ",
+  "metrics-server  GO-2026-6611  under_investigation  ",
+  "metrics-server  GO-2026-6612  under_investigation  ",
+  "metrics-server  GO-2026-6617  under_investigation"
+ ],
+ "gate": "PASS"
+}

@@ -1,0 +1,41 @@
+{
+ "osv": "GO-2026-6605",
+ "group": "under_investigation",
+ "severity": "unknown",
+ "model": "configured-llm",
+ "packages": {
+  "net/http": {
+   "symbols": [
+    "Client.Do",
+    "Client.Get",
+    "Client.PostForm",
+    "Transport.RoundTrip"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "net/http/httputil": {
+   "symbols": [
+    "ReverseProxy.ServeHTTP"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 2,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 2,
+ "taint_sinks_by_source": {
+  "request": 1,
+  "response": 2
+ },
+ "taint_path_rows": 29,
+ "taint_sinks": [
+  "cloud.google.com/go/compute/metadata/metadata.go:319",
+  "k8s.io/apimachinery/pkg/util/proxy/upgradeaware.go:292"
+ ],
+ "sink_sites_outside_pkg": 68
+}

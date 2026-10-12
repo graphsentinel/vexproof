@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2025-4010",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "plausible",
+ "reason": "Request data reaches url.Parse in apiserver handlers (27 request-sourced sink paths). Advisory: insufficient validation of bracketed IPv6 hosts; impact depends on how the parsed host is used (allow-list or routing decisions). Needs a maintainer judgement.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

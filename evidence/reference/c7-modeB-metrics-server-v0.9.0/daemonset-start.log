@@ -1,0 +1,2 @@
+target pid=6339 bin=/proc/6339/root/metrics-server
+probes enabled; waiting 120s

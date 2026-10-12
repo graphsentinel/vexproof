@@ -1,0 +1,35 @@
+{
+ "osv": "GO-2026-6088",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "encoding/xml": {
+   "symbols": [
+    "Decoder.Decode",
+    "Unmarshal"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 5,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 5,
+ "taint_sinks_by_source": {
+  "response": 4,
+  "request": 1
+ },
+ "taint_path_rows": 37,
+ "taint_sinks": [
+  "github.com/Azure/azure-sdk-for-go/storage/client.go:845",
+  "github.com/Azure/azure-sdk-for-go/storage/client.go:963",
+  "github.com/Azure/azure-sdk-for-go/storage/util.go:101",
+  "github.com/Azure/go-autorest/autorest/responder.go:210",
+  "github.com/emicklei/go-restful/v3/entity_accessors.go:86"
+ ],
+ "sink_sites_outside_pkg": 10
+}

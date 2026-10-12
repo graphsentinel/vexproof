@@ -1,0 +1,41 @@
+{
+ "osv": "GO-2024-2611",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": "configured-llm",
+ "packages": {
+  "google.golang.org/protobuf/encoding/protojson": {
+   "symbols": [
+    "Unmarshal"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "google.golang.org/protobuf/internal/encoding/json": {
+   "symbols": [
+    "Decoder.Peek",
+    "Decoder.Read"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 4,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 4,
+ "taint_sinks_by_source": {
+  "response": 4,
+  "request": 3
+ },
+ "taint_path_rows": 124,
+ "taint_sinks": [
+  "github.com/googleapis/gax-go/v2/apierror/apierror.go:329",
+  "google.golang.org/protobuf/types/known/structpb/struct.pb.go:231",
+  "google.golang.org/protobuf/types/known/structpb/struct.pb.go:439",
+  "google.golang.org/protobuf/types/known/structpb/struct.pb.go:611"
+ ],
+ "sink_sites_outside_pkg": 12
+}

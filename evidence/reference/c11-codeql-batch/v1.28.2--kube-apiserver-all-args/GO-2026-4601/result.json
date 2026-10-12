@@ -1,0 +1,50 @@
+{
+ "osv": "GO-2026-4601",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "net/url": {
+   "symbols": [
+    "Parse",
+    "ParseRequestURI",
+    "URL.Parse"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 19,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 19,
+ "taint_sinks_by_source": {
+  "request": 9,
+  "response": 16
+ },
+ "taint_path_rows": 153,
+ "taint_sinks": [
+  "github.com/Azure/go-autorest/autorest/adal/config.go:68",
+  "github.com/Azure/go-autorest/autorest/adal/config.go:72",
+  "github.com/Azure/go-autorest/autorest/adal/config.go:76",
+  "github.com/Azure/go-autorest/autorest/adal/config.go:80",
+  "github.com/Azure/go-autorest/autorest/adal/config.go:84",
+  "github.com/Azure/go-autorest/autorest/authorization_storage.go:139",
+  "github.com/Azure/go-autorest/autorest/preparer.go:519",
+  "github.com/go-openapi/jsonreference/reference.go:112",
+  "go.etcd.io/etcd/client/v3/internal/endpoint/endpoint.go:111",
+  "golang.org/x/net/websocket/hybi.go:519",
+  "golang.org/x/net/websocket/hybi.go:548",
+  "google.golang.org/grpc/clientconn.go:1610",
+  "k8s.io/apiextensions-apiserver/pkg/apihelpers/helpers.go:62",
+  "k8s.io/apimachinery/pkg/util/proxy/transport.go:194",
+  "k8s.io/apiserver/pkg/apis/config/validation/validation.go:407",
+  "k8s.io/apiserver/pkg/util/webhook/validation.go:32",
+  "k8s.io/component-base/tracing/api/v1/config.go:69",
+  "k8s.io/kms/pkg/util/util.go:36",
+  "k8s.io/kube-openapi/pkg/validation/spec/schema.go:149"
+ ],
+ "sink_sites_outside_pkg": 85
+}

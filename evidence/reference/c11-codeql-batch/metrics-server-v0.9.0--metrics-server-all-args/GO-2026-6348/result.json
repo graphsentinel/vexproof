@@ -1,0 +1,34 @@
+{
+ "osv": "GO-2026-6348",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "google.golang.org/grpc/mem": {
+   "symbols": [
+    "IsBelowBufferPoolingThreshold",
+    "NewBuffer",
+    "writer.Write"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "google.golang.org/grpc/internal/transport": {
+   "symbols": [
+    "NewHTTP2Client",
+    "http2Client.Close",
+    "http2Client.GracefulClose"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 41,
+ "taint_sinks": [
+  "google.golang.org/grpc/internal/transport/handler_server.go:444",
+  "google.golang.org/grpc/mem/buffers.go:139"
+ ],
+ "sink_sites_outside_pkg": 8
+}

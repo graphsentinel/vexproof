@@ -1,0 +1,48 @@
+{
+ "osv": "GO-2025-4007",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": "configured-llm",
+ "packages": {
+  "crypto/x509": {
+   "symbols": [
+    "CertPool.AppendCertsFromPEM",
+    "Certificate.Verify",
+    "CertificateRequest.CheckSignature",
+    "CreateCertificate",
+    "MarshalPKCS1PrivateKey",
+    "MarshalPKIXPublicKey",
+    "ParseCertificate",
+    "ParseCertificateRequest",
+    "ParseCertificates",
+    "ParseECPrivateKey",
+    "ParsePKCS1PrivateKey",
+    "ParsePKCS8PrivateKey",
+    "ParsePKIXPublicKey"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 1,
+ "sinks_main_module": 3,
+ "sink_packages_not_in_binary": [
+  "k8s.io/client-go/util/certificate/csr"
+ ],
+ "taint_results": 5,
+ "taint_sinks_by_source": {
+  "request": 3,
+  "response": 5
+ },
+ "taint_path_rows": 8,
+ "taint_sinks": [
+  "k8s.io/client-go/util/cert/pem.go:49",
+  "k8s.io/client-go/util/certificate/csr/csr.go:363",
+  "pkg/apis/certificates/helpers.go:36",
+  "pkg/apis/certificates/validation/validation.go:114",
+  "pkg/apis/certificates/validation/validation.go:630"
+ ],
+ "sink_sites_outside_pkg": 94
+}

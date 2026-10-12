@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2026-4601",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "plausible",
+ "reason": "Same paths as GO-2025-4010 (url.Parse on request data in apiserver handlers); advisory: incorrect parsing of IPv6 host literals. Impact depends on how the host is used.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

@@ -1,0 +1,11 @@
+run	target	osv	aliases	L1_trivy	L3_level	package	symbols	sym_found	blocks	blocks_hit	L4	verdict
+ci	metrics-server	GO-2026-5970	CVE-2026-56852	yes	symbol	golang.org/x/text/unicode/norm	25	25	122	0	not-observed	REACHABLE-NOT-OBSERVED
+ci	metrics-server	GO-2026-6061	GHSA-hrxh-6v49-42gf	yes	symbol	google.golang.org/grpc/internal/transport	24	24	353	0	not-observed	REACHABLE-NOT-OBSERVED
+ci	metrics-server	GO-2026-6061	GHSA-hrxh-6v49-42gf	yes	symbol	google.golang.org/grpc/internal/xds/rbac	4	0	0	0	not-instrumented	REACHABLE-NOT-OBSERVED
+ci	metrics-server	GO-2026-6348	CVE-2026-84304,GHSA-vp52-pcj8-j9qc	yes	symbol	google.golang.org/grpc/internal/transport	24	24	441	0	not-observed	REACHABLE-NOT-OBSERVED
+ci	metrics-server	GO-2026-6348	CVE-2026-84304,GHSA-vp52-pcj8-j9qc	yes	symbol	google.golang.org/grpc/mem	6	6	26	0	not-observed	REACHABLE-NOT-OBSERVED
+ci	metrics-server	GO-2026-6603	CVE-2026-78659	no	symbol	golang.org/x/net/http2	81	81	380	146	executed	EXECUTED
+ci	metrics-server	GO-2026-6610	CVE-2026-78660	no	symbol	golang.org/x/net/http2	9	9	64	25	executed	EXECUTED
+ci	metrics-server	GO-2026-6611	CVE-2026-78669	no	symbol	golang.org/x/net/http2	101	101	557	257	executed	EXECUTED
+ci	metrics-server	GO-2026-6612	CVE-2026-78663	no	symbol	golang.org/x/net/http2	88	88	444	177	executed	EXECUTED
+ci	metrics-server	GO-2026-6617	CVE-2026-97032	no	symbol	golang.org/x/net/http2	82	82	367	141	executed	EXECUTED

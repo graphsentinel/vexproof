@@ -1,0 +1,11 @@
+target	osv	aliases	L1_trivy	L3_level	package	symbols	sym_found	blocks	blocks_hit	L4	verdict
+kube-apiserver	GO-2023-2102	CVE-2023-39325,GHSA-4374-p667-p6c8	yes	symbol	golang.org/x/net/http2	5	5	109	60	executed	EXECUTED
+kube-apiserver	GO-2024-2687	CVE-2023-45288,GHSA-4v7x-pqxf-cx7m	yes	symbol	golang.org/x/net/http2	72	72	471	192	executed	EXECUTED
+kube-apiserver	GO-2024-3333	CVE-2024-45338,GHSA-w32m-9786-jp63	yes	package	golang.org/x/net/html	8	8	242	0	not-observed	NOT-REACHABLE-STATIC
+kube-apiserver	GO-2025-3595	CVE-2025-22872	yes	symbol	golang.org/x/net/html	6	6	88	0	not-observed	REACHABLE-NOT-OBSERVED
+kube-apiserver	GO-2024-3321	CVE-2024-45337,GHSA-v778-237x-gjrc	yes	module	golang.org/x/crypto/ssh	3	2	0	0	not-linked	NOT-REACHABLE-STATIC
+kubectl	GO-2023-2102	CVE-2023-39325,GHSA-4374-p667-p6c8	yes	package	golang.org/x/net/http2	5	5	109	0	not-observed	NOT-REACHABLE-STATIC
+kubectl	GO-2024-2687	CVE-2023-45288,GHSA-4v7x-pqxf-cx7m	yes	symbol	golang.org/x/net/http2	72	72	471	126	executed	EXECUTED
+kubectl	GO-2024-3333	CVE-2024-45338,GHSA-w32m-9786-jp63	yes	package	golang.org/x/net/html	8	8	242	0	not-observed	NOT-REACHABLE-STATIC
+kubectl	GO-2025-3595	CVE-2025-22872	yes	symbol	golang.org/x/net/html	6	6	88	0	not-observed	REACHABLE-NOT-OBSERVED
+kubectl	GO-2024-3321	-	no	none	-	-	-	-	-	absent	ABSENT

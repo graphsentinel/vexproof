@@ -1,0 +1,38 @@
+{
+ "osv": "GO-2026-4971",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "net": {
+   "symbols": [
+    "Dialer.Dial",
+    "Dialer.DialContext",
+    "Listen",
+    "ListenConfig.Listen",
+    "Resolver.LookupHost",
+    "Resolver.LookupIPAddr",
+    "Resolver.LookupSRV",
+    "Resolver.LookupTXT"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 1,
+ "sinks_main_module": 1,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 2,
+ "taint_sinks_by_source": {
+  "response": 1,
+  "request": 1
+ },
+ "taint_path_rows": 2,
+ "taint_sinks": [
+  "k8s.io/apimachinery/pkg/util/proxy/dial.go:51",
+  "pkg/registry/core/node/strategy.go:264"
+ ],
+ "sink_sites_outside_pkg": 60
+}

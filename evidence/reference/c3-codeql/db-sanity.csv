@@ -1,0 +1,10 @@
+db,"kind","what","n"
+kube-apiserver,"sink-calls","html.NewTokenizer",0
+kube-apiserver,"body-reads","net/http.Response.Body",2
+kube-apiserver,"rewriteHTML-calls","proxy.rewriteHTML",0
+kube-apiserver,"pkgpaths","golang.org/x/net/html",1
+db,"kind","what","n"
+kube-apiserver-vendor,"sink-calls","html.NewTokenizer",3
+kube-apiserver-vendor,"body-reads","net/http.Response.Body",4990
+kube-apiserver-vendor,"rewriteHTML-calls","proxy.rewriteHTML",1
+kube-apiserver-vendor,"pkgpaths","golang.org/x/net/html",1

@@ -1,0 +1,746 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-10-09T08:20:18.3689235Z",
+  "ArtifactName": "/scan/metrics-server",
+  "ArtifactType": "filesystem",
+  "Metadata": {
+    "ImageConfig": {
+      "architecture": "",
+      "created": "0001-01-01T00:00:00Z",
+      "os": "",
+      "rootfs": {
+        "type": "",
+        "diff_ids": null
+      },
+      "config": {}
+    }
+  },
+  "Results": [
+    {
+      "Target": "metrics-server",
+      "Class": "lang-pkgs",
+      "Type": "gobinary",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "GHSA-gcjh-h69q-9w9g",
+          "PkgID": "github.com/google/cel-go@v0.28.1",
+          "PkgName": "github.com/google/cel-go",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/github.com/google/cel-go@v0.28.1",
+            "UID": "3d411509a80d5cc2"
+          },
+          "InstalledVersion": "v0.28.1",
+          "FixedVersion": "0.29.0",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://github.com/advisories/GHSA-gcjh-h69q-9w9g",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "cel-go: JSON Private Fields Exposed via NativeTypes and ParseStructTag",
+          "Description": "The function `ext.NativeTypes(ParseStructTag(\"json\"))` does not honour the `encoding/json` skip directive `json:\"-\"`. Fields tagged `json:\"-\"` are registered in the CEL type system under the literal name `\"-\"` and are readable from any user-submitted CEL expression via `dyn(obj)[\"-\"]`. \n\nAdditionally, `newNativeTypes` silently registers every nested struct reachable from the type passed to `NativeTypes`, including types from third-party dependencies the developer never examined.\n\n## Root cause\n\nIn `fieldNameByTag`, the helper used by `ParseStructTag(\"json\")` to translate Go struct tags into CEL field names.\n\nSee at `ext/native.go:146`:\n\n```go\nfunc fieldNameByTag(structTagToParse string) func(field reflect.StructField) string {\n    return func(field reflect.StructField) string {\n        tag, found := field.Tag.Lookup(structTagToParse)\n        if found {\n            splits := strings.Split(tag, \",\")\n            if len(splits) \u003e 0 {\n                // We make the assumption that the leftmost entry in the tag is the name.\n                // This seems to be true for most tags that have the concept of a name/key, such as:\n                // https://pkg.go.dev/encoding/xml#Marshal\n                // https://pkg.go.dev/encoding/json#Marshal\n                // https://pkg.go.dev/go.mongodb.org/mongo-driver/bson#hdr-Structs\n                // https://pkg.go.dev/go.yaml.in/yaml/v3#Marshal\n                name := splits[0]\n                return name\n            }\n        }\n\n        return field.Name\n    }\n}\n```\n\nFor a field tagged `json:\"-\"`, this code splits the tag into `[]string{\"-\"}` and returns `\"-\"` as the CEL field name. It never checks whether `\"-\"` is the JSON skip sentinel.\n\nThis contradicts the `encoding/json` rule that the source comment explicitly points readers to:\n\n```text\nAs a special case, if the field tag is \"-\", the field is always omitted. Note\nthat a field with name \"-\" can still be generated using the tag \"-,\".\n```\n\nThe public option also documents JSON-style parsing as the intended behavior.\nSee at `ext/native.go:190`:\n\n```go\n// ParseStructTag configures the struct tag to parse. The 0th item in the tag is used as the name of the CEL field.\n// For example:\n// If the tag to parse is \"cel\" and the struct field has tag cel:\"foo\", the CEL struct field will be \"foo\".\n// If the tag to parse is \"json\" and the struct field has tag json:\"foo,omitempty\", the CEL struct field will be \"foo\".\nfunc ParseStructTag(tag string) NativeTypesOption {\n    return func(ntp *nativeTypeOptions) error {\n        ntp.fieldNameHandler = fieldNameByTag(tag)\n        return nil\n    }\n}\n```\n\nA developer using `ParseStructTag(\"json\")` is therefore led to expect `encoding/json` field-name semantics. Instead, `json:\"-\"` is treated as a real field name.\n\nThe bad name is accepted during native type construction. `newNativeType` checks for duplicate field names, but it does not reject or skip empty names or skip sentinels.\n\nSee at `ext/native.go:663`:\n\n```go\nif fieldNameHandler != nil {\n    fieldNames := make(map[string]struct{})\n\n    for idx := 0; idx \u003c refType.NumField(); idx++ {\n        field := refType.Field(idx)\n        fieldName := toFieldName(fieldNameHandler, field)\n\n        if _, found := fieldNames[fieldName]; found {\n            return nil, fmt.Errorf(\"invalid field name `%s` in struct `%s`: %w\", fieldName, refType.Name(), errDuplicatedFieldName)\n        } else {\n            fieldNames[fieldName] = struct{}{}\n        }\n    }\n}\n```\n\nOnce accepted, the field becomes part of CEL's view of the type. Field enumeration reports it as a normal field name.\n\nSee at `ext/native.go:286`:\n\n```go\nfunc (tp *nativeTypeProvider) FindStructFieldNames(typeName string) ([]string, bool) {\n    if t, found := tp.nativeTypes[typeName]; found {\n        fieldCount := t.refType.NumField()\n        fields := make([]string, fieldCount)\n        for i := 0; i \u003c fieldCount; i++ {\n            fields[i] = toFieldName(tp.options.fieldNameHandler, t.refType.Field(i))\n        }\n        return fields, true\n    }\n    if celTypeFields, found := tp.baseProvider.FindStructFieldNames(typeName); found {\n        return celTypeFields, true\n    }\n    return tp.baseProvider.FindStructFieldNames(typeName)\n}\n```\n\nField lookup also treats the name as valid and returns the underlying Go field value.\n\nSee at `ext/native.go:303`:\n\n```go\nfunc (tp *nativeTypeProvider) FindStructFieldType(typeName, fieldName string) (*types.FieldType, bool) {\n    t, found := tp.nativeTypes[typeName]\n    if !found {\n        return tp.baseProvider.FindStructFieldType(typeName, fieldName)\n    }\n    refField, isDefined := t.hasField(fieldName)\n    if !found || !isDefined {\n        return nil, false\n    }\n\n    return \u0026types.FieldType{\n        IsSet: func(obj any) bool {\n            refVal := reflect.Indirect(reflect.ValueOf(obj))\n            refField := refVal.FieldByName(refField.Name)\n            return !refField.IsZero()\n        },\n        GetFrom: func(obj any) (any, error) {\n            refVal := reflect.Indirect(reflect.ValueOf(obj))\n            refField := refVal.FieldByName(refField.Name)\n            return getFieldValue(refField), nil\n        },\n    }, true\n}\n```\n\nAt runtime, native objects advertise index access.\nSee at `ext/native.go:37`:\n\n```go\nvar (\n    nativeObjTraitMask = traits.FieldTesterType | traits.IndexerType\n)\n```\n\nBecause `traits.IndexerType` is present, a user expression can bypass ordinary field syntax and read the registered `\"-\"` field with bracket access:\n\n```cel\ndyn(req.auth)[\"-\"]\n```\n\nThe same mistaken name is also used when converting native objects to JSON-like CEL values. `ConvertToNative(jsonStructType)` iterates all Go struct fields, computes the CEL field name, and inserts it into the output map without applying the JSON skip rule.\n\nSee at `ext/native.go:501`:\n\n```go\ncase jsonStructType:\n    refVal := reflect.Indirect(o.refValue)\n    refType := refVal.Type()\n    fields := make(map[string]*structpb.Value, refVal.NumField())\n    for i := 0; i \u003c refVal.NumField(); i++ {\n        fieldType := refType.Field(i)\n        fieldValue := refVal.Field(i)\n        if !fieldValue.IsValid() || fieldValue.IsZero() {\n            continue\n        }\n        fieldName := toFieldName(o.valType.fieldNameHandler, fieldType)\n        fieldCELVal := o.NativeToValue(fieldValue.Interface())\n        fieldJSONVal, err := fieldCELVal.ConvertToNative(jsonValueType)\n        if err != nil {\n            return nil, err\n        }\n        fields[fieldName] = fieldJSONVal.(*structpb.Value)\n    }\n    return \u0026structpb.Struct{Fields: fields}, nil\n```\n\nThis means a `json:\"-\"` secret is exposed in two ways: it can be read directly through CEL indexing as `dyn(obj)[\"-\"]`, and it can appear under the key `\"-\"` in JSON struct conversion output.\n\nThe blast radius is widened by `newNativeTypes`, which registers not only the type explicitly passed to `NativeTypes`, but also every nested struct reachable from its fields.\n\nSee at `ext/native.go:609`:\n\n```go\nfunc newNativeTypes(fieldNameHandler NativeTypesFieldNameHandler, rawType reflect.Type) ([]*nativeType, error) {\n    nt, err := newNativeType(fieldNameHandler, rawType)\n    if err != nil {\n        return nil, err\n    }\n    result := []*nativeType{nt}\n\n    var iterateStructMembers func(reflect.Type)\n    iterateStructMembers = func(t reflect.Type) {\n        if k := t.Kind(); k == reflect.Pointer || k == reflect.Slice || k == reflect.Array || k == reflect.Map {\n            iterateStructMembers(t.Elem())\n            return\n        }\n        if t.Kind() != reflect.Struct {\n            return\n        }\n\n        nt, ntErr := newNativeType(fieldNameHandler, t)\n        if ntErr != nil {\n            err = ntErr\n            return\n        }\n        result = append(result, nt)\n\n        for idx := 0; idx \u003c t.NumField(); idx++ {\n            iterateStructMembers(t.Field(idx).Type)\n        }\n    }\n    iterateStructMembers(rawType)\n\n    return result, err\n}\n```\n\nAs a result, a developer can register one apparently safe request type while a nested dependency type is silently registered too. If that nested type contains a `json:\"-\"` secret, CEL still receives a readable field named `\"-\"` even though the developer never registered or audited that nested type directly.\n\n## Reproduction\n\n```go\npackage main\n\nimport (\n    \"fmt\"\n    \"reflect\"\n\n    \"github.com/google/cel-go/cel\"\n    \"github.com/google/cel-go/ext\"\n)\n\n// Simulates a library type; developer never registers this directly.\ntype AuthCtx struct {\n    UserID string `json:\"userId\"`\n    Secret string `json:\"-\"` // server-internal; never appears in JSON output\n}\n\n// Developer registers only this type.\ntype Req struct{ Auth AuthCtx `json:\"auth\"` }\n\nfunc main() {\n    env, _ := cel.NewEnv(\n        // Only Req is passed; AuthCtx is registered silently by newNativeTypes.\n        ext.NativeTypes(reflect.TypeOf(Req{}), ext.ParseStructTag(\"json\")),\n        cel.Variable(\"req\", cel.ObjectType(\"main.Req\")),\n    )\n    ast, _ := env.Compile(`dyn(req.auth)[\"-\"]`)\n    prg, _ := env.Program(ast)\n    out, _, _ := prg.Eval(map[string]any{\n        \"req\": Req{Auth: AuthCtx{UserID: \"alice\", Secret: \"sk-live-s3cr3t\"}},\n    })\n    fmt.Println(out) // sk-live-s3cr3t\n}\n```\n\n**Expected:** expression compile error or empty result; `json:\"-\"` field should not be\naccessible.  \n**Actual:** `sk-live-s3cr3t`; the server-injected secret is returned verbatim.\n\nThe same field is also included under key `\"-\"` in `ConvertToNative(jsonStructType)`\noutput, and appears in `FindStructFieldNames` enumeration.\n\n### path 1. CEL indexing\n\nTested against the released module `github.com/google/cel-go v0.28.1`\n(latest stable release as of 2026-05-12), using the `go.mod` entry:\n\n```\nrequire github.com/google/cel-go v0.28.1\n```\n\nRunning the PoC above (`go run main.go`) produces:\n\n```\nsk-live-s3cr3t\n```\n\nThe secret value is returned verbatim, with no error at compile time or at runtime.\n\n### Path 2. `ConvertToNative(jsonStructType)`\n\nWhen the `nativeObj` for the `AuthCtx` value is converted to a Protobuf `Struct`\n(the representation used whenever CEL output is serialised to JSON), the\n`json:\"-\"` field appears in the output map under the key `\"-\"`.\n\n```go\npackage main\n\nimport (\n    \"encoding/json\"\n    \"fmt\"\n    \"reflect\"\n\n    \"github.com/google/cel-go/cel\"\n    \"github.com/google/cel-go/ext\"\n\n    structpb \"google.golang.org/protobuf/types/known/structpb\"\n)\n\ntype AuthCtxConv struct {\n    UserID string `json:\"userId\"`\n    Secret string `json:\"-\"` // should never appear in JSON output\n}\n\ntype ReqConv struct{ Auth AuthCtxConv `json:\"auth\"` }\n\nfunc main() {\n    env, _ := cel.NewEnv(\n        ext.NativeTypes(reflect.TypeOf(ReqConv{}), ext.ParseStructTag(\"json\")),\n        cel.Variable(\"req\", cel.ObjectType(\"main.ReqConv\")),\n    )\n\n    ast, _ := env.Compile(`req.auth`)\n    prg, _ := env.Program(ast)\n    out, _, _ := prg.Eval(map[string]any{\n        \"req\": ReqConv{Auth: AuthCtxConv{UserID: \"alice\", Secret: \"sk-live-s3cr3t\"}},\n    })\n\n    jsonStructType := reflect.TypeOf(\u0026structpb.Struct{})\n    raw, _ := out.ConvertToNative(jsonStructType)\n\n    st := raw.(*structpb.Struct)\n    b, _ := json.MarshalIndent(st.AsMap(), \"\", \"  \")\n    fmt.Printf(\"ConvertToNative(jsonStructType) output:\\n%s\\n\", b)\n    fmt.Printf(\"\\nDirect field access via \\\"-\\\" key present: %v\\n\", st.Fields[\"-\"] != nil)\n    if v, ok := st.Fields[\"-\"]; ok {\n        fmt.Printf(\"Value: %s\\n\", v.GetStringValue())\n    }\n}\n```\n\nRunning the PoC above produces:\n\n```\nConvertToNative(jsonStructType) output:\n{\n  \"-\": \"sk-live-s3cr3t\",\n  \"userId\": \"alice\"\n}\n\nDirect field access via \"-\" key present: true\nValue: sk-live-s3cr3t\n```\n\nThe `\"-\"` key is present in the serialised Protobuf struct alongside `userId`.\nAny system that converts a CEL evaluation result to JSON (e.g. via `structpb.Struct`) will include the secret in the output, regardless of whether the `dyn()[\"-\"]` indexing path is used.\n\n## Impact\n\nAny user who can submit CEL expressions to an application that uses `ext.NativeTypes(ParseStructTag(\"json\"))` can read struct fields that the developer explicitly marked `json:\"-\"` to keep out of serialised output. By writing `dyn(obj)[\"-\"]`, the attacker retrieves the raw Go field value, typically a secret, internal token, or private identifier, with no compile-time or runtime error. Because `newNativeTypes` silently registers every nested struct reachable from the root type, the attacker may also reach secrets in dependency types the developer never intended to expose to CEL.\n\n## Remediation\n\nDo not treat `json:\"-\"` as a CEL field named `\"-\"`. Model it as an explicit skipped field, not as an empty string field name.\n\nUpdate the struct-tag parsing path so exact `json:\"-\"` returns “skip this field”, while `json:\"-,\"` continues to mean the literal field name `\"-\"`, matching `encoding/json` semantics.\n\nApply that skip decision consistently anywhere native fields are exposed or resolved:\n\n- duplicate-name validation in `newNativeType`\n- field enumeration in `FindStructFieldNames`\n- field type lookup in `FindStructFieldType`\n- runtime lookup in `fieldByName` / `hasField`\n- object construction in `NewValue`\n- JSON conversion in `ConvertToNative(jsonStructType)`\n\nApply the same omit handling for `xml:\"-\"`, `yaml:\"-\"`, and `bson:\"-\"` where `ParseStructTag` is used.",
+          "Severity": "MEDIUM",
+          "VendorSeverity": {
+            "ghsa": 2
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N",
+              "V40Score": 6.3
+            }
+          },
+          "References": [
+            "https://github.com/cel-expr/cel-go",
+            "https://github.com/cel-expr/cel-go/security/advisories/GHSA-gcjh-h69q-9w9g"
+          ],
+          "PublishedDate": "2026-07-24T16:48:56Z",
+          "LastModifiedDate": "2026-07-24T16:48:56Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-81870",
+          "PkgID": "go.opentelemetry.io/otel/exporters/otlp/otlptrace@v1.44.0",
+          "PkgName": "go.opentelemetry.io/otel/exporters/otlp/otlptrace",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/go.opentelemetry.io/otel/exporters/otlp/otlptrace@v1.44.0",
+            "UID": "de28aed3542bfa09"
+          },
+          "InstalledVersion": "v1.44.0",
+          "FixedVersion": "1.45.0",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-81870",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "github.com/open-telemetry/opentelemetry-go: OpenTelemetry-Go: Information disclosure via exporter configuration logging",
+          "Description": "OpenTelemetry-Go is the Go implementation of OpenTelemetry. From version 1.5.0 to 1.44.0, sdk/trace.NewTracerProvider emits a TracerProvider created internal Info-level diagnostic event whose MarshalLog implementations recursively include span processor, exporter, and client configuration. Applications that call otel.SetLogger to enable OpenTelemetry internal Info logging can therefore record OTLP gRPC and HTTP collector endpoints, the OTLP HTTP Insecure flag, and complete Zipkin collector URLs. A person or system with access to those logs can learn internal collector topology and can recover credentials or tokens embedded in Zipkin URL user information or query strings. The default OpenTelemetry logger does not emit the event, and this path does not log OTLP authentication headers, TLS key material, or span payloads. This issue is fixed in version 1.45.0.",
+          "Severity": "LOW",
+          "CweIDs": [
+            "CWE-200",
+            "CWE-532"
+          ],
+          "VendorSeverity": {
+            "ghsa": 1,
+            "redhat": 1
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:L/AC:L/AT:P/PR:L/UI:N/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N",
+              "V40Score": 2
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
+              "V3Score": 3.3
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-81870",
+            "https://github.com/open-telemetry/opentelemetry-go",
+            "https://github.com/open-telemetry/opentelemetry-go/commit/3a1412d2b3bc4e4231fbeac2ed42117ae541bb38",
+            "https://github.com/open-telemetry/opentelemetry-go/pull/8438",
+            "https://github.com/open-telemetry/opentelemetry-go/releases/tag/exporters/zipkin/v1.45.0",
+            "https://github.com/open-telemetry/opentelemetry-go/releases/tag/sdk/v1.45.0",
+            "https://github.com/open-telemetry/opentelemetry-go/security/advisories/GHSA-8wmf-6v46-5gfg",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-81870",
+            "https://www.cve.org/CVERecord?id=CVE-2026-81870"
+          ],
+          "PublishedDate": "2026-09-16T20:17:32.733Z",
+          "LastModifiedDate": "2026-09-30T17:51:56.193Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-81870",
+          "PkgID": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc@v1.44.0",
+          "PkgName": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc@v1.44.0",
+            "UID": "4bc9dc1cdd38f91e"
+          },
+          "InstalledVersion": "v1.44.0",
+          "FixedVersion": "1.45.0",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-81870",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "github.com/open-telemetry/opentelemetry-go: OpenTelemetry-Go: Information disclosure via exporter configuration logging",
+          "Description": "OpenTelemetry-Go is the Go implementation of OpenTelemetry. From version 1.5.0 to 1.44.0, sdk/trace.NewTracerProvider emits a TracerProvider created internal Info-level diagnostic event whose MarshalLog implementations recursively include span processor, exporter, and client configuration. Applications that call otel.SetLogger to enable OpenTelemetry internal Info logging can therefore record OTLP gRPC and HTTP collector endpoints, the OTLP HTTP Insecure flag, and complete Zipkin collector URLs. A person or system with access to those logs can learn internal collector topology and can recover credentials or tokens embedded in Zipkin URL user information or query strings. The default OpenTelemetry logger does not emit the event, and this path does not log OTLP authentication headers, TLS key material, or span payloads. This issue is fixed in version 1.45.0.",
+          "Severity": "LOW",
+          "CweIDs": [
+            "CWE-200",
+            "CWE-532"
+          ],
+          "VendorSeverity": {
+            "ghsa": 1,
+            "redhat": 1
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:L/AC:L/AT:P/PR:L/UI:N/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N",
+              "V40Score": 2
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
+              "V3Score": 3.3
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-81870",
+            "https://github.com/open-telemetry/opentelemetry-go",
+            "https://github.com/open-telemetry/opentelemetry-go/commit/3a1412d2b3bc4e4231fbeac2ed42117ae541bb38",
+            "https://github.com/open-telemetry/opentelemetry-go/pull/8438",
+            "https://github.com/open-telemetry/opentelemetry-go/releases/tag/exporters/zipkin/v1.45.0",
+            "https://github.com/open-telemetry/opentelemetry-go/releases/tag/sdk/v1.45.0",
+            "https://github.com/open-telemetry/opentelemetry-go/security/advisories/GHSA-8wmf-6v46-5gfg",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-81870",
+            "https://www.cve.org/CVERecord?id=CVE-2026-81870"
+          ],
+          "PublishedDate": "2026-09-16T20:17:32.733Z",
+          "LastModifiedDate": "2026-09-30T17:51:56.193Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-81870",
+          "PkgID": "go.opentelemetry.io/otel/sdk@v1.44.0",
+          "PkgName": "go.opentelemetry.io/otel/sdk",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/go.opentelemetry.io/otel/sdk@v1.44.0",
+            "UID": "e9bb0032cb182911"
+          },
+          "InstalledVersion": "v1.44.0",
+          "FixedVersion": "1.45.0",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-81870",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "github.com/open-telemetry/opentelemetry-go: OpenTelemetry-Go: Information disclosure via exporter configuration logging",
+          "Description": "OpenTelemetry-Go is the Go implementation of OpenTelemetry. From version 1.5.0 to 1.44.0, sdk/trace.NewTracerProvider emits a TracerProvider created internal Info-level diagnostic event whose MarshalLog implementations recursively include span processor, exporter, and client configuration. Applications that call otel.SetLogger to enable OpenTelemetry internal Info logging can therefore record OTLP gRPC and HTTP collector endpoints, the OTLP HTTP Insecure flag, and complete Zipkin collector URLs. A person or system with access to those logs can learn internal collector topology and can recover credentials or tokens embedded in Zipkin URL user information or query strings. The default OpenTelemetry logger does not emit the event, and this path does not log OTLP authentication headers, TLS key material, or span payloads. This issue is fixed in version 1.45.0.",
+          "Severity": "LOW",
+          "CweIDs": [
+            "CWE-200",
+            "CWE-532"
+          ],
+          "VendorSeverity": {
+            "ghsa": 1,
+            "redhat": 1
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:L/AC:L/AT:P/PR:L/UI:N/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N",
+              "V40Score": 2
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
+              "V3Score": 3.3
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-81870",
+            "https://github.com/open-telemetry/opentelemetry-go",
+            "https://github.com/open-telemetry/opentelemetry-go/commit/3a1412d2b3bc4e4231fbeac2ed42117ae541bb38",
+            "https://github.com/open-telemetry/opentelemetry-go/pull/8438",
+            "https://github.com/open-telemetry/opentelemetry-go/releases/tag/exporters/zipkin/v1.45.0",
+            "https://github.com/open-telemetry/opentelemetry-go/releases/tag/sdk/v1.45.0",
+            "https://github.com/open-telemetry/opentelemetry-go/security/advisories/GHSA-8wmf-6v46-5gfg",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-81870",
+            "https://www.cve.org/CVERecord?id=CVE-2026-81870"
+          ],
+          "PublishedDate": "2026-09-16T20:17:32.733Z",
+          "LastModifiedDate": "2026-09-30T17:51:56.193Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-56854",
+          "PkgID": "golang.org/x/crypto@v0.53.0",
+          "PkgName": "golang.org/x/crypto",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/golang.org/x/crypto@v0.53.0",
+            "UID": "b77316a0bbb4be98"
+          },
+          "InstalledVersion": "v0.53.0",
+          "FixedVersion": "0.55.0",
+          "Status": "fixed",
+          "Layer": {},
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-56854",
+          "DataSource": {
+            "ID": "govulndb",
+            "Name": "The Go Vulnerability Database",
+            "URL": "https://pkg.go.dev/vuln/"
+          },
+          "Title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authentication bypass due to unenforced source-address restrictions",
+          "Description": "The source-address critical option in the Permissions returned by an authentication callback was only enforced for the PublicKeyCallback and VerifiedPublicKeyCallback paths, extending the fix for CVE-2026-46595. Permissions returned by the PasswordCallback, KeyboardInteractiveCallback, NoClientAuthCallback, and GSSAPIWithMICConfig.AllowLogin callbacks were not validated against the client's remote address, so a source-address restriction set by those callbacks was silently ignored. The check is now applied to the Permissions returned by any authentication callback.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-863"
+          ],
+          "VendorSeverity": {
+            "amazon": 3,
+            "redhat": 3
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:N",
+              "V3Score": 6.8
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-56854",
+            "https://go.dev/cl/797040",
+            "https://go.dev/issue/80213",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-56854",
+            "https://pkg.go.dev/vuln/GO-2026-6303",
+            "https://www.cve.org/CVERecord?id=CVE-2026-56854"
+          ],
+          "PublishedDate": "2026-08-28T16:18:17.607Z",
+          "LastModifiedDate": "2026-09-03T16:37:52.17Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-56855",
+          "PkgID": "golang.org/x/crypto@v0.53.0",
+          "PkgName": "golang.org/x/crypto",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/golang.org/x/crypto@v0.53.0",
+            "UID": "b77316a0bbb4be98"
+          },
+          "InstalledVersion": "v0.53.0",
+          "FixedVersion": "0.56.0",
+          "Status": "fixed",
+          "Layer": {},
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-56855",
+          "DataSource": {
+            "ID": "govulndb",
+            "Name": "The Go Vulnerability Database",
+            "URL": "https://pkg.go.dev/vuln/"
+          },
+          "Title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted messages",
+          "Description": "Previously, after a channel has been established, a malicious peer could send crafted messages that would deadlock the entire connection. Now, we handle all RFC 4254 channel messages; global requests are handled explicitly. Then, treat all other messages as a protocol error and tear the connection down instead of buffering and blocking.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-770"
+          ],
+          "VendorSeverity": {
+            "alma": 3,
+            "amazon": 3,
+            "azure": 2,
+            "oracle-oval": 3,
+            "redhat": 2,
+            "rocky": 3
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+              "V3Score": 5.3
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2026:70640",
+            "https://access.redhat.com/security/cve/CVE-2026-56855",
+            "https://bugzilla.redhat.com/2515815",
+            "https://bugzilla.redhat.com/2515820",
+            "https://bugzilla.redhat.com/2515827",
+            "https://bugzilla.redhat.com/2515838",
+            "https://bugzilla.redhat.com/2515839",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2402034",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2503742",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515815",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515820",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515827",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515838",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515839",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2528050",
+            "https://creativecommons.org/licenses/by/4.0/",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-11395",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-15789",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-33818",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56853",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56855",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56858",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56860",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56862",
+            "https://errata.almalinux.org/9/ALSA-2026-70640.html",
+            "https://errata.rockylinux.org/RLSA-2026:70640",
+            "https://go.dev/cl/826524",
+            "https://go.dev/issue/81317",
+            "https://groups.google.com/g/golang-announce/c/1y3fb2np35U",
+            "https://linux.oracle.com/cve/CVE-2026-56855.html",
+            "https://linux.oracle.com/errata/ELSA-2026-70640.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-56855",
+            "https://pkg.go.dev/vuln/GO-2026-6355",
+            "https://www.cve.org/CVERecord?id=CVE-2026-56855"
+          ],
+          "PublishedDate": "2026-09-02T20:17:36.397Z",
+          "LastModifiedDate": "2026-09-04T16:34:56.823Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-78662",
+          "PkgID": "golang.org/x/crypto@v0.53.0",
+          "PkgName": "golang.org/x/crypto",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/golang.org/x/crypto@v0.53.0",
+            "UID": "b77316a0bbb4be98"
+          },
+          "InstalledVersion": "v0.53.0",
+          "FixedVersion": "0.56.0",
+          "Status": "fixed",
+          "Layer": {},
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78662",
+          "DataSource": {
+            "ID": "govulndb",
+            "Name": "The Go Vulnerability Database",
+            "URL": "https://pkg.go.dev/vuln/"
+          },
+          "Title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via channel request flooding",
+          "Description": "Previously, a channel registered in the mux's chanList is not usable until it is established. A malicious peer was able flood the channel's incomingRequests, deadlocking the entire connection. Now, we add an atomic established state, set when a channel becomes usable. Until such a time, handlePacket drops every packet other than the open confirmation/failure, without blocking and without tearing down the connection.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-770"
+          ],
+          "VendorSeverity": {
+            "amazon": 3,
+            "azure": 2,
+            "redhat": 2
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+              "V3Score": 5.3
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-78662",
+            "https://go.dev/cl/826504",
+            "https://go.dev/issue/81316",
+            "https://groups.google.com/g/golang-announce/c/1y3fb2np35U",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-78662",
+            "https://pkg.go.dev/vuln/GO-2026-6354",
+            "https://www.cve.org/CVERecord?id=CVE-2026-78662"
+          ],
+          "PublishedDate": "2026-09-02T20:17:37.167Z",
+          "LastModifiedDate": "2026-09-04T16:33:34.057Z"
+        },
+        {
+          "VulnerabilityID": "GO-2026-5932",
+          "PkgID": "golang.org/x/crypto@v0.53.0",
+          "PkgName": "golang.org/x/crypto",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/golang.org/x/crypto@v0.53.0",
+            "UID": "b77316a0bbb4be98"
+          },
+          "InstalledVersion": "v0.53.0",
+          "Status": "affected",
+          "Layer": {},
+          "DataSource": {
+            "ID": "govulndb",
+            "Name": "The Go Vulnerability Database",
+            "URL": "https://pkg.go.dev/vuln/"
+          },
+          "Title": "The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues",
+          "Description": "The golang.org/x/crypto/openpgp package is unsafe by design, has numerous known security issues, is not maintained, and should not be used.\n\nIf you are required to interoperate with OpenPGP systems and need a maintained package, consider github.com/ProtonMail/go-crypto/openpgp which is a maintained fork that aims to be a drop-in replacement for this package.",
+          "Severity": "UNKNOWN",
+          "References": [
+            "https://go.dev/issue/44226",
+            "https://pkg.go.dev/vuln/GO-2026-5932"
+          ]
+        },
+        {
+          "VulnerabilityID": "CVE-2026-56852",
+          "PkgID": "golang.org/x/text@v0.38.0",
+          "PkgName": "golang.org/x/text",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/golang.org/x/text@v0.38.0",
+            "UID": "fc4ddbcc4055e5f1"
+          },
+          "InstalledVersion": "v0.38.0",
+          "FixedVersion": "0.39.0",
+          "Status": "fixed",
+          "Layer": {},
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-56852",
+          "DataSource": {
+            "ID": "govulndb",
+            "Name": "The Go Vulnerability Database",
+            "URL": "https://pkg.go.dev/vuln/"
+          },
+          "Title": "golang.org/x/text: golang.org/x/text: Denial of Service via invalid UTF-8 input",
+          "Description": "A norm.Iter can enter an infinite loop when handling input containing invalid UTF-8 bytes.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-835"
+          ],
+          "VendorSeverity": {
+            "alma": 3,
+            "amazon": 3,
+            "azure": 3,
+            "oracle-oval": 3,
+            "redhat": 3,
+            "rocky": 3
+          },
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2026:70201",
+            "https://access.redhat.com/security/cve/CVE-2026-56852",
+            "https://bugzilla.redhat.com/2456335",
+            "https://bugzilla.redhat.com/2467809",
+            "https://bugzilla.redhat.com/2504233",
+            "https://bugzilla.redhat.com/2508234",
+            "https://bugzilla.redhat.com/2515815",
+            "https://bugzilla.redhat.com/2515820",
+            "https://bugzilla.redhat.com/2515827",
+            "https://bugzilla.redhat.com/2515838",
+            "https://bugzilla.redhat.com/2515839",
+            "https://bugzilla.redhat.com/2515840",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2456335",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2467809",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2504233",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2508234",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515815",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515820",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515827",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515838",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515839",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515840",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2518147",
+            "https://creativecommons.org/licenses/by/4.0/",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-17106",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-19730",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-33810",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-33818",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-42499",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56852",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56853",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56858",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56859",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56860",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-56862",
+            "https://errata.almalinux.org/10/ALSA-2026-70201.html",
+            "https://errata.rockylinux.org/RLSA-2026:70201",
+            "https://go.dev/cl/794100",
+            "https://go.dev/issue/80142",
+            "https://linux.oracle.com/cve/CVE-2026-56852.html",
+            "https://linux.oracle.com/errata/ELSA-2026-70201.html",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-56852",
+            "https://pkg.go.dev/vuln/GO-2026-5970",
+            "https://www.cve.org/CVERecord?id=CVE-2026-56852"
+          ],
+          "PublishedDate": "2026-07-21T20:17:02.867Z",
+          "LastModifiedDate": "2026-07-23T18:27:48.877Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-56851",
+          "PkgID": "golang.org/x/text@v0.38.0",
+          "PkgName": "golang.org/x/text",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/golang.org/x/text@v0.38.0",
+            "UID": "fc4ddbcc4055e5f1"
+          },
+          "InstalledVersion": "v0.38.0",
+          "FixedVersion": "0.41.0",
+          "Status": "fixed",
+          "Layer": {},
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-56851",
+          "DataSource": {
+            "ID": "govulndb",
+            "Name": "The Go Vulnerability Database",
+            "URL": "https://pkg.go.dev/vuln/"
+          },
+          "Title": "The Nickname profile can panic with an out-of-bounds slice error when  ...",
+          "Description": "The Nickname profile can panic with an out-of-bounds slice error when transforming crafted input into a short destination buffer.",
+          "Severity": "UNKNOWN",
+          "References": [
+            "https://go.dev/cl/793360",
+            "https://go.dev/issue/80112",
+            "https://pkg.go.dev/vuln/GO-2026-6629"
+          ],
+          "PublishedDate": "2026-10-07T18:17:20.903Z",
+          "LastModifiedDate": "2026-10-07T18:17:20.903Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-84304",
+          "PkgID": "google.golang.org/grpc@v1.81.1",
+          "PkgName": "google.golang.org/grpc",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/google.golang.org/grpc@v1.81.1",
+            "UID": "ff965cb3c1a2c647"
+          },
+          "InstalledVersion": "v1.81.1",
+          "FixedVersion": "1.83.1",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84304",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "google.golang.org/grpc: gRPC-Go: Denial of Service via HTTP/2 DATA Frame Fragmentation",
+          "Description": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, internal/transport/transport.go stores each fragmented HTTP/2 DATA frame as a separate recvMsg in recvBuffer, so millions of one-byte frames can consume disproportionate heap memory even when payload bytes remain within connection and stream flow-control windows. An unauthenticated remote attacker can use concurrent multiplexed streams to exhaust process memory and cause a runtime panic or out-of-memory termination. Receive-buffer compaction is enabled by default and can be controlled temporarily with GRPC_GO_EXPERIMENTAL_ENABLE_RECEIVE_BUFFER_COMPACTION. This issue is fixed in version 1.83.1.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-400"
+          ],
+          "VendorSeverity": {
+            "azure": 3,
+            "ghsa": 3,
+            "redhat": 3
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+              "V40Score": 8.7
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-84304",
+            "https://github.com/grpc/grpc-go",
+            "https://github.com/grpc/grpc-go/commit/7354d9c8debb4bcf2225bf429857078de310c176",
+            "https://github.com/grpc/grpc-go/commit/8cfeca0e1ee5ea0980dcc320e20240fa1079ec77",
+            "https://github.com/grpc/grpc-go/pull/9331",
+            "https://github.com/grpc/grpc-go/pull/9333",
+            "https://github.com/grpc/grpc-go/releases/tag/v1.83.1",
+            "https://github.com/grpc/grpc-go/security/advisories/GHSA-vp52-pcj8-j9qc",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-84304",
+            "https://www.cve.org/CVERecord?id=CVE-2026-84304"
+          ],
+          "PublishedDate": "2026-09-01T19:17:30.743Z",
+          "LastModifiedDate": "2026-09-09T21:09:13.08Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-84445",
+          "PkgID": "google.golang.org/grpc@v1.81.1",
+          "PkgName": "google.golang.org/grpc",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/google.golang.org/grpc@v1.81.1",
+            "UID": "ff965cb3c1a2c647"
+          },
+          "InstalledVersion": "v1.81.1",
+          "FixedVersion": "1.82.2, 1.83.2, 1.84.0-dev.0.20260825144003-d5a41119e0e3, 1.85.0-dev.0.20260825072537-93e31b48545e",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84445",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "google.golang.org/grpc: gRPC-Go: Denial of Service via malformed RPC requests",
+          "Description": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.82.2 and 1.83.2, servers created with xds.NewGRPCServer() allow internal/transport/http2_server.go to accept an RPC containing neither the :authority header nor the Host header, while RouteAndProcess in internal/xds/server/routing.go assumes that an authority value exists and indexes the empty slice. A remote client that can complete transport connection establishment can trigger an index-out-of-bounds panic that is not recovered by the per-RPC goroutine and terminates the entire server process. In insecure or ordinary TLS deployments the request can be unauthenticated, while strict mTLS or ALTS deployments require valid transport credentials before the malformed RPC can reach the interceptor. This issue is fixed in versions 1.82.2 and 1.83.2.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-129",
+            "CWE-248"
+          ],
+          "VendorSeverity": {
+            "azure": 3,
+            "ghsa": 3,
+            "redhat": 3,
+            "rocky": 3
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+              "V40Score": 8.7
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+              "V3Score": 7.5
+            }
+          },
+          "References": [
+            "https://access.redhat.com/errata/RHSA-2026:76743",
+            "https://access.redhat.com/security/cve/CVE-2026-84445",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2533175",
+            "https://creativecommons.org/licenses/by/4.0/",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-84445",
+            "https://errata.rockylinux.org/RLSA-2026:76743",
+            "https://github.com/grpc/grpc-go",
+            "https://github.com/grpc/grpc-go/commit/3822494d8ea03b992c089fd2a195f041762fffb7",
+            "https://github.com/grpc/grpc-go/commit/8668b69c167df908b6b3666dcbf40992b9e932a4",
+            "https://github.com/grpc/grpc-go/commit/93e31b48545e2a8aaeb6e06b47fb249f94e6297f",
+            "https://github.com/grpc/grpc-go/issues/9354",
+            "https://github.com/grpc/grpc-go/pull/9365",
+            "https://github.com/grpc/grpc-go/pull/9366",
+            "https://github.com/grpc/grpc-go/pull/9367",
+            "https://github.com/grpc/grpc-go/releases/tag/v1.82.2",
+            "https://github.com/grpc/grpc-go/releases/tag/v1.83.2",
+            "https://github.com/grpc/grpc-go/security/advisories/GHSA-2v4p-qf9q-27wj",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-84445",
+            "https://www.cve.org/CVERecord?id=CVE-2026-84445"
+          ],
+          "PublishedDate": "2026-09-14T17:17:51.743Z",
+          "LastModifiedDate": "2026-09-25T14:10:13.927Z"
+        },
+        {
+          "VulnerabilityID": "GHSA-hrxh-6v49-42gf",
+          "PkgID": "google.golang.org/grpc@v1.81.1",
+          "PkgName": "google.golang.org/grpc",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/google.golang.org/grpc@v1.81.1",
+            "UID": "ff965cb3c1a2c647"
+          },
+          "InstalledVersion": "v1.81.1",
+          "FixedVersion": "1.82.1",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://github.com/advisories/GHSA-hrxh-6v49-42gf",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "gRPC-Go: xDS RBAC and HTTP/2 Vulnerabilities",
+          "Description": "Multiple security vulnerabilities have been identified and addressed in grpc-go affecting the xDS RBAC authorization engine (internal/xds/rbac) and the HTTP/2 transport server implementation (internal/transport). These vulnerabilities could result in:\n\n- Authorization Bypass (Fail-Open) when translating xDS RBAC policies containing `Metadata` or `RequestedServerName` fields.\n- Denial of Service (High CPU Consumption) due to an HTTP/2 Rapid Reset mitigation bypass during client-initiated stream resets.\n- Denial of Service (Server Panic) when parsing crafted xDS RBAC policies containing `NOT` rules around unsupported fields.\n\n\n### Impact\n_What kind of vulnerability is it? Who is impacted?_\n\n#### xDS RBAC Authorization Bypass via `Metadata` \u0026 `RequestedServerName` matchers\n\n- Affected Component: xDS RBAC \n- Impact: When building policy matchers for gRPC RBAC from xDS configurations, unsupported `permission` and `principal` rules (specifically `Metadata` and `RequestedServerName`) were silently ignored and treated as no-ops.\n  - If an authorization policy relied purely on these matchers for access control, treating those rules as no-ops effectively removed the restrictions.\n- If these unsupported rules were nested inside logical `NOT` rules (`Permission_NotRule` / `Principal_NotId`) or multi-condition `OR/AND` rules, silently dropping them changed the boolean logic flow of the authorization engine.\n\nAs a result, policy evaluation decisions could fail open, allowing unauthorized clients to access protected gRPC services or resources.\n\n#### HTTP/2 Rapid Reset Mitigation Bypass / Denial of Service via Stream Aborts\n\n- Affected Component: HTTP/2 transport\n- Impact: Earlier mitigations in grpc-go for HTTP/2 Rapid Reset only applied threshold checks to items that directly resulted in control frames being written back to the wire, such as `SETTINGS` ACKs or server-initiated `RST_STREAM`s.\n\nWhen a client initiated a rapid flood of stream creation (`HEADERS`) immediately followed by stream termination `RST_STREAM`, items queued up in the control buffer without counting against the transport response frame threshold. An attacker can repeatedly trigger this flood sequence to bypass reader blocking, resulting in high CPU usage, and Denial of Service (DoS).\n\n#### Denial of Service (Panic) in xDS RBAC Engine via Unsupported Fields inside NOT Rules\n\n- Affected Component: xDS RBAC \n- Impact: The xDS RBAC policy translators recursively generate matchers for nested rules. When a `NOT` rule wrapped an unsupported or unhandled field (such as `SourcedMetadata`), the recursive step returned an empty matcher. This could result in a runtime panic when the RBAC engine attempts to authorize an incoming request.\n\nAn attacker or misconfigured/malicious xDS management server delivering an LDS/RDS update containing a `NOT` rule around an unhandled field causes the gRPC server process to crash immediately (CWE-248 / Denial of Service).\n\n### Patches\n_Has the problem been patched? What versions should users upgrade to?_\n\nAll three issues have been fixed in `master` and will be released in 1.82.1 shortly.\n\n### Workarounds\n_Is there a way for users to fix or remediate the vulnerability without upgrading?_\n\nIf upgrading grpc-go immediately is not possible, apply the following workarounds based on your deployment architecture:\n\n* For xDS RBAC Vulnerabilities \u0026 Panics: Ensure that upstream xDS management servers do not push RBAC policies containing `Metadata`, `RequestedServerName`, or `NOT` rules wrapping unsupported fields (such as `SourcedMetadata`) to grpc-go servers.\n* For HTTP/2 Rapid Reset DOS: Configure upstream reverse proxies or load balancers (such as Envoy) with strict HTTP/2 `max_concurrent_streams` limits and active rate limiting on `RST_STREAM` frequency per connection.\n\n### Severity\n\n  | Vulnerability | Qualitative Severity | Approximate CVSS v3.1 Score | Primary Impact |\n  | :--- | :--- | :--- | :--- |\n  | **xDS RBAC Authorization Bypass** | **High** | `8.2` | Unauthorized Access / Fail-Open |\n  | **HTTP/2 Rapid Reset DOS Bypass** | **High** | `7.5` | High CPU Consumption / Denial of Service |\n  | **xDS RBAC Engine Server Panic** | **Medium** | `5.9` | Process Crash / Denial of Service |",
+          "Severity": "HIGH",
+          "VendorSeverity": {
+            "ghsa": 3
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:H/SC:N/SI:N/SA:N",
+              "V40Score": 8.8
+            }
+          },
+          "References": [
+            "https://github.com/grpc/grpc-go",
+            "https://github.com/grpc/grpc-go/commit/4ea465d4ab98013f72a142fe0fc89c19770b2935",
+            "https://github.com/grpc/grpc-go/pull/9236",
+            "https://github.com/grpc/grpc-go/releases/tag/v1.82.1",
+            "https://github.com/grpc/grpc-go/security/advisories/GHSA-hrxh-6v49-42gf"
+          ],
+          "PublishedDate": "2026-07-21T22:03:55Z",
+          "LastModifiedDate": "2026-07-21T22:03:56Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-84303",
+          "PkgID": "google.golang.org/grpc@v1.81.1",
+          "PkgName": "google.golang.org/grpc",
+          "PkgIdentifier": {
+            "PURL": "pkg:golang/google.golang.org/grpc@v1.81.1",
+            "UID": "ff965cb3c1a2c647"
+          },
+          "InstalledVersion": "v1.81.1",
+          "FixedVersion": "1.83.1",
+          "Status": "fixed",
+          "Layer": {},
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-84303",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Go",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Ago"
+          },
+          "Title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, th ...",
+          "Description": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, the xDS RBAC HTTP filter in internal/xds/httpfilter/rbac/rbac.go does not lowercase header matcher names in normalizeHeaderMatcher even though incoming metadata keys are lowercase. A DENY policy using a mixed-case name such as X-Role or User-Agent therefore does not match and fails open, allowing requests that should be rejected. The same case mismatch permits :Scheme or Grpc-Status to evade gRFC A41 validation and prevents Host from being rewritten to :authority. This issue is fixed in version 1.83.1.",
+          "Severity": "MEDIUM",
+          "CweIDs": [
+            "CWE-178",
+            "CWE-863"
+          ],
+          "VendorSeverity": {
+            "ghsa": 2
+          },
+          "CVSS": {
+            "ghsa": {
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N",
+              "V40Score": 6.3
+            }
+          },
+          "References": [
+            "https://github.com/grpc/grpc-go",
+            "https://github.com/grpc/grpc-go/commit/db9482836c298f234c896cf82ab68cafc78237f8",
+            "https://github.com/grpc/grpc-go/commit/ebba6f3f1b206e2b4dc4d1d5a96d18430302c2fe",
+            "https://github.com/grpc/grpc-go/pull/9332",
+            "https://github.com/grpc/grpc-go/pull/9335",
+            "https://github.com/grpc/grpc-go/releases/tag/v1.83.1",
+            "https://github.com/grpc/grpc-go/security/advisories/GHSA-qc2q-p7wx-3px3",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-84303"
+          ],
+          "PublishedDate": "2026-09-01T19:17:30.6Z",
+          "LastModifiedDate": "2026-09-09T21:09:13.08Z"
+        }
+      ]
+    }
+  ]
+}

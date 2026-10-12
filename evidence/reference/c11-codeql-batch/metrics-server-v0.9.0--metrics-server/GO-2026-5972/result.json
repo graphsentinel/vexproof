@@ -1,0 +1,55 @@
+{
+ "osv": "GO-2026-5972",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "encoding/asn1": {
+   "symbols": [
+    "Unmarshal"
+   ],
+   "truncated": false,
+   "seconds": 5.9,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [
+     [
+      "arg",
+      "encoding/asn1.Unmarshal",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "encoding/asn1.Unmarshal",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "encoding/asn1.Unmarshal",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "arg",
+      "function": "encoding/asn1.Unmarshal",
+      "index": 0
+     }
+    ]
+   }
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 0
+}

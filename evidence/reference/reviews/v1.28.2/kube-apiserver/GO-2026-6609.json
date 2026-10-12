@@ -1,0 +1,14 @@
+{
+ "osv": "GO-2026-6609",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "confirmed",
+ "reason": "Trigger test L6 (evidence/c13-trigger-go-2026-6609, lab/trigger/go-2026-6609): GET /openapi/v2 with a Range header of N one-byte ranges reaches http.ServeContent (kube-openapi handler.go:172). Vulnerable arms (official v1.28.2 go1.20.8; same source with go1.26.8) answer 206 for every N and spend 0.66-0.78 s CPU and send 7.1 MB per 600 KB request at N=50000 (linear: 0.09 s at N=5000). The fixed arm (same source, go1.26.9) answers 200 with flat CPU (0.02 s). Needs an authenticated client: anonymous /openapi/v2 is 403. Impact is bounded by the 1 MB header limit.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision",
+ "trigger_test": "evidence/c14-triggertest-go-2026-6609/status.json",
+ "previous": {
+  "verdict": "plausible",
+  "reason": "see git history"
+ },
+ "trigger_spec": "examples/triggertest-go-2026-6609.yaml"
+}

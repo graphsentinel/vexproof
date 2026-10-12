@@ -1,0 +1,2 @@
+sha256:25d291fde59974547bac6f07fa9d6cf6f5bedd1f19d60c893311c5e741e0a42f [/metrics-server]
+a27ef2388c41ac560fcac1ff5f93df4114e156e1367b7702d462aab828f8a98d  ~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official-ms/metrics-server

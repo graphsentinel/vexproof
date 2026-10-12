@@ -1,0 +1,4 @@
+0xaab040	golang.org/x/net/http2.(*Server).ServeConn	vendor/golang.org/x/net/http2/server.go:401
+0xab20c0	golang.org/x/net/http2.(*serverConn).processHeaders	vendor/golang.org/x/net/http2/server.go:1918
+0x1f5ea00	golang.org/x/net/html.(*Tokenizer).Next	vendor/golang.org/x/net/html/token.go:994
+0x1f64260	k8s.io/apimachinery/pkg/util/proxy.rewriteHTML	vendor/k8s.io/apimachinery/pkg/util/proxy/transport.go:179

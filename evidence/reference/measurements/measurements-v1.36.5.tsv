@@ -1,0 +1,3 @@
+run	target	osv	aliases	L1_trivy	L3_level	package	symbols	sym_found	blocks	blocks_hit	L4	verdict
+c4-v1.36.5-shipped	kubelet	GO-2026-5426	CVE-2026-39883,GHSA-hfvc-g4fc-pqhx	yes	symbol	go.opentelemetry.io/otel/sdk/resource	1	1	-	-	not-run	REACHABLE-NOT-OBSERVED
+c4-v1.36.5-shipped	kube-apiserver	GO-2026-5426	CVE-2026-39883,GHSA-hfvc-g4fc-pqhx	yes	symbol	go.opentelemetry.io/otel/sdk/resource	1	1	-	-	not-run	REACHABLE-NOT-OBSERVED

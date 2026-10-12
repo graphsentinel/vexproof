@@ -1,0 +1,188 @@
+/o/kube-apiserver: go1.20.8
+	path	k8s.io/kubernetes/cmd/kube-apiserver
+	mod	k8s.io/kubernetes	(devel)	
+	dep	cloud.google.com/go/compute/metadata	v0.2.3	
+	dep	github.com/Azure/azure-sdk-for-go	v68.0.0+incompatible	
+	dep	github.com/Azure/go-autorest/autorest	v0.11.29	
+	dep	github.com/Azure/go-autorest/autorest/adal	v0.9.23	
+	dep	github.com/Azure/go-autorest/autorest/date	v0.3.0	
+	dep	github.com/Azure/go-autorest/autorest/mocks	v0.4.2	
+	dep	github.com/Azure/go-autorest/autorest/to	v0.4.0	
+	dep	github.com/Azure/go-autorest/autorest/validation	v0.3.1	
+	dep	github.com/Azure/go-autorest/logger	v0.2.1	
+	dep	github.com/Azure/go-autorest/tracing	v0.6.0	
+	dep	github.com/GoogleCloudPlatform/k8s-cloud-provider	v1.18.1-0.20220218231025-f11817397a1b	
+	dep	github.com/NYTimes/gziphandler	v1.1.1	
+	dep	github.com/antlr/antlr4/runtime/Go/antlr/v4	v4.0.0-20230305170008-8188dc5388df	
+	dep	github.com/asaskevich/govalidator	v0.0.0-20190424111038-f61b66f89f4a	
+	dep	github.com/beorn7/perks	v1.0.1	
+	dep	github.com/blang/semver/v4	v4.0.0	
+	dep	github.com/cenkalti/backoff/v4	v4.2.1	
+	dep	github.com/cespare/xxhash/v2	v2.2.0	
+	dep	github.com/coreos/go-oidc	v2.2.1+incompatible	
+	dep	github.com/coreos/go-semver	v0.3.1	
+	dep	github.com/coreos/go-systemd/v22	v22.5.0	
+	dep	github.com/davecgh/go-spew	v1.1.1	
+	dep	github.com/docker/distribution	v2.8.2+incompatible	
+	dep	github.com/emicklei/go-restful/v3	v3.9.0	
+	dep	github.com/evanphx/json-patch	v4.12.0+incompatible	
+	dep	github.com/felixge/httpsnoop	v1.0.3	
+	dep	github.com/fsnotify/fsnotify	v1.6.0	
+	dep	github.com/go-logr/logr	v1.2.4	
+	dep	github.com/go-logr/stdr	v1.2.2	
+	dep	github.com/go-logr/zapr	v1.2.3	
+	dep	github.com/go-openapi/jsonpointer	v0.19.6	
+	dep	github.com/go-openapi/jsonreference	v0.20.2	
+	dep	github.com/go-openapi/swag	v0.22.3	
+	dep	github.com/gofrs/uuid	v4.4.0+incompatible	
+	dep	github.com/gogo/protobuf	v1.3.2	
+	dep	github.com/golang-jwt/jwt/v4	v4.5.0	
+	dep	github.com/golang/groupcache	v0.0.0-20210331224755-41bb18bfe9da	
+	dep	github.com/golang/mock	v1.6.0	
+	dep	github.com/golang/protobuf	v1.5.3	
+	dep	github.com/google/cel-go	v0.16.1	
+	dep	github.com/google/gnostic-models	v0.6.8	
+	dep	github.com/google/go-cmp	v0.5.9	
+	dep	github.com/google/gofuzz	v1.2.0	
+	dep	github.com/google/uuid	v1.3.0	
+	dep	github.com/googleapis/enterprise-certificate-proxy	v0.2.3	
+	dep	github.com/googleapis/gax-go/v2	v2.7.1	
+	dep	github.com/grpc-ecosystem/go-grpc-prometheus	v1.2.0	
+	dep	github.com/grpc-ecosystem/grpc-gateway/v2	v2.7.0	
+	dep	github.com/imdario/mergo	v0.3.6	
+	dep	github.com/josharian/intern	v1.0.0	
+	dep	github.com/json-iterator/go	v1.1.12	
+	dep	github.com/mailru/easyjson	v0.7.7	
+	dep	github.com/matttproud/golang_protobuf_extensions	v1.0.4	
+	dep	github.com/moby/sys/mountinfo	v0.6.2	
+	dep	github.com/moby/term	v0.0.0-20221205130635-1aeaba878587	
+	dep	github.com/modern-go/concurrent	v0.0.0-20180306012644-bacd9c7ef1dd	
+	dep	github.com/modern-go/reflect2	v1.0.2	
+	dep	github.com/munnerz/goautoneg	v0.0.0-20191010083416-a7dc8b61c822	
+	dep	github.com/mxk/go-flowrate	v0.0.0-20140419014527-cca7078d478f	
+	dep	github.com/opencontainers/go-digest	v1.0.0	
+	dep	github.com/opencontainers/selinux	v1.10.0	
+	dep	github.com/pkg/errors	v0.9.1	
+	dep	github.com/pquerna/cachecontrol	v0.1.0	
+	dep	github.com/prometheus/client_golang	v1.16.0	
+	dep	github.com/prometheus/client_model	v0.4.0	
+	dep	github.com/prometheus/common	v0.44.0	
+	dep	github.com/prometheus/procfs	v0.10.1	
+	dep	github.com/robfig/cron/v3	v3.0.1	
+	dep	github.com/rubiojr/go-vhd	v0.0.0-20200706105327-02e210299021	
+	dep	github.com/spf13/cobra	v1.7.0	
+	dep	github.com/spf13/pflag	v1.0.5	
+	dep	github.com/stoewer/go-strcase	v1.2.0	
+	dep	github.com/vmware/govmomi	v0.30.0	
+	dep	go.etcd.io/etcd/api/v3	v3.5.9	
+	dep	go.etcd.io/etcd/client/pkg/v3	v3.5.9	
+	dep	go.etcd.io/etcd/client/v3	v3.5.9	
+	dep	go.opencensus.io	v0.24.0	
+	dep	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc	v0.35.0	
+	dep	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp	v0.35.1	
+	dep	go.opentelemetry.io/otel	v1.10.0	
+	dep	go.opentelemetry.io/otel/exporters/otlp/internal/retry	v1.10.0	
+	dep	go.opentelemetry.io/otel/exporters/otlp/otlptrace	v1.10.0	
+	dep	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc	v1.10.0	
+	dep	go.opentelemetry.io/otel/metric	v0.31.0	
+	dep	go.opentelemetry.io/otel/sdk	v1.10.0	
+	dep	go.opentelemetry.io/otel/trace	v1.10.0	
+	dep	go.opentelemetry.io/proto/otlp	v0.19.0	
+	dep	go.uber.org/atomic	v1.10.0	
+	dep	go.uber.org/multierr	v1.11.0	
+	dep	go.uber.org/zap	v1.19.0	
+	dep	golang.org/x/crypto	v0.11.0	
+	dep	golang.org/x/exp	v0.0.0-20220722155223-a9213eeb770e	
+	dep	golang.org/x/net	v0.13.0	
+	dep	golang.org/x/oauth2	v0.8.0	
+	dep	golang.org/x/sync	v0.2.0	
+	dep	golang.org/x/sys	v0.10.0	
+	dep	golang.org/x/term	v0.10.0	
+	dep	golang.org/x/text	v0.11.0	
+	dep	golang.org/x/time	v0.3.0	
+	dep	golang.org/x/tools	v0.8.0	
+	dep	google.golang.org/api	v0.114.0	
+	dep	google.golang.org/genproto	v0.0.0-20230526161137-0005af68ea54	
+	dep	google.golang.org/genproto/googleapis/api	v0.0.0-20230525234035-dd9d682886f9	
+	dep	google.golang.org/genproto/googleapis/rpc	v0.0.0-20230525234030-28d5490b6b19	
+	dep	google.golang.org/grpc	v1.54.0	
+	dep	google.golang.org/protobuf	v1.30.0	
+	dep	gopkg.in/gcfg.v1	v1.2.3	
+	dep	gopkg.in/inf.v0	v0.9.1	
+	dep	gopkg.in/natefinch/lumberjack.v2	v2.2.1	
+	dep	gopkg.in/square/go-jose.v2	v2.6.0	
+	dep	gopkg.in/warnings.v0	v0.1.2	
+	dep	gopkg.in/yaml.v2	v2.4.0	
+	dep	gopkg.in/yaml.v3	v3.0.1	
+	dep	k8s.io/api	v0.0.0
+	=>	./staging/src/k8s.io/api	(devel)	
+	
+	dep	k8s.io/apiextensions-apiserver	v0.0.0
+	=>	./staging/src/k8s.io/apiextensions-apiserver	(devel)	
+	
+	dep	k8s.io/apimachinery	v0.0.0
+	=>	./staging/src/k8s.io/apimachinery	(devel)	
+	
+	dep	k8s.io/apiserver	v0.0.0
+	=>	./staging/src/k8s.io/apiserver	(devel)	
+	
+	dep	k8s.io/client-go	v0.0.0
+	=>	./staging/src/k8s.io/client-go	(devel)	
+	
+	dep	k8s.io/cloud-provider	v0.0.0
+	=>	./staging/src/k8s.io/cloud-provider	(devel)	
+	
+	dep	k8s.io/cluster-bootstrap	v0.0.0
+	=>	./staging/src/k8s.io/cluster-bootstrap	(devel)	
+	
+	dep	k8s.io/component-base	v0.0.0
+	=>	./staging/src/k8s.io/component-base	(devel)	
+	
+	dep	k8s.io/component-helpers	v0.0.0
+	=>	./staging/src/k8s.io/component-helpers	(devel)	
+	
+	dep	k8s.io/controller-manager	v0.0.0
+	=>	./staging/src/k8s.io/controller-manager	(devel)	
+	
+	dep	k8s.io/dynamic-resource-allocation	v0.0.0
+	=>	./staging/src/k8s.io/dynamic-resource-allocation	(devel)	
+	
+	dep	k8s.io/klog/v2	v2.100.1	
+	dep	k8s.io/kms	v0.0.0
+	=>	./staging/src/k8s.io/kms	(devel)	
+	
+	dep	k8s.io/kube-aggregator	v0.0.0
+	=>	./staging/src/k8s.io/kube-aggregator	(devel)	
+	
+	dep	k8s.io/kube-openapi	v0.0.0-20230717233707-2695361300d9	
+	dep	k8s.io/kubelet	v0.0.0
+	=>	./staging/src/k8s.io/kubelet	(devel)	
+	
+	dep	k8s.io/legacy-cloud-providers	v0.0.0
+	=>	./staging/src/k8s.io/legacy-cloud-providers	(devel)	
+	
+	dep	k8s.io/mount-utils	v0.0.0
+	=>	./staging/src/k8s.io/mount-utils	(devel)	
+	
+	dep	k8s.io/pod-security-admission	v0.0.0
+	=>	./staging/src/k8s.io/pod-security-admission	(devel)	
+	
+	dep	k8s.io/utils	v0.0.0-20230406110748-d93618cff8a2	
+	dep	sigs.k8s.io/apiserver-network-proxy/konnectivity-client	v0.1.2	
+	dep	sigs.k8s.io/json	v0.0.0-20221116044647-bc3834ca7abd	
+	dep	sigs.k8s.io/structured-merge-diff/v4	v4.2.3	
+	dep	sigs.k8s.io/yaml	v1.3.0	
+	build	-asmflags=all=-trimpath=/workspace/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	-gcflags="all=-trimpath=/workspace/src/k8s.io/kubernetes/_output/dockerized/go/src/k8s.io/kubernetes "
+	build	-ldflags="all=-X 'k8s.io/kubernetes/vendor/k8s.io/client-go/pkg/version.buildDate=2023-09-13T09:29:07Z' -X 'k8s.io/kubernetes/vendor/k8s.io/component-base/version.buildDate=2023-09-13T09:29:07Z' -X 'k8s.io/client-go/pkg/version.buildDate=2023-09-13T09:29:07Z' -X 'k8s.io/component-base/version.buildDate=2023-09-13T09:29:07Z' -X 'k8s.io/kubernetes/vendor/k8s.io/client-go/pkg/version.gitCommit=89a4ea3e1e4ddd7f7572286090359983e0387b2f' -X 'k8s.io/kubernetes/vendor/k8s.io/component-base/version.gitCommit=89a4ea3e1e4ddd7f7572286090359983e0387b2f' -X 'k8s.io/client-go/pkg/version.gitCommit=89a4ea3e1e4ddd7f7572286090359983e0387b2f' -X 'k8s.io/component-base/version.gitCommit=89a4ea3e1e4ddd7f7572286090359983e0387b2f' -X 'k8s.io/kubernetes/vendor/k8s.io/client-go/pkg/version.gitTreeState=clean' -X 'k8s.io/kubernetes/vendor/k8s.io/component-base/version.gitTreeState=clean' -X 'k8s.io/client-go/pkg/version.gitTreeState=clean' -X 'k8s.io/component-base/version.gitTreeState=clean' -X 'k8s.io/kubernetes/vendor/k8s.io/client-go/pkg/version.gitVersion=v1.28.2' -X 'k8s.io/kubernetes/vendor/k8s.io/component-base/version.gitVersion=v1.28.2' -X 'k8s.io/client-go/pkg/version.gitVersion=v1.28.2' -X 'k8s.io/component-base/version.gitVersion=v1.28.2' -X 'k8s.io/kubernetes/vendor/k8s.io/client-go/pkg/version.gitMajor=1' -X 'k8s.io/kubernetes/vendor/k8s.io/component-base/version.gitMajor=1' -X 'k8s.io/client-go/pkg/version.gitMajor=1' -X 'k8s.io/component-base/version.gitMajor=1' -X 'k8s.io/kubernetes/vendor/k8s.io/client-go/pkg/version.gitMinor=28' -X 'k8s.io/kubernetes/vendor/k8s.io/component-base/version.gitMinor=28' -X 'k8s.io/client-go/pkg/version.gitMinor=28' -X 'k8s.io/component-base/version.gitMinor=28'  -s -w"
+	build	-tags=selinux,notest
+	build	CGO_ENABLED=0
+	build	GOARCH=amd64
+	build	GOOS=linux
+	build	GOAMD64=v1
+	build	vcs=git
+	build	vcs.revision=89a4ea3e1e4ddd7f7572286090359983e0387b2f
+	build	vcs.time=2023-09-13T09:29:06Z
+	build	vcs.modified=false

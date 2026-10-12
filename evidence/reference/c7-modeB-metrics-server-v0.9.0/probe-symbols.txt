@@ -1,0 +1,15 @@
+GO-2026-6603	x/net/http2.(*Framer).readMetaFrame
+GO-2026-6603	x/net/http2.(*transportResponseBody).Read
+GO-2026-6603	x/net/http2.(*pipe).Read
+GO-2026-6610	x/net/http2.(*clientConnReadLoop).handleResponse
+GO-2026-6610	x/net/http2.(*noDialH2RoundTripper).RoundTrip
+GO-2026-6610	x/net/http2.(*noDialClientConnPool).GetClientConn
+GO-2026-6611	x/net/http2.(*clientStream).cleanupWriteRequest
+GO-2026-6611	x/net/http2.(*clientConnReadLoop).processSettingsNoWrite
+GO-2026-6611	x/net/http2.(*serverConn).scheduleFrameWrite
+GO-2026-6612	x/net/http2.(*serverConn).processHeaders
+GO-2026-6612	x/net/http2.(*transportResponseBody).Read
+GO-2026-6612	x/net/http2.(*serverConn).closeStream
+GO-2026-6617	x/net/http2.(*transportResponseBody).Read
+GO-2026-6617	x/net/http2.(*pipe).Read
+GO-2026-6617	x/net/http2.(*Framer).WriteHeaders

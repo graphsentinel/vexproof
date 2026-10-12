@@ -1,0 +1,2 @@
+0x18c9b40	go.opentelemetry.io/otel/sdk/resource.(*hostIDReaderLinux).read	go.opentelemetry.io/otel/sdk@v1.40.0/resource/host_id.go:83
+0x18ca7e0	go.opentelemetry.io/otel/sdk/resource.New	go.opentelemetry.io/otel/sdk@v1.40.0/resource/resource.go:59

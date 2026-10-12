@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2026-4976",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "rejected",
+ "reason": "Request-sourced paths come from gRPC transport, govmomi and HTTP instrumentation code, not from the API server's own proxy handler; the path does not show the apiserver's ReverseProxy forwarding a client query. The apiserver proxy does use ReverseProxy: a separate question.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

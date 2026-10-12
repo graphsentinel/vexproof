@@ -1,0 +1,181 @@
+{
+ "osv": "GO-2026-6610",
+ "group": "under_investigation",
+ "severity": "unknown",
+ "model": "configured-llm",
+ "packages": {
+  "golang.org/x/net/http2": {
+   "symbols": [
+    "Transport.NewClientConn",
+    "Transport.RoundTrip",
+    "noDialH2RoundTripper.NewClientConn",
+    "noDialH2RoundTripper.RoundTrip",
+    "unencryptedTransport.RoundTrip"
+   ],
+   "truncated": false,
+   "seconds": 6.4,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [
+     [
+      "arg",
+      "golang.org/x/net/http2.(*Transport).NewClientConn",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(*Transport).RoundTrip",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(*unencryptedTransport).RoundTrip",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(noDialH2RoundTripper).NewClientConn",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(noDialH2RoundTripper).RoundTrip",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "golang.org/x/net/http2.(*Transport).NewClientConn",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(*Transport).RoundTrip",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(*unencryptedTransport).RoundTrip",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(noDialH2RoundTripper).NewClientConn",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(noDialH2RoundTripper).RoundTrip",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "golang.org/x/net/http2.(*Transport).NewClientConn",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(*Transport).RoundTrip",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(*unencryptedTransport).RoundTrip",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(noDialH2RoundTripper).NewClientConn",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/net/http2.(noDialH2RoundTripper).RoundTrip",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "arg",
+      "function": "golang.org/x/net/http2.(*Transport).RoundTrip",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/net/http2.(*unencryptedTransport).RoundTrip",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/net/http2.(noDialH2RoundTripper).RoundTrip",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/net/http2.(*Transport).NewClientConn",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/net/http2.(noDialH2RoundTripper).NewClientConn",
+      "index": 0
+     }
+    ]
+   }
+  },
+  "net/http": {
+   "symbols": [
+    "Client.Do"
+   ],
+   "truncated": false,
+   "seconds": 4.9,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [
+     [
+      "arg",
+      "net/http.(*Client).Do",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "net/http.(*Client).Do",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "net/http.(*Client).Do",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "arg",
+      "function": "net/http.(*Client).Do",
+      "index": 0
+     }
+    ]
+   }
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 9
+}

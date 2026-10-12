@@ -1,0 +1,55 @@
+{
+ "osv": "GO-2026-6089",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "net/http": {
+   "symbols": [
+    "Server.Serve"
+   ],
+   "truncated": false,
+   "seconds": 4.7,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 2,
+   "per_sample": [
+    [
+     [
+      "receiver",
+      "net/http.(*Server).Serve",
+      0
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "net/http.(*Server).Serve",
+      null
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "net/http.(*Server).Serve",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "receiver",
+      "function": "net/http.(*Server).Serve",
+      "index": 0
+     }
+    ]
+   }
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 2
+}

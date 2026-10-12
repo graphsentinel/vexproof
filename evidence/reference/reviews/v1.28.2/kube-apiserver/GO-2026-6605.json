@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2026-6605",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "rejected",
+ "reason": "Advisory is about the HTTP/1 client after a CONNECT rejection; the request-sourced paths come from client and instrumentation code, not from a client-controlled CONNECT.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

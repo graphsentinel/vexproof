@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2026-4971",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "rejected",
+ "reason": "Advisory: panic in Dial/LookupPort with a NUL byte on Windows; the binary is linux. The OSV entry lacks a goos restriction, so the GOOS rule did not catch it.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

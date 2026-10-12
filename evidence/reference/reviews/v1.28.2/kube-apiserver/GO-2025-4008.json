@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2025-4008",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "rejected",
+ "reason": "CodeQL path: incoming request URL (apimachinery proxy upgradeaware.go:322) -> address of tlsDialer.DialContext (dial.go:105). The advisory is triggered by the TLS peer's handshake messages, not by the dial address: the path does not show the trigger. Separate open question: the API server is a TLS server, so the network-listener rule may apply; needs a per-advisory client/server check.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

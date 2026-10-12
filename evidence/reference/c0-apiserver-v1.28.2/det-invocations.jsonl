@@ -1,0 +1,62 @@
+{"cmd":"create --help"}
+{"cmd":"expose --help"}
+{"cmd":"run --help"}
+{"cmd":"set --help"}
+{"cmd":"explain --help"}
+{"cmd":"get --help"}
+{"cmd":"edit --help"}
+{"cmd":"delete --help"}
+{"cmd":"rollout --help"}
+{"cmd":"scale --help"}
+{"cmd":"autoscale --help"}
+{"cmd":"certificate --help"}
+{"cmd":"cluster-info --help"}
+{"cmd":"top --help"}
+{"cmd":"cordon --help"}
+{"cmd":"uncordon --help"}
+{"cmd":"drain --help"}
+{"cmd":"taint --help"}
+{"cmd":"describe --help"}
+{"cmd":"logs --help"}
+{"cmd":"attach --help"}
+{"cmd":"exec --help"}
+{"cmd":"port-forward --help"}
+{"cmd":"proxy --help"}
+{"cmd":"cp --help"}
+{"cmd":"auth --help"}
+{"cmd":"debug --help"}
+{"cmd":"events --help"}
+{"cmd":"diff --help"}
+{"cmd":"apply --help"}
+{"cmd":"patch --help"}
+{"cmd":"replace --help"}
+{"cmd":"wait --help"}
+{"cmd":"kustomize --help"}
+{"cmd":"label --help"}
+{"cmd":"annotate --help"}
+{"cmd":"completion --help"}
+{"cmd":"api-resources --help"}
+{"cmd":"api-versions --help"}
+{"cmd":"config --help"}
+{"cmd":"plugin --help"}
+{"cmd":"version --help"}
+{"cmd":"kubectl --help"}
+{"cmd":"version"}
+{"cmd":"api-resources"}
+{"cmd":"get ns"}
+{"cmd":"create ns team-a"}
+{"cmd":"apply -f /r/in/cm.yaml"}
+{"cmd":"get cm demo -n team-a -o yaml"}
+{"cmd":"get cm demo -n team-a -o json"}
+{"cmd":"describe cm demo -n team-a"}
+{"cmd":"explain pods"}
+{"cmd":"explain deployment.spec"}
+{"cmd":"auth can-i get pods"}
+{"cmd":"config view"}
+{"cmd":"get --raw /openapi/v2"}
+{"cmd":"get --raw /healthz"}
+{"cmd":"delete cm demo -n team-a"}
+{"cmd":"get pods -A"}
+{"cmd":"top pods"}
+{"cmd":"cluster-info"}
+{"cmd":"diff -f /r/in/cm.yaml"}

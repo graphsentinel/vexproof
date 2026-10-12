@@ -1,0 +1,214 @@
+{
+ "report": "results/report/metrics-server-v0.9.0--metrics-server.json",
+ "db": "../_upstream/codeql-db-ms/metrics-server-vendor",
+ "model": "configured-llm",
+ "results": [
+  {
+   "osv": "GO-2026-5026",
+   "severity": "critical",
+   "compiled": true,
+   "sink_sites_outside_pkg": 9,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5856",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5970",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5972",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6061",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 2,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6089",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 2,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6090",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6091",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6218",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6348",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 1,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6505",
+   "severity": "low",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 4,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6599",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6600",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6603",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 2,
+   "taint_results": 0,
+   "unstable_proposals": 2,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6605",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 9,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6607",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6608",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6609",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 3,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6610",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 9,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6611",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 7,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6612",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 2,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6613",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 2,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6617",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 4,
+   "taint_results": 0,
+   "unstable_proposals": 1,
+   "error": ""
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "osv": "GO-2026-6218",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": "configured-llm",
+ "packages": {
+  "net/url": {
+   "symbols": [
+    "URL.Parse",
+    "URL.ResolveReference"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 4,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 4,
+ "taint_sinks_by_source": {
+  "response": 4
+ },
+ "taint_path_rows": 8,
+ "taint_sinks": [
+  "github.com/Azure/go-autorest/autorest/adal/config.go:72",
+  "github.com/Azure/go-autorest/autorest/adal/config.go:76",
+  "github.com/Azure/go-autorest/autorest/adal/config.go:80",
+  "github.com/Azure/go-autorest/autorest/adal/config.go:84"
+ ],
+ "sink_sites_outside_pkg": 12
+}

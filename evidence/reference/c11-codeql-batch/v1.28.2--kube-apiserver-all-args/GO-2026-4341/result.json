@@ -1,0 +1,50 @@
+{
+ "osv": "GO-2026-4341",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "net/url": {
+   "symbols": [
+    "ParseQuery",
+    "URL.Query"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 39,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 39,
+ "taint_sinks_by_source": {
+  "request": 38,
+  "response": 1
+ },
+ "taint_path_rows": 40,
+ "taint_sinks": [
+  "github.com/Azure/azure-sdk-for-go/storage/client.go:788",
+  "github.com/Azure/go-autorest/autorest/adal/token_1.13.go:32",
+  "github.com/Azure/go-autorest/autorest/authorization_storage.go:160",
+  "github.com/Azure/go-autorest/autorest/preparer.go:533",
+  "github.com/emicklei/go-restful/v3/request.go:56",
+  "golang.org/x/oauth2/google/internal/externalaccount/aws.go:123",
+  "golang.org/x/oauth2/internal/token.go:258",
+  "k8s.io/apiserver/pkg/endpoints/filters/authn_audit.go:74",
+  "k8s.io/apiserver/pkg/endpoints/filters/request_deadline.go:156",
+  "k8s.io/apiserver/pkg/endpoints/handlers/create.go:102",
+  "k8s.io/apiserver/pkg/endpoints/handlers/delete.go:110",
+  "k8s.io/apiserver/pkg/endpoints/handlers/delete.go:195",
+  "k8s.io/apiserver/pkg/endpoints/handlers/delete.go:253",
+  "k8s.io/apiserver/pkg/endpoints/handlers/get.go:136",
+  "k8s.io/apiserver/pkg/endpoints/handlers/get.go:197",
+  "k8s.io/apiserver/pkg/endpoints/handlers/get.go:92",
+  "k8s.io/apiserver/pkg/endpoints/handlers/negotiation/negotiate.go:101",
+  "k8s.io/apiserver/pkg/endpoints/handlers/patch.go:114",
+  "k8s.io/apiserver/pkg/endpoints/handlers/response.go:103",
+  "k8s.io/apiserver/pkg/endpoints/handlers/rest.go:402"
+ ],
+ "sink_sites_outside_pkg": 59
+}

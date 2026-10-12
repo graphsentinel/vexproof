@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2026-4341",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "confirmed",
+ "reason": "Incoming request URL query parsed by apiserver handlers (endpoints/handlers, metrics, request info, flowcontrol) via URL.Query/ParseQuery. Advisory: memory exhaustion in query parameter parsing. The trigger is the request's own query string.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

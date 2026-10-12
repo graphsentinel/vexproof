@@ -1,0 +1,8 @@
+{
+ "osv": "GO-2025-4009",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "verdict": "confirmed",
+ "reason": "Request body (apiserver handlers rest.go:376) -> CSR validation -> certificates.ParseCSR -> pem.Decode (helpers.go:32). Advisory: quadratic parsing of untrusted PEM. Needs permission to create CertificateSigningRequests. pem.Decode executed in the lab run, possibly via another caller.",
+ "reviewer": "lab review (2026-10-09); not a maintainer decision"
+}

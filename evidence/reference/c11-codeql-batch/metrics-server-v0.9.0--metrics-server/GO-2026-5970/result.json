@@ -1,0 +1,159 @@
+{
+ "osv": "GO-2026-5970",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": "configured-llm",
+ "packages": {
+  "golang.org/x/text/unicode/norm": {
+   "symbols": [
+    "Form.Bytes",
+    "Form.IsNormalString",
+    "Form.Properties",
+    "Form.QuickSpan",
+    "Form.String"
+   ],
+   "truncated": false,
+   "seconds": 6.6,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 2,
+   "per_sample": [
+    [
+     [
+      "receiver",
+      "golang.org/x/text/unicode/norm.Form.Bytes",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/text/unicode/norm.Form.IsNormalString",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/text/unicode/norm.Form.Properties",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/text/unicode/norm.Form.QuickSpan",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/text/unicode/norm.Form.String",
+      null
+     ]
+    ],
+    [
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.Bytes",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.IsNormalString",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.Properties",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.QuickSpan",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.String",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.Bytes",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.IsNormalString",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.Properties",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.QuickSpan",
+      0
+     ],
+     [
+      "arg",
+      "golang.org/x/text/unicode/norm.Form.String",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/text/unicode/norm.Form.Bytes"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/text/unicode/norm.Form.IsNormalString"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/text/unicode/norm.Form.Properties"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/text/unicode/norm.Form.QuickSpan"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/text/unicode/norm.Form.String"
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/text/unicode/norm.Form.Bytes",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/text/unicode/norm.Form.IsNormalString",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/text/unicode/norm.Form.Properties",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/text/unicode/norm.Form.QuickSpan",
+      "index": 0
+     },
+     {
+      "kind": "arg",
+      "function": "golang.org/x/text/unicode/norm.Form.String",
+      "index": 0
+     }
+    ]
+   }
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 20
+}

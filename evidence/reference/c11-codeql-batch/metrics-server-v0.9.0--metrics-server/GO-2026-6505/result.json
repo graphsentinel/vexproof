@@ -1,0 +1,469 @@
+{
+ "osv": "GO-2026-6505",
+ "group": "under_investigation",
+ "severity": "low",
+ "model": "configured-llm",
+ "packages": {
+  "go.opentelemetry.io/otel/sdk/trace": {
+   "symbols": [
+    "TracerProvider.Tracer",
+    "init",
+    "init$1",
+    "logDropped$1",
+    "nonRecordingSpan.AddEvent",
+    "nonRecordingSpan.End",
+    "nonRecordingSpan.IsRecording",
+    "nonRecordingSpan.SetAttributes",
+    "nonRecordingSpan.SetName",
+    "nonRecordingSpan.SetStatus",
+    "nonRecordingSpan.SpanContext",
+    "nonRecordingSpan.TracerProvider",
+    "recordingSpan.AddEvent",
+    "recordingSpan.End",
+    "recordingSpan.IsRecording",
+    "recordingSpan.SetAttributes",
+    "recordingSpan.SetName",
+    "recordingSpan.SetStatus",
+    "recordingSpan.SpanContext",
+    "recordingSpan.TracerProvider",
+    "tracer.Start"
+   ],
+   "truncated": false,
+   "seconds": 6.2,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 2,
+   "per_sample": [
+    [
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace.(*TracerProvider).Tracer",
+      null
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace.(*TracerProvider).Tracer",
+      0
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace.(*TracerProvider).Tracer",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "receiver",
+      "function": "go.opentelemetry.io/otel/sdk/trace.(*TracerProvider).Tracer"
+     }
+    ]
+   }
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/observ": {
+   "symbols": [
+    "init",
+    "init$1",
+    "init$2",
+    "init$3",
+    "init$4"
+   ],
+   "truncated": false,
+   "seconds": 5.6,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 6.4,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 6.0,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/retry": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 5.8,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/sdk": {
+   "symbols": [
+    "Version",
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 5.4,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/sdk/trace/internal/observ": {
+   "symbols": [
+    "NewTracer",
+    "Tracer.Enabled",
+    "Tracer.SpanEnded",
+    "Tracer.SpanLive",
+    "Tracer.SpanStarted",
+    "init",
+    "init$1"
+   ],
+   "truncated": false,
+   "seconds": 5.6,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 3,
+   "per_sample": [
+    [
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.Enabled",
+      0
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.SpanStarted",
+      0
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.SpanEnded",
+      null
+     ],
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.SpanLive",
+      null
+     ],
+     [
+      "receiver",
+      "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.SpanStarted",
+      null
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "receiver",
+      "function": "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.Enabled",
+      "index": 0
+     },
+     {
+      "kind": "receiver",
+      "function": "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.SpanStarted",
+      "index": 0
+     },
+     {
+      "kind": "receiver",
+      "function": "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.SpanLive"
+     },
+     {
+      "kind": "receiver",
+      "function": "go.opentelemetry.io/otel/sdk/trace/internal/observ.Tracer.SpanEnded"
+     }
+    ]
+   }
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/envconfig": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 5.1,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 2,
+   "per_sample": [
+    [
+     [
+      "arg",
+      "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/envconfig.init",
+      0
+     ]
+    ],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "arg",
+      "function": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/envconfig.init",
+      "index": 0
+     }
+    ]
+   }
+  },
+  "go.opentelemetry.io/otel/sdk/resource": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 4.9,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 4.9,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/sdk/instrumentation": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 4.7,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/x": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 4.9,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/sdk/internal/x": {
+   "symbols": [
+    "Feature[string].Enabled",
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 4.7,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "errors": [
+    "bad function name: go.opentelemetry.io/otel/sdk/internal/x.Feature[string].Enabled",
+    "bad function name: go.opentelemetry.io/otel/sdk/internal/x.Feature[string].Enabled",
+    "bad function name: go.opentelemetry.io/otel/sdk/internal/x.Feature[string].Enabled"
+   ],
+   "error": "bad function name: go.opentelemetry.io/otel/sdk/internal/x.Feature[string].Enabled"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/otlpconfig": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 5.6,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 3,
+   "per_sample": [
+    [],
+    [
+     [
+      "arg",
+      "otlpconfig.init",
+      0
+     ]
+    ],
+    [
+     [
+      "arg",
+      "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/otlpconfig.init",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "arg",
+      "function": "otlpconfig.init",
+      "index": 0
+     }
+    ]
+   }
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 5.8,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/counter": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 5.5,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  },
+  "go.opentelemetry.io/otel/sdk/trace/internal/env": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "seconds": 5.8,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [],
+    [],
+    []
+   ],
+   "proposal": {
+    "sinks": []
+   },
+   "error": "no sink proposed"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 0
+}

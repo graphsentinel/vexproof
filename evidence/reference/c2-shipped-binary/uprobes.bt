@@ -1,0 +1,7 @@
+// Mode B: entry uprobes on the shipped (stripped) kube-apiserver v1.28.2; addresses from pclnsym.txt / pclnsym-html.txt
+uprobe:~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver:0xaab040   { @hits["x/net/http2.(*Server).ServeConn"] = count(); }
+uprobe:~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver:0xab20c0   { @hits["x/net/http2.(*serverConn).processHeaders"] = count(); }
+uprobe:~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver:0x1f5ea00  { @hits["x/net/html.(*Tokenizer).Next"] = count(); }
+uprobe:~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver:0x1f5de60  { @hits["x/net/html.(*Tokenizer).readStartTag"] = count(); }
+uprobe:~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver:0x1f64260  { @hits["util/proxy.rewriteHTML"] = count(); }
+interval:s:150 { exit(); }

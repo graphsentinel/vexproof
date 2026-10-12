@@ -1,0 +1,5 @@
+target	osv	aliases	L1_trivy	L3_level	package	symbols	sym_found	blocks	blocks_hit	L4	verdict
+kube-apiserver	GO-2025-3595	CVE-2025-22872	yes	symbol	golang.org/x/net/html	6	6	88	36	executed	EXECUTED
+kube-apiserver	GO-2024-3333	CVE-2024-45338,GHSA-w32m-9786-jp63	yes	package	golang.org/x/net/html	8	8	242	0	not-observed	NOT-REACHABLE-STATIC
+kubectl	GO-2025-3595	CVE-2025-22872	yes	symbol	golang.org/x/net/html	6	6	88	0	not-observed	REACHABLE-NOT-OBSERVED
+kubectl	GO-2024-3333	CVE-2024-45338,GHSA-w32m-9786-jp63	yes	package	golang.org/x/net/html	8	8	242	0	not-observed	NOT-REACHABLE-STATIC

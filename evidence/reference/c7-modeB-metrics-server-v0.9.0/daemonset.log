@@ -1,0 +1,10 @@
+target pid=6339 bin=/proc/6339/root/metrics-server
+probes enabled; waiting 120s
+=== uprobe_profile
+vxb_framer_readmetaframe 68
+vxb_serverconn_closestream 63
+vxb_serverconn_processheaders 63
+vxb_clientconnreadloop_handleresponse 5
+vxb_transport_roundtripopt 0
+vxb_transportresponsebody_read 0
+=== removed

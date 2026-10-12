@@ -1,0 +1,6 @@
+T=/sys/kernel/tracing
+  ~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver vxb_serveconn                                              0
+  ~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver vxb_processheaders                                         0
+  ~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver vxb_next                                                   0
+  ~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver vxb_rewritehtml                                            0
+  ~/Projects/Proposals/kubecon-eu-2027/oss-securitycon/_upstream/official/kube-apiserver vxb_readstarttag                                           0

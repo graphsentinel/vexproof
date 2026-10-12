@@ -1,0 +1,233 @@
+{
+ "osv": "GO-2026-6611",
+ "group": "under_investigation",
+ "severity": "unknown",
+ "model": "configured-llm",
+ "packages": {
+  "net/http": {
+   "symbols": [
+    "CanonicalHeaderKey",
+    "Client.Do",
+    "Error",
+    "HandleFunc",
+    "Header.Add",
+    "Header.Del",
+    "Header.Get",
+    "Header.Set",
+    "NewRequest",
+    "NewRequestWithContext",
+    "ReadResponse",
+    "Request.UserAgent",
+    "Request.Write",
+    "Response.Write",
+    "ServeMux.HandleFunc",
+    "Server.Close",
+    "Server.Serve",
+    "Server.Shutdown",
+    "body.Close",
+    "body.Read",
+    "bodyEOFSignal.Close",
+    "bodyEOFSignal.Read",
+    "bodyLocked.Read",
+    "bufioFlushWriter.Write",
+    "cancelTimerBody.Close",
+    "cancelTimerBody.Read",
+    "checkConnErrorWriter.Write",
+    "chunkWriter.Write",
+    "connReader.Read",
+    "expectContinueReader.Close",
+    "expectContinueReader.Read",
+    "gzipReader.Close",
+    "gzipReader.Read",
+    "http2ConnectionError.Error",
+    "http2ErrCode.String",
+    "http2FrameHeader.String",
+    "http2FrameType.String",
+    "http2FrameWriteRequest.String",
+    "http2GoAwayError.Error",
+    "http2Setting.String"
+   ],
+   "truncated": true,
+   "seconds": 5.7,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 1,
+   "per_sample": [
+    [
+     [
+      "receiver",
+      "net/http.(*http2Setting).String",
+      0
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "net/http.(*http2Setting).String",
+      0
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "net/http.(*http2Setting).String",
+      0
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "receiver",
+      "function": "net/http.(*http2Setting).String",
+      "index": 0
+     }
+    ]
+   }
+  },
+  "golang.org/x/net/http2": {
+   "symbols": [
+    "ConfigureServer",
+    "ConfigureTransports",
+    "ConnectionError.Error",
+    "ErrCode.String",
+    "FrameHeader.String",
+    "FrameType.String",
+    "FrameWriteRequest.String",
+    "Framer.ReadFrame",
+    "Framer.ReadFrameForHeader",
+    "Framer.ReadFrameHeader",
+    "Framer.WriteContinuation",
+    "Framer.WriteGoAway",
+    "Framer.WriteHeaders",
+    "Framer.WritePing",
+    "Framer.WriteRSTStream",
+    "Framer.WriteSettings",
+    "Framer.WriteSettingsAck",
+    "Framer.WriteWindowUpdate",
+    "GoAwayError.Error",
+    "Server.ServeConn",
+    "Setting.String",
+    "SettingID.String",
+    "SettingsFrame.ForeachSetting",
+    "StreamError.Error",
+    "Transport.NewClientConn",
+    "Transport.RoundTrip",
+    "bufferedWriterTimeoutWriter.Write",
+    "chunkWriter.Write",
+    "connError.Error",
+    "duplicatePseudoHeaderError.Error",
+    "gzipReader.Close",
+    "gzipReader.Read",
+    "headerFieldNameError.Error",
+    "headerFieldValueError.Error",
+    "netHTTPClientConn.RoundTrip",
+    "noDialH2RoundTripper.NewClientConn",
+    "noDialH2RoundTripper.RoundTrip",
+    "pseudoHeaderError.Error",
+    "requestBody.Close",
+    "requestBody.Read"
+   ],
+   "truncated": true,
+   "seconds": 5.5,
+   "samples": 3,
+   "valid_samples": 3,
+   "distinct_proposals": 2,
+   "per_sample": [
+    [
+     [
+      "ctor-arg",
+      "golang.org/x/net/http2.NewFramer",
+      1
+     ]
+    ],
+    [
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Framer).ReadFrame",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Framer).ReadFrameForHeader",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Framer).ReadFrameHeader",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Server).ServeConn",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*SettingsFrame).ForeachSetting",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Transport).NewClientConn",
+      null
+     ],
+     [
+      "receiver",
+      "golang.org/x/net/http2.(*Transport).RoundTrip",
+      null
+     ]
+    ],
+    [
+     [
+      "ctor-arg",
+      "golang.org/x/net/http2.NewFramer",
+      1
+     ]
+    ]
+   ],
+   "proposal": {
+    "sinks": [
+     {
+      "kind": "ctor-arg",
+      "function": "golang.org/x/net/http2.NewFramer",
+      "index": 1
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*Framer).ReadFrame"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*Framer).ReadFrameForHeader"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*Framer).ReadFrameHeader"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*Server).ServeConn"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*Transport).RoundTrip"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*Transport).NewClientConn"
+     },
+     {
+      "kind": "receiver",
+      "function": "golang.org/x/net/http2.(*SettingsFrame).ForeachSetting"
+     }
+    ]
+   }
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 7
+}

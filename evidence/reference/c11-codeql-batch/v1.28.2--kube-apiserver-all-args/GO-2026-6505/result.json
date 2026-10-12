@@ -1,0 +1,153 @@
+{
+ "osv": "GO-2026-6505",
+ "group": "under_investigation",
+ "severity": "low",
+ "model": "configured-llm",
+ "packages": {
+  "go.opentelemetry.io/otel/sdk/trace": {
+   "symbols": [
+    "NeverSample",
+    "NewBatchSpanProcessor",
+    "NewTracerProvider",
+    "ParentBased",
+    "Shutdown$1",
+    "TraceIDRatioBased",
+    "TracerProvider.Shutdown",
+    "TracerProvider.Tracer",
+    "WithResource",
+    "WithSampler",
+    "WithSpanProcessor",
+    "errUnsupportedSampler.Error",
+    "init",
+    "nonRecordingSpan.AddEvent",
+    "nonRecordingSpan.End",
+    "nonRecordingSpan.RecordError",
+    "nonRecordingSpan.SetAttributes",
+    "nonRecordingSpan.SetStatus",
+    "nonRecordingSpan.SpanContext",
+    "nonRecordingSpan.TracerProvider",
+    "recordingSpan.AddEvent",
+    "recordingSpan.End",
+    "recordingSpan.RecordError",
+    "recordingSpan.SetAttributes",
+    "recordingSpan.SetStatus",
+    "recordingSpan.SpanContext",
+    "recordingSpan.TracerProvider",
+    "samplerArgParseError.Error",
+    "samplerArgParseError.Unwrap",
+    "tracer.Start",
+    "tracerProviderConfig.MarshalLog"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc": {
+   "symbols": [
+    "New",
+    "WithDialOption",
+    "WithEndpoint",
+    "WithInsecure",
+    "client.Start",
+    "client.Stop",
+    "client.UploadTraces",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace": {
+   "symbols": [
+    "Exporter.ExportSpans",
+    "Exporter.Shutdown",
+    "New",
+    "Shutdown$1",
+    "Start$1",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform": {
+   "symbols": [
+    "Spans",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/resource": {
+   "symbols": [
+    "Default",
+    "Default$1",
+    "Environment",
+    "Merge",
+    "New",
+    "Resource.Equivalent",
+    "Resource.Iter",
+    "Resource.SchemaURL",
+    "WithAttributes",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/internal/env": {
+   "symbols": [
+    "BatchSpanProcessorExportTimeout",
+    "BatchSpanProcessorMaxExportBatchSize",
+    "BatchSpanProcessorMaxQueueSize",
+    "BatchSpanProcessorScheduleDelay",
+    "SpanAttributeCount",
+    "SpanAttributeValueLength",
+    "SpanEventAttributeCount",
+    "SpanEventCount",
+    "SpanLinkAttributeCount",
+    "SpanLinkCount",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/otlpconfig": {
+   "symbols": [
+    "NewGRPCConfig",
+    "NewGRPCOption",
+    "WithEndpoint",
+    "WithInsecure",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/instrumentation": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/internal": {
+   "symbols": [
+    "MonotonicEndTime",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "sinks_in_binary": 2,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [],
+ "taint_results": 2,
+ "taint_sinks_by_source": {
+  "response": 2
+ },
+ "taint_path_rows": 2,
+ "taint_sinks": [
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/options.go:72",
+  "k8s.io/component-base/tracing/utils.go:63"
+ ],
+ "sink_sites_outside_pkg": 16
+}
