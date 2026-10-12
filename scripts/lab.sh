@@ -254,7 +254,8 @@ cmd_status() {
   [ "$e" != none ] && echo "  lab containers running: $("$e" ps -q --filter label=vexproof.lab | wc -l)"
   if cluster_up; then echo "  custom resources: $(kubectl --context "$KCTX" get crd -l "$MANAGED" --no-headers 2>/dev/null | wc -l)"
   else echo "  cluster $KCTX: not reachable"; fi
-  [ -f "$RT/summary.md" ] && { log "last summary"; head -20 "$RT/summary.md"; }
+  if [ -f "$RT/summary.md" ]; then log "last summary"; head -20 "$RT/summary.md"; fi
+  return 0
 }
 
 case "${1:-}" in
