@@ -42,7 +42,7 @@ One chain per (binary, OSV entry):
 | Layer | Question | Tool |
 |---|---|---|
 | L1 | is the module listed? | Trivy on the binary |
-| P | are the vulnerable symbols in the **shipped** binary? | `.gopclntab` listing of the official binary (`lab/pclnsym`), positive control from the same package |
+| P | are the vulnerable symbols in the **shipped** binary? | `.gopclntab` listing of the official binary (`lab/pclnsym`), positive control from the same package or a parent at a `/` boundary |
 | L3 | does a static call path reach them? | govulncheck (source mode with the shipped Go version and build tags, and binary mode) |
 | T | does untrusted data reach their input? | CodeQL taint query with sinks derived from the OSV symbols, or a declared entry-point rule bound to the call path |
 | L4a | did they execute under a workload? | coverage build of the same source (`go build -cover`) |
@@ -55,7 +55,7 @@ Decision rules (`lab/chain.py`, `lab/autochain.py`; every rule has a regression 
   **and** a CodeQL flow whose rule names the OSV, or an entry-point rule whose entry function is a frame of the OSV's
   symbol-level call path. In the automatic chains, `affected` additionally needs a review file marked `confirmed`.
 - `not_affected / vulnerable_code_not_present`: the symbols are absent from the shipped binary's full listing, a
-  positive control from the same package is present, and (automatic chains) none of the names occurs anywhere in the
+  positive control from the same package (or a parent at a `/` boundary) is present, and (automatic chains) none of the names occurs anywhere in the
   binary's bytes, in any spelling (plain, `%2e`-escaped, generic instantiations).
 - `not_affected / vulnerable_code_not_in_execute_path`: a coverage row for every package the OSV names, each with a
   count of exactly 0, and no symbol-level finding for the OSV anywhere in the govulncheck output.
