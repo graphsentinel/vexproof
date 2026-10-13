@@ -191,6 +191,7 @@ def collect(release, target, gv, trivy, chains_dir, note):
             "govulncheck": level[oid], "group": group,
             "justification": (c or {}).get("vex_justification") or "", "auto": bool((c or {}).get("auto")),
             "note": (c or {}).get("status_note") or "",
+            "substate": ((c.get("substate") or "hand_built_chain") if c and c["vex_status"] == "under_investigation" else ""),
             "chain": (c or {}).get("_file", ""),
             "codeql": codeql_label(cq.get(oid)),
         })
@@ -201,8 +202,12 @@ def collect(release, target, gv, trivy, chains_dir, note):
                      "fixed": [v.get("FixedVersion", "")] if v.get("FixedVersion") else [], "trivy": "yes",
                      "severity": v.get("Severity", ""), "govulncheck": "none", "group": "scanner_only",
                      **dict(zip(("sev", "cvss", "sev_source"), severity("", v.get("Severity", "")))),
-                     "justification": "", "note": "", "chain": "", "codeql": "not run"})
+                     "justification": "", "note": "", "substate": "", "chain": "", "codeql": "not run"})
     counts = {g: sum(r["group"] == g for r in rows) for g, _, _ in GROUPS}
+    subs = {}
+    for x in rows:
+        if x["group"] == "under_investigation":
+            subs[x["substate"]] = subs.get(x["substate"], 0) + 1
     by_sev = {g: {v: sum(r["group"] == g and r["sev"] == v for r in rows) for v in SEV_ORDER} for g, _, _ in GROUPS}
     built_go = next((v.get("InstalledVersion") for v in tv.values() if v.get("PkgName") == "stdlib"), None)
     warning = None
@@ -213,7 +218,8 @@ def collect(release, target, gv, trivy, chains_dir, note):
     return {"release": release, "target": target, "note": note, "govulncheck_file": gv,
             "trivy_file": trivy[0] if trivy else None,
             "chains_dir": ", ".join(dirs) or None, "govulncheck_go": gv_go,
-            "binary_go": built_go, "warning": warning, "counts": counts, "by_severity": by_sev, "rows": rows}
+            "binary_go": built_go, "warning": warning, "counts": counts, "by_severity": by_sev,
+            "substates": subs, "rows": rows}
 
 
 PAGE_CSS = """
@@ -302,7 +308,21 @@ def render(reports, generated):
             out.append(f"<tr><td>{e(r['release'])}</td><td>{e(r['target'])}</td><td><span class=\"pill g-{g}\">{e(title)}</span></td>")
             out += [f"<td class=\"n{' zero' if not r['by_severity'][g][v] else ''}\">{r['by_severity'][g][v]}</td>" for v in SEV_ORDER]
             out.append("</tr>")
-    out.append("</table></div><div class=\"legend\">")
+    out.append("</table></div>")
+    names = sorted({k for r in reports for k in r["substates"]})
+    if names:
+        out.append("<h2>Under investigation by sub-state</h2><p class=\"sum\">What is missing, per chain (the first "
+                   "that holds: not measured, not observed under the workload, observed without a demonstrated input "
+                   "path, ...). The label is the first part of each reason below.</p><div class=\"scroll\"><table>"
+                   "<tr><th>Release</th><th>Binary</th>" + "".join(f"<th class=\"mono\">{e(k)}</th>" for k in names)
+                   + "</tr>")
+        for r in reports:
+            if r["substates"]:
+                out.append(f"<tr><td>{e(r['release'])}</td><td>{e(r['target'])}</td>" + "".join(
+                    f"<td class=\"n{' zero' if not r['substates'].get(k) else ''}\">{r['substates'].get(k, 0)}</td>"
+                    for k in names) + "</tr>")
+        out.append("</table></div>")
+    out.append("<div class=\"legend\">")
     out += [f"<div><span><span class=\"pill g-{g}\">{e(t)}</span></span><span class=\"sum\">{e(d)}</span></div>"
             for g, t, d in GROUPS]
     out.append("</div></section>")
@@ -364,7 +384,8 @@ def main():
         reports.append(r)
         name = f"{r['release'].replace(' ', '-')}--{r['target']}.json"
         json.dump(r, open(os.path.join("results/report", name), "w"), indent=1)
-        index.append({"file": name, "release": r["release"], "target": r["target"], "counts": r["counts"]})
+        index.append({"file": name, "release": r["release"], "target": r["target"], "counts": r["counts"],
+                      "under_investigation_substates": r["substates"]})
         print(f"{r['release']:22} {r['target']:15} " + " ".join(f"{g}={n}" for g, n in r["counts"].items()))
     json.dump(index, open("results/report/index.json", "w"), indent=1)
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")

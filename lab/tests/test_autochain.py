@@ -292,3 +292,89 @@ def test_duplicate_osv_preserves_present_symbol(tmp_path):
               "rows": [{"osv": "GO-1", "group": "static_reachable", "trivy": "yes"}]}
     c = run(tmp_path, imports, ["m/p.G", "m/q.H"], b"m/p.G\x00m/q.H\x00", "not reported", report=report)
     assert c["vex_status"] == "under_investigation"
+
+
+# --- under_investigation sub-states (one headline label per chain) ---
+def test_static_only_is_not_measured(tmp_path):
+    c = run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], b"m/p.(*T).F", "symbol")
+    assert c["substate"] == "not_measured" and c["status_note"].startswith("[not_measured] ")
+
+
+def test_candidate_sub_states(tmp_path):
+    assert chain_with(tmp_path, executed=True, request_sinks=2)["substate"] == "candidate_awaiting_review"
+
+
+def test_rejected_sub_state(tmp_path):
+    assert chain_with(tmp_path, executed=True, request_sinks=2, verdict="rejected")["substate"] == "rejected"
+
+
+def test_executed_without_path_sub_state(tmp_path):
+    c = chain_with(tmp_path, executed=True, request_sinks=0)
+    assert c["substate"] == "observed_no_input_path_demonstrated"
+    assert c["substate_dimensions"]["measurement"] == "measured(lab-workload)"
+
+
+def test_not_observed_sub_state(tmp_path):
+    c = chain_with(tmp_path, executed=False, request_sinks=2)
+    assert c["substate"] == "not_observed" and c["substate_dimensions"]["execution"] == "not_observed(lab-workload)"
+
+
+def test_coarse_sub_state(tmp_path):
+    c = chain_with(tmp_path, executed=True, request_sinks=2, symbols=50)
+    assert c["substate"] == "symbols_too_coarse" and c["substate_dimensions"]["input_path"] == "not_decidable"
+
+
+def test_decided_chains_have_no_sub_state(tmp_path):
+    assert chain_with(tmp_path, executed=True, request_sinks=2, verdict="confirmed")["substate"] is None
+
+
+def test_headline_order_is_total():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("autochain", f"{ROOT}/lab/autochain.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    base = {"consistency": "ok", "instrumentation": "not_run", "measurement": "measured(p)", "execution": "observed",
+            "input_path": "client", "trigger": "none", "review": "none", "data": []}
+    assert m.headline({**base, "consistency": "contradictory_rows", "measurement": "not_measured"}) == "contradictory_rows"
+    assert m.headline({**base, "measurement": "not_measured", "data": ["osv_without_symbols"]}) == "not_measured"
+    assert m.headline({**base, "input_path": "upstream_only"}) == "observed_upstream_input_only"
+    assert m.headline(base) == "unclassified"  # observed + client input without a review flag never happens in autochain
+
+
+def test_failed_codeql_query_is_classified(tmp_path):
+    args = runtime_inputs(tmp_path, executed=True, request_sinks=0)
+    idx = tmp_path / "cq" / "index.json"
+    idx.write_text(json.dumps({"results": [{"osv": "GO-1", "compiled": False}]}))
+    c = run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], b"m/p.(*T).F", "symbol", extra=args)
+    assert c["substate"] == "observed_input_path_not_analysed"
+
+
+def test_raw_control_failure_is_no_positive_control(tmp_path):
+    c = run(tmp_path, IMP, ["m/p.G"], b"nothing", "not reported")
+    assert "raw-name check has no positive control" in c["status_note"]
+    assert "no_positive_control" in c["substate_dimensions"]["data"]
+
+
+def test_every_reachable_dimension_combination_has_a_headline():
+    import importlib.util
+    import itertools
+    spec = importlib.util.spec_from_file_location("autochain", f"{ROOT}/lab/autochain.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    for cons, meas, exe, inp, rev in itertools.product(
+            ("ok", "contradictory_rows", "layers_disagree"), ("not_measured", "measured(p)"),
+            ("n/a", "observed", "not_observed(p)"), ("not_run", "client", "upstream_only", "not_decidable",
+                                                      "no_input_path_demonstrated"),
+            ("none", "candidate_awaiting_review", "rejected")):
+        if (meas == "not_measured") != (exe == "n/a"):
+            continue  # execution is set exactly when coverage rows exist
+        if exe == "observed" and inp == "client" and rev == "none":
+            continue  # executed + request path + specific symbols is a candidate: review is never "none"
+        if inp == "not_decidable":
+            data = [["symbols_too_coarse"]] if exe == "observed" else [[]]
+        else:
+            data = [[]]
+        for dt in data + [["osv_without_symbols"]]:
+            d = {"consistency": cons, "instrumentation": "not_run", "measurement": meas, "execution": exe,
+                 "input_path": inp, "trigger": "none", "review": rev, "data": dt}
+            assert m.headline(d) != "unclassified", d

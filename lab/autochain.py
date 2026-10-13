@@ -68,6 +68,41 @@ def binary_levels(path):
     return lv
 
 
+# under_investigation sub-states (private plan "exercise layer" §5): orthogonal dimensions, one headline label.
+# Values within one dimension are mutually exclusive. Phase 0 derives them from the existing layers; the exercise layer
+# (entry attribution, differential triggers) fills instrumentation, execution attribution and trigger later.
+HEADLINE_ORDER = ("contradictory_rows", "layers_disagree", "instrumentation_failed", "not_measured", "inconclusive",
+                  "trigger_not_validated", "arm_unavailable", "mitigated_by_configuration",
+                  "shipped_not_triggered_cause_unknown", "candidate_awaiting_review", "rejected",
+                  "observed_upstream_input_only", "attribution_incomplete", "observed_no_input_path_demonstrated",
+                  "observed_input_path_not_analysed",
+                  "not_observed", "osv_without_symbols", "symbols_too_coarse", "symbols_missing_possibly_inlined",
+                  "no_positive_control", "trigger_class_unsupported")
+
+
+def headline(d):
+    """the first predicate of HEADLINE_ORDER that holds for the dimensions d"""
+    holds = {
+        "contradictory_rows": d["consistency"] == "contradictory_rows",
+        "layers_disagree": d["consistency"] == "layers_disagree",
+        "instrumentation_failed": d["instrumentation"] == "instrumentation_failed",
+        "not_measured": d["measurement"] == "not_measured",
+        "candidate_awaiting_review": d["review"] == "candidate_awaiting_review",
+        "rejected": d["review"] == "rejected",
+        "observed_upstream_input_only": d["execution"] == "observed" and d["input_path"] == "upstream_only",
+        "attribution_incomplete": d["execution"] == "attribution_incomplete",
+        "observed_no_input_path_demonstrated": d["execution"] == "observed" and d["input_path"] == "no_input_path_demonstrated",
+        "observed_input_path_not_analysed": d["execution"] == "observed" and d["input_path"] == "not_run",
+        "not_observed": d["execution"].startswith("not_observed"),
+        **{k: d["trigger"] == k for k in ("inconclusive", "trigger_not_validated", "arm_unavailable",
+                                          "mitigated_by_configuration", "shipped_not_triggered_cause_unknown",
+                                          "trigger_class_unsupported")},
+        **{k: k in d["data"] for k in ("osv_without_symbols", "symbols_too_coarse", "symbols_missing_possibly_inlined",
+                                       "no_positive_control")},
+    }
+    return next((k for k in HEADLINE_ORDER if holds[k]), "unclassified")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--report", required=True)
@@ -81,6 +116,7 @@ def main():
     ap.add_argument("--codeql", help="batch.py output dir (all-args mode) for this target")
     ap.add_argument("--coarse", type=int, default=10, help="more reached symbols than this: CodeQL sinks too coarse")
     ap.add_argument("--reviews", help="dir of <OSV>.json review files (verdict confirmed / plausible / rejected)")
+    ap.add_argument("--profile", default="lab-workload", help="name of the workload profile behind --cov")
     A = ap.parse_args()
     rep = json.load(open(A.report))
     if not (isinstance(rep, dict) and isinstance(rep.get("rows"), list) and rep.get("target") and rep.get("govulncheck_file")):
@@ -208,6 +244,15 @@ def main():
             status, just = "under_investigation", None
             note = (f"{len(present)} of {len(checked)} OSV symbols are in the shipped binary; static path exists; "
                     f"binary-mode govulncheck: {b}; no runtime or taint evidence (static layers only)")
+        data = []
+        if not checked or no_symbols:
+            data.append("osv_without_symbols")
+        if checked and not present and b == "symbol" and status == "under_investigation":
+            data.append("symbols_missing_possibly_inlined")
+        if checked and not present and status == "under_investigation" and (not control or (not in_raw and not raw_control)):
+            data.append("no_positive_control")
+        dims = {"consistency": "ok", "instrumentation": "not_run", "measurement": "not_measured", "execution": "n/a",
+                "input_path": "not_run", "trigger": "none", "review": "none", "data": data}
         runtime = None
         if A.cov or A.codeql:
             rows = cov_rows.get(r["osv"], [])
@@ -230,16 +275,28 @@ def main():
                      else f"no path, {c.get('sink_sites_outside_pkg') or 0} sink sites" if c.get("compiled") else "no query")
             runtime["codeql"] = cqtxt
             runtime["coarse_symbols"] = coarse
+            if rows:
+                dims["measurement"] = f"measured({A.profile})"
+                dims["execution"] = "observed" if exe else f"not_observed({A.profile})"
+            if c:
+                dims["input_path"] = ("not_decidable" if coarse else "client" if req else "upstream_only" if resp
+                                      else "no_input_path_demonstrated" if c.get("compiled") else "not_run")
+            if coarse and exe:
+                data.append("symbols_too_coarse")
+            if bad:
+                dims["consistency"] = "contradictory_rows"
             if bad:
                 status, just = "under_investigation", None
                 note = f"contradictory coverage row (L4 label vs. hit count) for {', '.join(bad)}; " + note
             elif status == "not_affected" and exe_other:
                 status, just = "under_investigation", None
+                dims["consistency"] = "layers_disagree"
                 note = (f"layers disagree: {note}; but coverage rows of packages the OSV does not name executed "
                         f"({', '.join(exe_other)}): the row/package mapping needs checking")
             elif status == "not_affected" and exe:
                 # the rebuild executed code the shipped-binary check calls absent: the two layers disagree
                 status, just = "under_investigation", None
+                dims["consistency"] = "layers_disagree"
                 note = (f"layers disagree: {note}; but the coverage rebuild executed it ({runtime['blocks']} blocks in "
                         f"{', '.join(runtime['executed_packages'])})")
             elif status == "not_affected":
@@ -259,10 +316,12 @@ def main():
                     note = f"{base}; review confirmed: {review['reason']}"
                 elif review and review["verdict"] == "rejected":
                     status, just = "under_investigation", None
+                    dims["review"] = "rejected"
                     runtime["affected_candidate"] = False
                     note = f"{base}; candidate rejected in review: {review['reason']}"
                 else:
                     status, just = "under_investigation", None
+                    dims["review"] = "candidate_awaiting_review"
                     note = (f"affected candidate: {base}; " + (f"review: plausible, {review['reason']}" if review
                                                                else "awaiting review"))
             elif exe:
@@ -276,15 +335,22 @@ def main():
                 status, just = "under_investigation", None
                 note = (f"not observed under the lab workload ({len(rows)} package rows measured); CodeQL: {cqtxt}"
                         + ("; symbols coarse" if coarse else "") + "; " + note)
+        sub = headline(dims) if status == "under_investigation" else None
+        if sub == "unclassified":
+            raise SystemExit(f"{r['osv']}: under_investigation without a sub-state: {dims}")
+        if sub:
+            note = f"[{sub}] {note}"
         chain = {"target": rep["target"], "osv": r["osv"], "aliases": ",".join(o.get("aliases", [])),
                  "auto": True, "L1_scanner": r["trivy"], "L3_level": "symbol",
                  "L3_call_path": govulncheck_paths(rep["govulncheck_file"], r["osv"]),
                  "L3b_binary_mode": b, "symbols_checked": checked, "shipped_binary_symbols_present": present,
                  "inventory_control": control, "names_in_binary": in_raw, "osv_goos": goos_lists, "binary_goos": goos, "L4a_coverage": "not run", "L4b_uprobes": "not run",
-                 "taint_paths": "not run", "runtime": runtime, "vex_status": status, "vex_justification": just, "status_note": note}
+                 "taint_paths": "not run", "runtime": runtime, "vex_status": status, "vex_justification": just, "status_note": note,
+                 "substate": sub, "substate_dimensions": dims if sub else None}
         name = f"{rep['target']}--{r['osv']}.json"
         json.dump(chain, open(os.path.join(A.out, name), "w"), indent=1)
-        index.append({"file": name, "target": rep["target"], "osv": r["osv"], "status": status, "justification": just})
+        index.append({"file": name, "target": rep["target"], "osv": r["osv"], "status": status, "justification": just,
+                      "substate": sub})
         st = {"vulnerability": {"name": r["osv"], "aliases": o.get("aliases", [])}, "products": [{"@id": A.purl}],
               "status": status, "status_notes": note, "impact_statement": f"automatic static chain: {name}"}
         if just:
