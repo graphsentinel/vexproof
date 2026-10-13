@@ -1,0 +1,1012 @@
+{
+ "run": "1",
+ "cluster": "vxp3-kc-v1365-r1",
+ "k3s_image": "docker.io/rancher/k3s:v1.36.5-k3s1@sha256:057cfd5a9d51b89f1f0ee139c28d5d5fdd5aa7ddeac2742a0ba90c6dbc0329bb",
+ "busybox": "docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662",
+ "profile_sha256": "0192ee8f5027d2c2a5560aaa7046eeb74cbe7304c0ebcfd36f0f412671e98914",
+ "cover_sha256": "ba044b529cd8d20e0f594784a51668e4530464f3f05464fd69581f13d99955c5",
+ "driver_sha256": "fdf4a8e1991c5b75199cc48880a7a1bb9f580a1ef1aa40b2fd6059d0437a0726",
+ "commands": [
+  {
+   "kind": "fixture",
+   "id": "ns",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [],
+   "tail": "namespace/vxp3 created\n",
+   "pid": 177741,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "fixture",
+   "id": "web",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [],
+   "tail": "deployment.apps/web created\n",
+   "pid": 177751,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "fixture",
+   "id": "web-wait",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 16.77,
+   "inputs": [],
+   "tail": "pdate to be observed...\nWaiting for deployment spec update to be observed...\nWaiting for deployment \"web\" rollout to finish: 0 out of 1 new replicas have been updated...\nWaiting for deployment \"web\" rollout to finish: 0 of 1 updated replicas are available...\ndeployment \"web\" successfully rolled out\n",
+   "pid": 177761,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "fixture",
+   "id": "websvc",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.07,
+   "inputs": [],
+   "tail": "service/web exposed\n",
+   "pid": 178505,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "version",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "Major\": \"1\",\n    \"minCompatibilityMinor\": \"35\",\n    \"gitVersion\": \"v1.36.5+k3s1\",\n    \"gitCommit\": \"3dd98cc58ec34991e7e59b93663eee2e26fc1f65\",\n    \"gitTreeState\": \"clean\",\n    \"buildDate\": \"2026-09-30T16:04:14Z\",\n    \"goVersion\": \"go1.26.8\",\n    \"compiler\": \"gc\",\n    \"platform\": \"linux/amd64\"\n  }\n}\n",
+   "pid": 178534,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "cluster-info",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.06,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "running at https://127.0.0.1:42585/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy\nMetrics-server is running at https://127.0.0.1:42585/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy\n\nTo further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.\n",
+   "pid": 178544,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "api-resources",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "se        VolumeAttachment                   create,delete,deletecollection,get,list,patch,update,watch   \nvolumeattributesclasses             vac          storage.k8s.io/v1                 false        VolumeAttributesClass              create,delete,deletecollection,get,list,patch,update,watch   \n",
+   "pid": 178554,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "api-versions",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "g/v2\nbatch/v1\ncertificates.k8s.io/v1\ncoordination.k8s.io/v1\ndiscovery.k8s.io/v1\nevents.k8s.io/v1\nflowcontrol.apiserver.k8s.io/v1\nhelm.cattle.io/v1\nk3s.cattle.io/v1\nnetworking.k8s.io/v1\nnode.k8s.io/v1\npolicy/v1\nrbac.authorization.k8s.io/v1\nresource.k8s.io/v1\nscheduling.k8s.io/v1\nstorage.k8s.io/v1\nv1\n",
+   "pid": 178564,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "explain",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.1,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "ired-\n  volumeMounts\t<[]VolumeMount>\n    mountPath\t<string> -required-\n    mountPropagation\t<string>\n    enum: Bidirectional, HostToContainer, None\n    name\t<string> -required-\n    readOnly\t<boolean>\n    recursiveReadOnly\t<string>\n    subPath\t<string>\n    subPathExpr\t<string>\n  workingDir\t<string>\n\n",
+   "pid": 178574,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "get-wide",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.07,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "8-qvn5n           0/1     ContainerCreating   0          13s   <none>      k3d-vxp3-kc-v1365-r1-server-0   <none>           <none>\nvxp3          web-74558879f6-bfd8f                      1/1     Running             0          13s   10.42.0.2   k3d-vxp3-kc-v1365-r1-server-0   <none>           <none>\n",
+   "pid": 178588,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "get-json",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.07,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "       \"ip\": \"10.42.0.2\"\n                    }\n                ],\n                \"qosClass\": \"BestEffort\",\n                \"resources\": {},\n                \"startTime\": \"2026-10-13T17:57:15Z\"\n            }\n        }\n    ],\n    \"kind\": \"List\",\n    \"metadata\": {\n        \"resourceVersion\": \"\"\n    }\n}\n",
+   "pid": 178606,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "get-yaml",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "57:14Z\"\n    lastUpdateTime: \"2026-10-13T17:57:28Z\"\n    message: ReplicaSet \"web-74558879f6\" has successfully progressed.\n    reason: NewReplicaSetAvailable\n    status: \"True\"\n    type: Progressing\n  observedGeneration: 1\n  readyReplicas: 1\n  replicas: 1\n  terminatingReplicas: 0\n  updatedReplicas: 1\n",
+   "pid": 178617,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "get-jsonpath",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "10.42.0.2",
+   "pid": 178628,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "get-columns",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "NAME                   IP\nweb-74558879f6-bfd8f   10.42.0.2\n",
+   "pid": 178638,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "get-watch",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 5.12,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "NAME                   READY   STATUS    RESTARTS   AGE\nweb-74558879f6-bfd8f   1/1     Running   0          13s\n",
+   "pid": 178648,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "describe",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.1,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "wReplicaSet:   web-74558879f6 (1/1 replicas created)\nEvents:\n  Type    Reason             Age   From                   Message\n  ----    ------             ----  ----                   -------\n  Normal  ScalingReplicaSet  20s   deployment-controller  Scaled up replica set web-74558879f6 from 0 to 1\n",
+   "pid": 178789,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "create-cm",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap/lab-cm created\n",
+   "pid": 178803,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "create-generic",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.09,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "secret/lab-generic created\n",
+   "pid": 178813,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "create-sa",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.08,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "serviceaccount/lab-sa created\n",
+   "pid": 178822,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "create-role",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.06,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "role.rbac.authorization.k8s.io/lab-role created\n",
+   "pid": 178832,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "create-binding",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.06,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "rolebinding.rbac.authorization.k8s.io/lab-rb created\n",
+   "pid": 178842,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "apply-client",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.11,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap/lab-cm2 created\n",
+   "pid": 178852,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "apply-server",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.15,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap/lab-cm2 serverside-applied\n",
+   "pid": 178862,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "diff",
+   "rc": 1,
+   "allowed": [
+    1
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.17,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "nfigMap.vxp3.lab-cm2\n--- /tmp/LIVE-2160394500/v1.ConfigMap.vxp3.lab-cm2\t2026-10-13 20:57:34.767327506 +0300\n+++ /tmp/MERGED-3503806637/v1.ConfigMap.vxp3.lab-cm2\t2026-10-13 20:57:34.767327506 +0300\n@@ -1,6 +1,6 @@\n apiVersion: v1\n data:\n-  x: \"1\"\n+  x: \"2\"\n kind: ConfigMap\n metadata:\n   annotations:\n",
+   "pid": 178873,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "patch-strategic",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.11,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "deployment.apps/web patched\n",
+   "pid": 178886,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "patch-merge",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.07,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap/lab-cm patched\n",
+   "pid": 178896,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "patch-json",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.06,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap/lab-cm patched\n",
+   "pid": 178934,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "label",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap/lab-cm labeled\n",
+   "pid": 178945,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "annotate",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.07,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap/lab-cm annotated\n",
+   "pid": 178955,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "scale",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "deployment.apps/web scaled\n",
+   "pid": 178966,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "rollout-status",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.8,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": " deployment \"web\" rollout to finish: 1 old replicas are pending termination...\nWaiting for deployment \"web\" rollout to finish: 1 old replicas are pending termination...\nWaiting for deployment \"web\" rollout to finish: 1 old replicas are pending termination...\ndeployment \"web\" successfully rolled out\n",
+   "pid": 178976,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "set-env",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.11,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "deployment.apps/web env updated\n",
+   "pid": 179314,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "rollout-history",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.08,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "deployment.apps/web \nREVISION  CHANGE-CAUSE\n1         <none>\n2         <none>\n3         <none>\n\n",
+   "pid": 179326,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "rollout-undo",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.1,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "deployment.apps/web rolled back\n",
+   "pid": 179364,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "run",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "pod/lab-run created\n",
+   "pid": 179375,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "wait",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.66,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "pod/lab-run condition met\n",
+   "pid": 179386,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "logs",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.1,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "lab\n",
+   "pid": 179546,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "exec",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.12,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "inside\ngroup\nhostname\nhosts\n",
+   "pid": 179583,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "cp-to",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.16,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "",
+   "pid": 179613,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "cp-from",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.11,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "tar: removing leading '/' from member names\n",
+   "pid": 179682,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "port-forward",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": "200",
+   "ok": true,
+   "seconds": 6.07,
+   "inputs": [
+    "local",
+    "inbound",
+    "upstream"
+   ],
+   "tail": "Forwarding from 127.0.0.1:18080 -> 8080\nForwarding from [::1]:18080 -> 8080\nHandling connection for 18080\n",
+   "pid": 179746,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "proxy",
+   "rc": -2,
+   "allowed": [
+    -2
+   ],
+   "probe": "200",
+   "ok": true,
+   "seconds": 6.04,
+   "inputs": [
+    "local",
+    "inbound",
+    "upstream"
+   ],
+   "tail": "Starting to serve on 127.0.0.1:18001\n",
+   "pid": 179767,
+   "flush": false,
+   "counter_file": false
+  },
+  {
+   "kind": "command",
+   "id": "events",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.11,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "f from 1 to 0\n13s         Normal   Scheduled           Pod/web-79c44c56f-krr9x     Successfully assigned vxp3/web-79c44c56f-krr9x to k3d-vxp3-kc-v1365-r1-server-0\n13s         Normal   Scheduled           Pod/lab-run                 Successfully assigned vxp3/lab-run to k3d-vxp3-kc-v1365-r1-server-0\n",
+   "pid": 179892,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "auth-can-i",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.08,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "yes\n",
+   "pid": 179902,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "auth-whoami",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "         VALUE\nUsername                                            system:admin\nGroups                                              [system:masters system:authenticated]\nExtra: authentication.kubernetes.io/credential-id   [X509SHA256=71b8cd01f1eb6eccd1a63e7032f88674a8d207ffdd6eaa9e902974e262fb9b41]\n",
+   "pid": 179912,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "csr-create",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.06,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "certificatesigningrequest.certificates.k8s.io/lab-csr created\n",
+   "pid": 179922,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "csr-approve",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.05,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "certificatesigningrequest.certificates.k8s.io/lab-csr approved\n",
+   "pid": 179932,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "kustomize",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.07,
+   "inputs": [
+    "local"
+   ],
+   "tail": "# Warning: 'commonLabels' is deprecated. Please use 'labels' instead. Run 'kustomize edit fix' to update your Kustomization automatically.\napiVersion: v1\ndata:\n  x: \"1\"\nkind: ConfigMap\nmetadata:\n  labels:\n    lab: kustomize\n  name: kz-lab-cm2\n",
+   "pid": 179942,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "config-view",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [
+    "local"
+   ],
+   "tail": "[omitted in the published copy: kubectl config view output; kubectl had masked the client certificate and key as DATA+OMITTED]",
+   "pid": 179952,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "config-contexts",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.1,
+   "inputs": [
+    "local"
+   ],
+   "tail": "CURRENT   NAME                   CLUSTER                AUTHINFO                     NAMESPACE\n*         k3d-vxp3-kc-v1365-r1   k3d-vxp3-kc-v1365-r1   admin@k3d-vxp3-kc-v1365-r1   \n",
+   "pid": 179962,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "completion",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [
+    "local"
+   ],
+   "tail": "local out directive\n    __kubectl_get_completion_results\n    __kubectl_process_completion_results\n}\n\nif [[ $(type -t compopt) = \"builtin\" ]]; then\n    complete -o default -F __start_kubectl kubectl\nelse\n    complete -o default -o nospace -F __start_kubectl kubectl\nfi\n\n# ex: ts=4 sw=4 et filetype=sh\n",
+   "pid": 179972,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "plugin-list",
+   "rc": 1,
+   "allowed": [
+    1
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.04,
+   "inputs": [
+    "local"
+   ],
+   "tail": "Unable to read directory \"/snap/bin\" from your PATH: open /snap/bin: no such file or directory. Skipping...\nerror: unable to find any kubectl plugins in your PATH\n",
+   "pid": 179982,
+   "flush": true,
+   "counter_file": true
+  },
+  {
+   "kind": "command",
+   "id": "delete",
+   "rc": 0,
+   "allowed": [
+    0
+   ],
+   "probe": null,
+   "ok": true,
+   "seconds": 0.06,
+   "inputs": [
+    "local",
+    "upstream"
+   ],
+   "tail": "configmap \"lab-cm\" deleted from vxp3 namespace\npod \"lab-run\" deleted from vxp3 namespace\n",
+   "pid": 179992,
+   "flush": true,
+   "counter_file": true
+  }
+ ],
+ "aborted": null,
+ "server_version": "v1.36.5+k3s1",
+ "invocations": 52,
+ "missing_counters": [],
+ "not_flushed_by_design": [
+  "proxy"
+ ],
+ "unexpected": [],
+ "complete": true
+}

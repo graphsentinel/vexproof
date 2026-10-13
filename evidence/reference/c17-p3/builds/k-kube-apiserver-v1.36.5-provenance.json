@@ -1,0 +1,50 @@
+{
+ "target": "kube-apiserver",
+ "release": "v1.36.5",
+ "source": {
+  "repo": "https://github.com/kubernetes/kubernetes",
+  "ref": "v1.36.5",
+  "tree": "311703920f6b8cb8d2151dc9f25c3744af4a812d",
+  "patches": "none"
+ },
+ "go": "1.26.8",
+ "goarch": "amd64",
+ "cgo": "0",
+ "tags": "selinux,notest,grpcnotrace",
+ "flags": "-buildvcs=false -trimpath -cover",
+ "ldflags_from_shipped": "",
+ "coverpkg": [
+  "k8s.io/kubernetes/cmd/kube-apiserver",
+  "crypto/tls",
+  "go.opentelemetry.io/otel/baggage",
+  "go.opentelemetry.io/otel/propagation",
+  "golang.org/x/net/http2",
+  "google.golang.org/grpc/internal/transport",
+  "google.golang.org/grpc/internal/xds/rbac",
+  "google.golang.org/grpc/mem",
+  "mime/multipart",
+  "net/http",
+  "net/http/httputil",
+  "net/http/internal/http2",
+  "net/textproto"
+ ],
+ "osvs": [
+  "GO-2026-5158",
+  "GO-2026-6061",
+  "GO-2026-6348",
+  "GO-2026-6505",
+  "GO-2026-6603",
+  "GO-2026-6605",
+  "GO-2026-6607",
+  "GO-2026-6608",
+  "GO-2026-6609",
+  "GO-2026-6610",
+  "GO-2026-6611",
+  "GO-2026-6612",
+  "GO-2026-6613",
+  "GO-2026-6617"
+ ],
+ "shipped_sha256": "5132c822dd6f8b5713130a006117eb7b800738ac7d4e6d3f0cdd6d306bde14fb",
+ "cover_sha256": "80aaecf8525d644656dbab7be7f131c59b97f64623e6419384c1806502fa063f",
+ "deps_equal_shipped": true
+}

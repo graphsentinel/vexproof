@@ -1,0 +1,37 @@
+{
+ "pkglist": [
+  "crypto/tls",
+  "golang.org/x/net/http2",
+  "k8s.io/kubernetes/cmd/kubectl",
+  "mime/multipart",
+  "net/http",
+  "net/http/httputil",
+  "net/textproto"
+ ],
+ "goos": "linux",
+ "symcov_sha256": "0ce2b58d83090138f235af01884f624753e06f669e77726acac4350073be0a0f",
+ "manifest": {
+  "GO-2026-6603 net/http": "executed",
+  "GO-2026-6603 net/http/internal/http2": "incomplete",
+  "GO-2026-6603 golang.org/x/net/http2": "executed",
+  "GO-2026-6605 net/http": "executed",
+  "GO-2026-6605 net/http/httputil": "zero",
+  "GO-2026-6607 crypto/tls": "executed",
+  "GO-2026-6608 net/textproto": "executed",
+  "GO-2026-6608 mime/multipart": "zero",
+  "GO-2026-6609 net/http": "zero",
+  "GO-2026-6610 net/http": "executed",
+  "GO-2026-6610 net/http/internal/http2": "incomplete",
+  "GO-2026-6610 golang.org/x/net/http2": "executed",
+  "GO-2026-6611 net/http": "executed",
+  "GO-2026-6611 net/http/internal/http2": "incomplete",
+  "GO-2026-6611 golang.org/x/net/http2": "executed",
+  "GO-2026-6612 net/http": "executed",
+  "GO-2026-6612 net/http/internal/http2": "incomplete",
+  "GO-2026-6612 golang.org/x/net/http2": "executed",
+  "GO-2026-6613 net/http": "executed",
+  "GO-2026-6617 net/http": "executed",
+  "GO-2026-6617 net/http/internal/http2": "incomplete",
+  "GO-2026-6617 golang.org/x/net/http2": "executed"
+ }
+}

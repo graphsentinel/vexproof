@@ -1,0 +1,11 @@
+crypto/tls
+go.opentelemetry.io/otel/baggage
+go.opentelemetry.io/otel/propagation
+golang.org/x/net/http2
+google.golang.org/grpc/internal/transport
+google.golang.org/grpc/mem
+k8s.io/kubernetes/cmd/kube-apiserver
+mime/multipart
+net/http
+net/http/httputil
+net/textproto

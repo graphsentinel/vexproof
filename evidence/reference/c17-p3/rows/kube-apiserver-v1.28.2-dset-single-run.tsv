@@ -1,0 +1,80 @@
+target	osv	aliases	L1_trivy	L3_level	package	symbols	sym_found	blocks	blocks_hit	L4	verdict	runs_executed	runs_valid	measurement
+kube-apiserver	GO-2023-2382	CVE-2023-39326	yes	symbol	net/http/internal	3	3	41	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2024-2598	CVE-2024-24783	yes	symbol	crypto/x509	2	2	63	20	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2024-2599	CVE-2023-45290	yes	symbol	net/textproto	10	10	56	14	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2024-2600	CVE-2023-45289	yes	symbol	net/http	10	10	20	1	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2024-2600	CVE-2023-45289	yes	symbol	net/http/cookiejar	3	3	3	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2024-2609	CVE-2024-24784	yes	symbol	net/mail	9	9	62	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2024-2610	CVE-2024-24785	yes	symbol	html/template	4	4	46	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2024-2611	CVE-2024-24786,GHSA-8r3f-844c-mc37	yes	symbol	google.golang.org/protobuf/encoding/protojson	3	3	13	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2024-2611	CVE-2024-24786,GHSA-8r3f-844c-mc37	yes	symbol	google.golang.org/protobuf/internal/encoding/json	2	2	41	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2024-2687	CVE-2023-45288,GHSA-4v7x-pqxf-cx7m	yes	symbol	golang.org/x/net/http2	72	72	471	191	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2024-2687	CVE-2023-45288,GHSA-4v7x-pqxf-cx7m	yes	symbol	net/http	190	188	1086	145	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2024-2887	CVE-2024-24790	yes	symbol	net/netip	6	6	28	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2024-2963	CVE-2024-24791	yes	symbol	net/http	14	14	47	9	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2024-3106	CVE-2024-34156	yes	symbol	encoding/gob	3	3	39	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2025-3373	CVE-2024-45341	yes	symbol	crypto/x509	34	34	473	89	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-3420	CVE-2024-45336	yes	symbol	net/http	12	12	75	11	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-3447	CVE-2025-22866	yes	symbol	crypto/internal/nistec	4	4	19	6	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-3503	CVE-2025-22870,GHSA-qxp5-gwg8-xv66	yes	symbol	net/http	2	2	4	4	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-3563	CVE-2025-22871	yes	symbol	net/http/internal	2	2	35	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2025-3751	CVE-2025-4673	yes	symbol	net/http	10	10	32	3	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-3956	CVE-2025-47906,CVE-2025-47906	yes	symbol	os/exec	1	1	0	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2025-4007	CVE-2025-58187,CVE-2025-58187	yes	symbol	crypto/x509	33	33	472	89	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4008	CVE-2025-58189,CVE-2025-58189	yes	symbol	crypto/tls	10	9	52	27	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4009	CVE-2025-61723,CVE-2025-61723	yes	symbol	encoding/pem	2	2	33	21	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4010	CVE-2025-47912,CVE-2025-47912	yes	symbol	net/url	6	6	38	15	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4011	CVE-2025-58185,CVE-2025-58185	yes	symbol	encoding/asn1	3	3	23	5	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4012	CVE-2025-58186,CVE-2025-58186	yes	symbol	net/http	16	14	79	1	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4013	CVE-2025-58188,CVE-2025-58188	yes	symbol	crypto/x509	2	2	54	20	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4155	CVE-2025-61729,CVE-2025-61729	yes	symbol	crypto/x509	2	2	50	26	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2025-4175	CVE-2025-61727	yes	symbol	crypto/x509	1	1	36	20	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4337	CVE-2025-68121	yes	symbol	crypto/tls	10	9	63	36	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4340	CVE-2025-61730,CVE-2025-61730	yes	symbol	crypto/tls	21	18	188	82	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4341	CVE-2025-61726,CVE-2025-61726	yes	symbol	net/url	3	3	17	9	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4601	CVE-2026-25679	yes	symbol	net/url	6	6	38	15	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4603	CVE-2026-27142	yes	symbol	html/template	4	4	63	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-4865	CVE-2026-32289	yes	symbol	html/template	22	22	75	6	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4870	CVE-2026-32283	yes	symbol	crypto/tls	15	13	98	49	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4918	CVE-2026-33814	yes	symbol	golang.org/x/net/http2	9	7	46	32	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4918	CVE-2026-33814	yes	symbol	net/http	26	19	64	1	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4946	CVE-2026-32281	yes	symbol	crypto/x509	2	1	36	20	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4947	CVE-2026-32280	yes	symbol	crypto/x509	2	2	63	20	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4971	CVE-2026-39836	yes	symbol	net	37	37	163	19	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4976	CVE-2026-39825	yes	symbol	net/http/httputil	2	2	73	29	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-4977	CVE-2026-42499	yes	symbol	net/mail	6	6	23	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-4980	CVE-2026-39826	yes	symbol	html/template	3	3	9	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-4986	CVE-2026-39820	yes	symbol	net/mail	8	8	38	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-5026	CVE-2026-39821	yes	symbol	golang.org/x/net/idna	5	5	0	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-5026	CVE-2026-39821	yes	symbol	net/http	20	14	45	3	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-5037	CVE-2026-27145	yes	symbol	crypto/x509	4	4	73	32	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-5038	CVE-2026-42504	yes	symbol	mime	1	1	23	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-5039	CVE-2026-42507	yes	symbol	net/textproto	6	6	52	20	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-5856	CVE-2026-42505	yes	symbol	crypto/tls	12	8	41	21	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-5970	CVE-2026-56852	yes	symbol	golang.org/x/text/unicode/norm	25	25	122	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-5972	CVE-2026-33818	yes	symbol	encoding/asn1	4	4	152	57	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6061	GHSA-hrxh-6v49-42gf	yes	symbol	google.golang.org/grpc/internal/transport	24	9	204	59	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6088	CVE-2026-56859	yes	symbol	encoding/xml	10	10	186	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-6089	CVE-2026-56853	yes	symbol	net/http	10	10	140	60	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6090	CVE-2026-56862	yes	symbol	crypto/tls	11	9	105	55	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6091	CVE-2026-56858	yes	symbol	html/template	3	3	26	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-6218	CVE-2026-56860	yes	symbol	net/url	3	3	35	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-6348	CVE-2026-84304,GHSA-vp52-pcj8-j9qc	yes	symbol	google.golang.org/grpc/internal/transport	24	13	324	65	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6600	CVE-2026-97030	no	symbol	html/template	4	4	47	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-6603	CVE-2026-78659	no	symbol	golang.org/x/net/http2	81	70	454	191	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6603	CVE-2026-78659	no	symbol	net/http	218	192	1093	157	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6605	CVE-2026-56866	no	symbol	net/http	18	13	74	23	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6605	CVE-2026-56866	no	symbol	net/http/httputil	2	2	84	29	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6607	CVE-2026-97031	no	symbol	crypto/tls	10	8	41	21	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6608	CVE-2026-94440	no	symbol	mime/multipart	5	5	68	0	not-observed	REACHABLE-NOT-OBSERVED	0/1	1	not observed in this rebuild under these workloads
+kube-apiserver	GO-2026-6608	CVE-2026-94440	no	symbol	net/textproto	5	5	52	28	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6609	CVE-2026-78667	no	symbol	net/http	6	5	48	7	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6610	CVE-2026-78660	no	symbol	golang.org/x/net/http2	9	7	68	30	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6610	CVE-2026-78660	no	symbol	net/http	26	19	86	1	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6611	CVE-2026-78669	no	symbol	golang.org/x/net/http2	101	87	600	305	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6611	CVE-2026-78669	no	symbol	net/http	238	204	1215	157	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6612	CVE-2026-78663	no	symbol	golang.org/x/net/http2	88	75	520	229	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6612	CVE-2026-78663	no	symbol	net/http	225	197	1159	157	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6613	CVE-2026-94439	no	symbol	net/http	150	129	768	186	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6617	CVE-2026-97032	no	symbol	golang.org/x/net/http2	82	71	446	188	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)
+kube-apiserver	GO-2026-6617	CVE-2026-97032	no	symbol	net/http	219	193	1083	157	executed	EXECUTED	1/1	1	executed in the rebuild (k=1, not reproduced)

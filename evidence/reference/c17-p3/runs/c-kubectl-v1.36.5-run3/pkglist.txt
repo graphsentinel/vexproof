@@ -1,0 +1,7 @@
+crypto/tls
+golang.org/x/net/http2
+k8s.io/kubernetes/cmd/kubectl
+mime/multipart
+net/http
+net/http/httputil
+net/textproto

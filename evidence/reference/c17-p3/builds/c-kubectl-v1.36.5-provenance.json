@@ -1,0 +1,41 @@
+{
+ "target": "kubectl",
+ "release": "v1.36.5",
+ "source": {
+  "repo": "https://github.com/kubernetes/kubernetes",
+  "ref": "v1.36.5",
+  "tree": "311703920f6b8cb8d2151dc9f25c3744af4a812d",
+  "patches": "none"
+ },
+ "go": "1.26.8",
+ "goarch": "amd64",
+ "cgo": "0",
+ "tags": "selinux,notest,grpcnotrace",
+ "flags": "-buildvcs=false -trimpath -cover",
+ "ldflags_from_shipped": "-X 'k8s.io/client-go/pkg/version.gitVersion=v1.36.5' -X 'k8s.io/client-go/pkg/version.gitCommit=ad950d1cc78b0183c476bd4d3f1934c104229727' -X 'k8s.io/client-go/pkg/version.gitTreeState=clean' -X 'k8s.io/client-go/pkg/version.buildDate=2026-09-23T17:10:05Z' -X 'k8s.io/component-base/version.gitVersion=v1.36.5' -X 'k8s.io/component-base/version.gitCommit=ad950d1cc78b0183c476bd4d3f1934c104229727' -X 'k8s.io/component-base/version.gitTreeState=clean' -X 'k8s.io/component-base/version.buildDate=2026-09-23T17:10:05Z'",
+ "coverpkg": [
+  "k8s.io/kubernetes/cmd/kubectl",
+  "crypto/tls",
+  "golang.org/x/net/http2",
+  "mime/multipart",
+  "net/http",
+  "net/http/httputil",
+  "net/http/internal/http2",
+  "net/textproto"
+ ],
+ "osvs": [
+  "GO-2026-6603",
+  "GO-2026-6605",
+  "GO-2026-6607",
+  "GO-2026-6608",
+  "GO-2026-6609",
+  "GO-2026-6610",
+  "GO-2026-6611",
+  "GO-2026-6612",
+  "GO-2026-6613",
+  "GO-2026-6617"
+ ],
+ "shipped_sha256": "33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e",
+ "cover_sha256": "ba044b529cd8d20e0f594784a51668e4530464f3f05464fd69581f13d99955c5",
+ "deps_equal_shipped": true
+}

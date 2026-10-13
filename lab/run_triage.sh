@@ -15,14 +15,19 @@ auto() {  # release-dir target purl [extra autochain args]
     --out "results/chains-auto/$r/$t" --purl "$p" "$@" > /dev/null
 }
 # runtime layer: coverage run c12 (FULL=1 rebuilds it) + CodeQL batch (all-args, source kinds) + review files;
+# exercise layer P3: execution rows of coverage rebuilds under versioned workload profiles (evidence/c17-p3);
 # exercise layer: affected needs a passed gate (evidence/gates, lab/trigger/gate.py) cited by a confirmed review
 auto v1.28.2 kube-apiserver "pkg:golang/k8s.io/kubernetes@v1.28.2#cmd/kube-apiserver" \
   --cov evidence/c12-cov-v1.28.2/measurements.tsv --codeql evidence/c11-codeql-batch/v1.28.2--kube-apiserver-all-args \
   --reviews evidence/reviews/v1.28.2/kube-apiserver \
   --exercise evidence/gates/v1.28.2/kube-apiserver --exercise-root .
-auto v1.28.2 kubectl "pkg:golang/k8s.io/kubernetes@v1.28.2#cmd/kubectl"
-auto v1.36.5 kube-apiserver "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kube-apiserver"
+auto v1.28.2 kubectl "pkg:golang/k8s.io/kubernetes@v1.28.2#cmd/kubectl" \
+  --cov evidence/c17-p3/rows/kubectl-v1.28.2.tsv --profile kubectl-workload-v1
+auto v1.36.5 kube-apiserver "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kube-apiserver" \
+  --cov evidence/c17-p3/rows/kube-apiserver-v1.36.5.tsv --profile kube-apiserver-workload-v1
 auto v1.36.5 kubelet "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kubelet"
-auto v1.36.5 kubectl "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kubectl"
-auto metrics-server-v0.9.0 metrics-server "pkg:golang/sigs.k8s.io/metrics-server@v0.9.0"
+auto v1.36.5 kubectl "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kubectl" \
+  --cov evidence/c17-p3/rows/kubectl-v1.36.5.tsv --profile kubectl-workload-v1
+auto metrics-server-v0.9.0 metrics-server "pkg:golang/sigs.k8s.io/metrics-server@v0.9.0" \
+  --cov evidence/c17-p3/rows/metrics-server-v0.9.0.tsv --profile metrics-server-workload-v1
 python3 lab/report.py

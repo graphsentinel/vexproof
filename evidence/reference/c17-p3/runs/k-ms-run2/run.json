@@ -1,0 +1,112 @@
+{
+ "run": "2",
+ "profile_sha256": "20373402c381ca8b7cf8c62cc94131a5e9e0c745e61ec4a9c6dbbdec21372f04",
+ "driver_sha256": "4b828ca9fc8a5ee26497ee510c576015387365a074c976b6ae1652032428f2e8",
+ "recipe_sha256": "7b9b4ddcc562bf09df9dc8edc8b345eaae210d87ce1150c259fed3526f8a69f2",
+ "coverpkg_extra": [
+  "crypto/tls",
+  "encoding/asn1",
+  "html/template",
+  "mime/multipart",
+  "net/http",
+  "net/http/httputil",
+  "net/http/internal/http2",
+  "net/textproto",
+  "net/url"
+ ],
+ "cluster": "vxp3-ms-r2",
+ "aborted": null,
+ "recipe_rc": 0,
+ "exercise": [
+  {
+   "cmd": "sleep 45",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC top nodes",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC top pods -A",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC top pods -A --containers",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/nodes",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/pods",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw '/apis/metrics.k8s.io/v1beta1/pods?labelSelector=k8s-app%3Dmetrics-server'",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/nodes/k3d-vxp3-ms-r2-server-0",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw '/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy/livez'",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC get --raw '/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy/readyz?verbose'",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "sleep 20",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  },
+  {
+   "cmd": "KC top pods -A --containers",
+   "rc": 0,
+   "expect": 0,
+   "ok": true
+  }
+ ],
+ "deps_equal_shipped": true,
+ "cover_sha256": "ad8b8325ac7821e9e53df0227197ce01f15bae754a6b2a79206369ae3afcd674",
+ "go": "1.26.8",
+ "counter_files": 1,
+ "unexpected": [],
+ "complete": true
+}

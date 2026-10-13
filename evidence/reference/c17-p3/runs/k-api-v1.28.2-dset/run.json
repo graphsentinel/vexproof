@@ -1,0 +1,191 @@
+{
+ "run": "4",
+ "etcd": "registry.k8s.io/etcd:3.5.9-0@sha256:e013d0d5e4e25d00c61a7ff839927a1f36479678f11e49502b53a5e0b14f10c3",
+ "backend": "docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662",
+ "profile_sha256": "ffa93b5f728933b84bd2f24d870218d315e18d9ba1fd5964b5c72c0b470f8a3e",
+ "cover_sha256": "f06aeacaeda7eb568eb9c41c6e32f86acd65d9e7ff234e1b95f07384c69f67f3",
+ "driver_sha256": "2321be87387c5496020396d3d2aaed1808eeee7bfef50711f30b12aed620f654",
+ "kubectl_sha256": "c922440b043e5de1afa3c1382f8c663a25f055978cbc6e8423493ec157579ec5",
+ "steps": [
+  {
+   "kind": "fixture",
+   "id": "default-sa",
+   "ok": true,
+   "rc": 0,
+   "tail": "serviceaccount/default created\n"
+  },
+  {
+   "kind": "fixture",
+   "id": "backend-objects",
+   "ok": true,
+   "rc": 0,
+   "tail": "pod/htmlpod created\nservice/htmlsvc created\n"
+  },
+  {
+   "kind": "fixture",
+   "id": "backend-pod-status",
+   "ok": true,
+   "rc": 0,
+   "tail": "pod/htmlpod patched\n"
+  },
+  {
+   "kind": "fixture",
+   "id": "backend-endpoints",
+   "ok": true,
+   "rc": 0,
+   "tail": "endpoints/htmlsvc created\nendpointslice.discovery.k8s.io/htmlsvc-1 created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "help-loop",
+   "ok": true,
+   "rc": 1,
+   "tail": ""
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-0",
+   "ok": true,
+   "rc": 0,
+   "tail": "Client Version: v1.28.2\nKustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3\nServer Version: v1.28.2\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-1",
+   "ok": true,
+   "rc": 0,
+   "tail": "      sc           storage.k8s.io/v1                      false        StorageClass\nvolumeattachments                              storage.k8s.io/v1                      false        VolumeAttachment\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-2",
+   "ok": true,
+   "rc": 0,
+   "tail": "NAME              STATUS   AGE\ndefault           Active   9s\nkube-node-lease   Active   9s\nkube-public       Active   9s\nkube-system       Active   9s\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-3",
+   "ok": true,
+   "rc": 0,
+   "tail": "namespace/team-a created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-4",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap/demo created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-5",
+   "ok": true,
+   "rc": 0,
+   "tail": "\"annotations\":{},\"name\":\"demo\",\"namespace\":\"team-a\"}}\n  creationTimestamp: \"2026-10-13T18:21:01Z\"\n  name: demo\n  namespace: team-a\n  resourceVersion: \"200\"\n  uid: 58b9d509-a23d-4024-bf2a-3f6081e63a12\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-6",
+   "ok": true,
+   "rc": 0,
+   "tail": "    \"creationTimestamp\": \"2026-10-13T18:21:01Z\",\n        \"name\": \"demo\",\n        \"namespace\": \"team-a\",\n        \"resourceVersion\": \"200\",\n        \"uid\": \"58b9d509-a23d-4024-bf2a-3f6081e63a12\"\n    }\n}\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-7",
+   "ok": true,
+   "rc": 0,
+   "tail": "Name:         demo\nNamespace:    team-a\nLabels:       <none>\nAnnotations:  <none>\n\nData\n====\npage:\n----\n<html><body><p>hello</p></body></html>\n\nBinaryData\n====\n\nEvents:  <none>\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-8",
+   "ok": true,
+   "rc": 0,
+   "tail": " the pod. This data may not be up to date.\n    Populated by the system. Read-only. More info:\n    https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status\n\n\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-9",
+   "ok": true,
+   "rc": 0,
+   "tail": "place existing pods with new ones.\n\n  template\t<PodTemplateSpec> -required-\n    Template describes the pods that will be created. The only allowed\n    template.spec.restartPolicy value is \"Always\".\n\n\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-10",
+   "ok": true,
+   "rc": 0,
+   "tail": "yes\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-11",
+   "ok": true,
+   "rc": 0,
+   "tail": "-name: vexproof-lab-target\n  name: lab\ncontexts:\n- context:\n    cluster: lab\n    user: lab\n  name: lab\ncurrent-context: lab\nkind: Config\npreferences: {}\nusers:\n- name: lab\n  user:\n    token: REDACTED\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-12",
+   "ok": true,
+   "rc": 0,
+   "tail": ",\"name\":\"watch\",\"in\":\"query\"}},\"securityDefinitions\":{\"BearerToken\":{\"description\":\"Bearer Token authentication\",\"type\":\"apiKey\",\"name\":\"authorization\",\"in\":\"header\"}},\"security\":[{\"BearerToken\":[]}]}"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-13",
+   "ok": true,
+   "rc": 0,
+   "tail": "ok"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-14",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap \"demo\" deleted\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-15",
+   "ok": true,
+   "rc": 0,
+   "tail": "NAMESPACE   NAME      READY   STATUS    RESTARTS   AGE\ndefault     htmlpod   0/1     Running   0          4s\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-16",
+   "ok": true,
+   "rc": 1,
+   "tail": "error: Metrics API not available\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-17",
+   "ok": true,
+   "rc": 0,
+   "tail": "\u001b[0;32mKubernetes control plane\u001b[0m is running at \u001b[0;33mhttps://127.0.0.1:32844\u001b[0m\n\nTo further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "dset-18",
+   "ok": true,
+   "rc": 1,
+   "tail": "  page: <html><body><p>hello</p></body></html>\n+kind: ConfigMap\n+metadata:\n+  creationTimestamp: \"2026-10-13T18:21:02Z\"\n+  name: demo\n+  namespace: team-a\n+  uid: 46e27135-8237-43e0-af4d-2a6da0ed0dfd\n"
+  },
+  {
+   "kind": "request",
+   "id": "service-proxy",
+   "ok": true,
+   "status": 200
+  }
+ ],
+ "aborted": null,
+ "server_version_status": 200,
+ "counter_files": 1,
+ "meta_files": 1,
+ "unexpected": [],
+ "complete": true
+}

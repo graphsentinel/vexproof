@@ -1,0 +1,332 @@
+{
+ "run": "1",
+ "etcd": "registry.k8s.io/etcd:3.6.8-0@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+ "backend": "docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662",
+ "profile_sha256": "0fa8f205274a4764eab052fdd97b4c3c0cdffd9ca6309a2850463f4e79a56ac4",
+ "cover_sha256": "80aaecf8525d644656dbab7be7f131c59b97f64623e6419384c1806502fa063f",
+ "driver_sha256": "2321be87387c5496020396d3d2aaed1808eeee7bfef50711f30b12aed620f654",
+ "kubectl_sha256": "33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e",
+ "steps": [
+  {
+   "kind": "fixture",
+   "id": "default-sa",
+   "ok": true,
+   "rc": 0,
+   "tail": "serviceaccount/default created\n"
+  },
+  {
+   "kind": "fixture",
+   "id": "backend-objects",
+   "ok": true,
+   "rc": 0,
+   "tail": "pod/htmlpod created\nservice/htmlsvc created\n"
+  },
+  {
+   "kind": "fixture",
+   "id": "backend-pod-status",
+   "ok": true,
+   "rc": 0,
+   "tail": "pod/htmlpod patched\n"
+  },
+  {
+   "kind": "fixture",
+   "id": "backend-endpoints",
+   "ok": true,
+   "rc": 0,
+   "tail": "endpoints/htmlsvc created\nendpointslice.discovery.k8s.io/htmlsvc-1 created\nWarning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "api-resources",
+   "ok": true,
+   "rc": 0,
+   "tail": "tch   \nvolumeattributesclasses             vac          storage.k8s.io/v1                 false        VolumeAttributesClass              create,delete,deletecollection,get,list,patch,update,watch   \n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "api-versions",
+   "ok": true,
+   "rc": 0,
+   "tail": "very.k8s.io/v1\nevents.k8s.io/v1\nflowcontrol.apiserver.k8s.io/v1\nnetworking.k8s.io/v1\nnode.k8s.io/v1\npolicy/v1\nrbac.authorization.k8s.io/v1\nresource.k8s.io/v1\nscheduling.k8s.io/v1\nstorage.k8s.io/v1\nv1\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "explain",
+   "ok": true,
+   "rc": 0,
+   "tail": "\n    enum: Bidirectional, HostToContainer, None\n    name\t<string> -required-\n    readOnly\t<boolean>\n    recursiveReadOnly\t<string>\n    subPath\t<string>\n    subPathExpr\t<string>\n  workingDir\t<string>\n\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-ns",
+   "ok": true,
+   "rc": 0,
+   "tail": "namespace/vxp3 created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-deploy",
+   "ok": true,
+   "rc": 0,
+   "tail": "deployment.apps/web created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-cm",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap/lab-cm created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-generic",
+   "ok": true,
+   "rc": 0,
+   "tail": "secret/lab-generic created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-sa",
+   "ok": true,
+   "rc": 0,
+   "tail": "serviceaccount/lab-sa created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-default-sa",
+   "ok": true,
+   "rc": 0,
+   "tail": "serviceaccount/default created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-role",
+   "ok": true,
+   "rc": 0,
+   "tail": "role.rbac.authorization.k8s.io/lab-role created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "create-binding",
+   "ok": true,
+   "rc": 0,
+   "tail": "rolebinding.rbac.authorization.k8s.io/lab-rb created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "get-json",
+   "ok": true,
+   "rc": 0,
+   "tail": "     \"resourceVersion\": \"215\",\n                \"uid\": \"657cbc66-25ba-4854-95bf-5922e2092cbf\"\n            }\n        }\n    ],\n    \"kind\": \"List\",\n    \"metadata\": {\n        \"resourceVersion\": \"\"\n    }\n}\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "get-watch",
+   "ok": true,
+   "rc": 0,
+   "tail": "NAME     DATA   AGE\nlab-cm   1      0s\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "describe",
+   "ok": true,
+   "rc": 0,
+   "tail": ":          <none>\n    Host Port:     <none>\n    Environment:   <none>\n    Mounts:        <none>\n  Volumes:         <none>\n  Node-Selectors:  <none>\n  Tolerations:     <none>\nEvents:            <none>\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "apply-client",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap/lab-cm2 created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "apply-server",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap/lab-cm2 serverside-applied\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "diff",
+   "ok": true,
+   "rc": 1,
+   "tail": "8 +0300\n+++ /tmp/MERGED-1251302234/v1.ConfigMap.vxp3.lab-cm2\t2026-10-13 21:18:40.239644868 +0300\n@@ -1,6 +1,6 @@\n apiVersion: v1\n data:\n-  x: \"1\"\n+  x: \"2\"\n kind: ConfigMap\n metadata:\n   annotations:\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "patch-strategic",
+   "ok": true,
+   "rc": 0,
+   "tail": "deployment.apps/web patched\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "patch-merge",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap/lab-cm patched\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "patch-json",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap/lab-cm patched\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "label",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap/lab-cm labeled\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "scale",
+   "ok": true,
+   "rc": 0,
+   "tail": "deployment.apps/web scaled\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "run",
+   "ok": true,
+   "rc": 0,
+   "tail": "pod/lab-run created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "auth-can-i",
+   "ok": true,
+   "rc": 0,
+   "tail": "yes\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "auth-whoami",
+   "ok": true,
+   "rc": 0,
+   "tail": "ATTRIBUTE   VALUE\nUsername    vexproof-lab\nUID         vexproof-lab\nGroups      [system:masters system:authenticated]\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "csr-create",
+   "ok": true,
+   "rc": 0,
+   "tail": "certificatesigningrequest.certificates.k8s.io/lab-csr created\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "csr-approve",
+   "ok": true,
+   "rc": 0,
+   "tail": "certificatesigningrequest.certificates.k8s.io/lab-csr approved\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "events",
+   "ok": true,
+   "rc": 0,
+   "tail": "No events found in vxp3 namespace.\n"
+  },
+  {
+   "kind": "kubectl",
+   "id": "delete",
+   "ok": true,
+   "rc": 0,
+   "tail": "configmap \"lab-cm\" deleted from vxp3 namespace\npod \"lab-run\" deleted from vxp3 namespace\n"
+  },
+  {
+   "kind": "request",
+   "id": "version",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "healthz",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "livez",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "metrics",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "openapi-v2",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "openapi-v2-range-1",
+   "ok": true,
+   "status": 206
+  },
+  {
+   "kind": "request",
+   "id": "openapi-v2-range-100",
+   "ok": true,
+   "status": 206
+  },
+  {
+   "kind": "request",
+   "id": "openapi-v3",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "openapi-v3-apps",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "discovery-aggregated",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "query-params-1000",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "watch",
+   "ok": true,
+   "status": 200
+  },
+  {
+   "kind": "request",
+   "id": "anonymous",
+   "ok": true,
+   "status": 403
+  },
+  {
+   "kind": "request",
+   "id": "service-proxy",
+   "ok": true,
+   "status": 200
+  }
+ ],
+ "aborted": null,
+ "server_version_status": 200,
+ "counter_files": 1,
+ "meta_files": 1,
+ "unexpected": [],
+ "complete": true
+}

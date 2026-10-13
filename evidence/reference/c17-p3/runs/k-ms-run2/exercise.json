@@ -1,0 +1,58 @@
+[
+ {
+  "cmd": "sleep 45",
+  "rc": 0
+ },
+ {
+  "cmd": "KC top nodes",
+  "rc": 0
+ },
+ {
+  "cmd": "KC top pods -A",
+  "rc": 0
+ },
+ {
+  "cmd": "KC top pods -A --containers",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/nodes",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/pods",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw '/apis/metrics.k8s.io/v1beta1/pods?labelSelector=k8s-app%3Dmetrics-server'",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw /apis/metrics.k8s.io/v1beta1/nodes/k3d-vxp3-ms-r2-server-0",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw '/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy/livez'",
+  "rc": 0
+ },
+ {
+  "cmd": "KC get --raw '/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy/readyz?verbose'",
+  "rc": 0
+ },
+ {
+  "cmd": "sleep 20",
+  "rc": 0
+ },
+ {
+  "cmd": "KC top pods -A --containers",
+  "rc": 0
+ }
+]

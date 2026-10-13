@@ -1,0 +1,39 @@
+{
+ "pkglist": [
+  "crypto/tls",
+  "encoding/asn1",
+  "golang.org/x/net/http2",
+  "golang.org/x/text/unicode/norm",
+  "google.golang.org/grpc/internal/transport",
+  "google.golang.org/grpc/mem",
+  "html/template",
+  "mime/multipart",
+  "net/http",
+  "net/http/httputil",
+  "net/textproto",
+  "net/url",
+  "sigs.k8s.io/metrics-server/cmd/metrics-server"
+ ],
+ "goos": "linux",
+ "symcov_sha256": "0ce2b58d83090138f235af01884f624753e06f669e77726acac4350073be0a0f",
+ "manifest": {
+  "GO-2026-5026 net/http": "executed",
+  "GO-2026-5026 net/http/internal/http2": "incomplete",
+  "GO-2026-5026 golang.org/x/net/idna": "incomplete",
+  "GO-2026-5856 crypto/tls": "executed",
+  "GO-2026-5972 encoding/asn1": "executed",
+  "GO-2026-6089 net/http": "executed",
+  "GO-2026-6090 crypto/tls": "executed",
+  "GO-2026-6091 html/template": "zero",
+  "GO-2026-6218 net/url": "zero",
+  "GO-2026-6599 html/template": "zero",
+  "GO-2026-6600 html/template": "zero",
+  "GO-2026-6605 net/http": "executed",
+  "GO-2026-6605 net/http/httputil": "zero",
+  "GO-2026-6607 crypto/tls": "executed",
+  "GO-2026-6608 net/textproto": "executed",
+  "GO-2026-6608 mime/multipart": "zero",
+  "GO-2026-6609 net/http": "executed",
+  "GO-2026-6613 net/http": "executed"
+ }
+}

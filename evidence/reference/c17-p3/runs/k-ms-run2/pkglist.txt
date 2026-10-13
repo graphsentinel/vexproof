@@ -1,0 +1,13 @@
+crypto/tls
+encoding/asn1
+golang.org/x/net/http2
+golang.org/x/text/unicode/norm
+google.golang.org/grpc/internal/transport
+google.golang.org/grpc/mem
+html/template
+mime/multipart
+net/http
+net/http/httputil
+net/textproto
+net/url
+sigs.k8s.io/metrics-server/cmd/metrics-server
