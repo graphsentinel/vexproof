@@ -39,6 +39,8 @@ import sys
 import time
 import urllib.request
 
+import attribution  # noqa: E402  (lab/trigger/attribution.py)
+
 import yaml
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -111,9 +113,11 @@ def buildinfo(path, go="1.26.9"):
     info = {"go": re.search(r":\s+go(\S+)", txt).group(1), "raw": txt}
     for key, rx in (("tags", r"-tags=(\S+)"), ("goos", r"GOOS=(\S+)"), ("default_godebug", r"DefaultGODEBUG=(\S+)"),
                     ("git_version", r"gitVersion=([^' ]+)"), ("git_commit", r"gitCommit=([0-9a-f]{40})"),
-                    ("vcs_revision", r"vcs.revision=([0-9a-f]+)"), ("path", r"\tpath\t(\S+)")):
+                    ("vcs_revision", r"vcs.revision=([0-9a-f]+)"), ("path", r"\tpath\t(\S+)"),
+                    ("goarch", r"GOARCH=(\S+)")):
         m = re.search(rx, txt)
         info[key] = m.group(1) if m else None
+    info["deps"] = sorted(re.findall(r"(?m)^\s*dep\s+(\S+)\s+(\S+)", txt))
     return info
 
 
@@ -161,17 +165,17 @@ def source_tree(src):
     return d
 
 
-def build(spec, src, go, tags, out_dir):
+def build(spec, src, go, tags, out_dir, ldflags=None):
     os.makedirs(out_dir, exist_ok=True)
     name = f"{os.path.basename(spec['target']['source']['mainPackage'].rstrip('/'))}-go{go}"
     dst = os.path.join(out_dir, name)
     if not os.path.exists(dst):
-        ld = spec.get("build", {}).get("extraLdflags", "")
+        ld = spec.get("build", {}).get("extraLdflags", "") if ldflags is None else ldflags
         cache = os.path.join(RUNTIME, "gocache")
         os.makedirs(cache, exist_ok=True)
         cmd = [ENGINE, "run", "--rm", "-v", f"{src}:/src", "-v", f"{cache}:/root/.cache", "-v", f"{out_dir}:/out",
                "-w", "/src", "-e", "GOFLAGS=-mod=vendor", "-e", "CGO_ENABLED=0", "-e", "GOTOOLCHAIN=local",
-               GO_IMAGE.format(go), "go", "build"]
+               GO_IMAGE.format(go), "go", "build", "-buildvcs=false"]
         if tags:
             cmd += ["-tags", tags]
         if ld:
@@ -248,9 +252,17 @@ class Target:
             cmd += ["-v", f"{p}:{f['mountPath']}:ro"]
         if godebug:
             cmd += ["-e", f"GODEBUG={godebug}"]
+        lim = self.rt.get("limits", {})
+        if lim.get("cpus"):
+            cmd += ["--cpus", str(lim["cpus"])]
+        if lim.get("cpuset"):  # a hard affinity bound (a --cpus quota is not an instantaneous bound)
+            cmd += ["--cpuset-cpus", str(lim["cpuset"])]
+        if lim.get("memory"):
+            cmd += ["--memory", str(lim["memory"])]
         cmd += [BASE_IMAGE, f"/b/{os.path.basename(binary)}", *self.rt.get("args", [])]
         sh(*cmd)
         self.port = self._published_port(port)
+        self.pid = int(sh(ENGINE, "inspect", "-f", "{{.State.Pid}}", f"{self.name}-target").strip())
         rd = self.rt["readiness"]
         for _ in range(90):
             try:
@@ -278,8 +290,9 @@ class Target:
         if self._published_port(int(self.rt.get("port", 6443))) != self.port:
             raise SystemExit("refusing: the published port changed")
 
-    def request(self, method, path, headers, auth=True, timeout=600):
-        self.verify_target()
+    def request(self, method, path, headers, auth=True, timeout=600, verified=False):
+        if not verified:  # verified=True only right after an explicit verify_target() by the caller
+            self.verify_target()
         h = dict(headers)
         if auth:
             h["Authorization"] = f"Bearer {self.ident.token}"
@@ -296,8 +309,29 @@ class Target:
         return r.status, len(body), time.time() - t
 
     def cpu(self):
-        f = sh(ENGINE, "exec", f"{self.name}-target", "cat", "/proc/1/stat").split(")")[1].split()
-        return (int(f[11]) + int(f[12])) / 100
+        """utime + stime of the target process (all threads), in seconds; read on the host (no exec latency)"""
+        try:
+            f = open(f"/proc/{self.pid}/stat").read().rsplit(")", 1)[1].split()
+        except OSError:
+            f = sh(ENGINE, "exec", f"{self.name}-target", "cat", "/proc/1/stat").rsplit(")", 1)[1].split()
+        return (int(f[11]) + int(f[12])) / os.sysconf("SC_CLK_TCK")
+
+    @staticmethod
+    def _count(lst):
+        return sum(int(b) - int(a) + 1 if b else 1 for r in lst.strip().split(",") if r
+                   for a, _, b in [r.partition("-")])
+
+    def cpus_allowed(self):
+        """the enforced bound: CPUs in the container cgroup's cpuset.cpus.effective (covers every thread), checked
+        against spec.runtime.limits.cpuset; the leader thread's affinity is returned as diagnostic data"""
+        cg = next(ln.split("::", 1)[1].strip() for ln in open(f"/proc/{self.pid}/cgroup") if ln.startswith("0::"))
+        eff = open(f"/sys/fs/cgroup{cg}/cpuset.cpus.effective").read().strip()
+        want = str(self.rt.get("limits", {}).get("cpuset", ""))
+        if not want or self._count(eff) != self._count(want) or eff != want:
+            raise SystemExit(f"cpuset not enforced as specified: cgroup {eff!r}, spec {want!r}")
+        leader = next(ln.split(":", 1)[1].strip() for ln in open(f"/proc/{self.pid}/status")
+                      if ln.startswith("Cpus_allowed_list:"))
+        return self._count(eff), {"cgroup_cpuset_effective": eff, "leader_affinity": leader}
 
     def close(self):
         ids = sh(ENGINE, "ps", "-aq", "--filter", f"name=^{self.name}-", check=False).split()
@@ -319,15 +353,19 @@ def _connect_pinned(conn, port, ident):
     return connect
 
 
-def payload(req, params):
-    """(path, headers) for one request, from the payload generator"""
+def payload(req, params, mark=None):
+    """(path, headers) for one request, from the payload generator. With a marker (exercise layer E2a), the first
+    range starts at the marker (odd, per request); the number of ranges is unchanged."""
     path, headers = req["path"], dict(req.get("headers", {}))
     p = req.get("payload")
     if not p:
         return path, headers
     n = int(re.sub(r"\{\{(\w+)\}\}", lambda m: str(params[m.group(1)]), str(p.get("count", "1"))))
+    if p["generator"] == "http-range" and n == 0:  # n = 0: the whole document, no Range header (cost control)
+        return path, headers
     if p["generator"] == "http-range":
-        headers[p.get("header", "Range")] = "bytes=" + ",".join(f"{2 * i}-{2 * i}" for i in range(n))
+        first = [f"{mark}-{mark}"] if mark is not None else ["0-0"]
+        headers[p.get("header", "Range")] = "bytes=" + ",".join(first + [f"{2 * i}-{2 * i}" for i in range(1, n)])
     elif p["generator"] == "query-params":
         path += ("&" if "?" in path else "?") + "&".join(f"p{i}=1" for i in range(n))
     return path, headers
@@ -367,10 +405,34 @@ def evaluate(oracle, rows, pname):
                 lo, hi = med[min(med)], med[max(med)]
                 res["checks"].append({"check": f"{arm}: {e['serverCPU']}", "observed": med,
                                       "ok": hi >= 5 * max(lo, 0.01)})
+            if "separation" in e:  # every trigger request's CPU > factor x the largest benign one (rank separation)
+                sp = e["separation"]
+                benign = [r["server_cpu_s"] for r in a if when_ok(sp["benign"], {pname: r[pname]})]
+                trig = [r["server_cpu_s"] for r in a if r in sel]
+                ok = bool(benign) and bool(trig) and min(trig) > sp.get("factor", 5) * max(max(benign), 0.01)
+                res["checks"].append({"check": f"{arm}: min CPU at {rule.get('when')} > {sp.get('factor', 5)} x max CPU at {sp['benign']}",
+                                      "observed": {"benign": [min(benign or [0]), statistics.median(benign or [0]), max(benign or [0])],
+                                                   "trigger": [min(trig or [0]), statistics.median(trig or [0]), max(trig or [0])]},
+                                      "ok": ok})
+            if "maxCPUBelow" in e:  # every selected request's CPU < factor x the reference arm's median at its condition
+                mb = e["maxCPUBelow"]
+                ref = [r["server_cpu_s"] for r in rows if r["arm"] == mb["arm"] and when_ok(mb["when"], {pname: r[pname]})]
+                trig = [r["server_cpu_s"] for r in a if r in sel]
+                cap = mb.get("factor", 5) * max(statistics.median(ref), 0.01) if ref else None
+                res["checks"].append({"check": f"{arm}: max CPU at {rule.get('when')} < {mb.get('factor', 5)} x median CPU of "
+                                               f"{mb['arm']} at {mb['when']} (floor 0.01 s)",
+                                      "observed": {"max": max(trig or [0]), "cap": cap},
+                                      "ok": bool(trig) and cap is not None and max(trig) < cap})
             if "serverCPUMax" in e:
                 cap = float(e["serverCPUMax"].rstrip("s"))
                 res["checks"].append({"check": f"{arm}: median CPU <= {cap}s", "observed": med,
                                       "ok": all(v <= cap for v in med.values())})
+        if "statusSameAs" in e:  # comparability: the arm answers like the named arm at every parameter value
+            for arm in rule["arms"]:
+                mine = {(r[pname], r["status"]) for r in rows if r["arm"] == arm}
+                ref = {(r[pname], r["status"]) for r in rows if r["arm"] == e["statusSameAs"]}
+                res["checks"].append({"check": f"{arm}: statuses per {pname} == {e['statusSameAs']}",
+                                      "observed": sorted(mine ^ ref), "ok": bool(mine) and mine == ref})
         res["ok"] = bool(res["checks"]) and all(c["ok"] for c in res["checks"])
         out.append(res)
     return out
@@ -384,7 +446,7 @@ def check_spec(spec):
             auth.get("tokenSource", "lab-generated") != "lab-generated":
         raise SystemExit("refusing: runtime.auth may only be {type: bearer, tokenSource: lab-generated} "
                          "(the runner creates the credential for each run)")
-    for k in ("host", "url", "address", "kubeconfig"):
+    for k in ("host", "url", "address", "kubeconfig"):  # noqa: the spec names no target
         if k in spec["runtime"] or k in spec["trigger"]["request"]:
             raise SystemExit(f"refusing: a TriggerTest cannot name a target {k}; the runner starts the target itself")
     lim = spec["safety"].get("maxRequestBytes")
@@ -396,6 +458,55 @@ def check_spec(spec):
             pth, hdr = payload(trig["request"], {pname: v})
             if len(pth) + sum(len(k) + len(x) for k, x in hdr.items()) > cap:
                 raise SystemExit(f"refusing: request for {pname}={v} exceeds safety.maxRequestBytes")
+
+
+# ---------- exercise layer: E2a window and the affected rule (private plan "exercise layer" §3 E2a, §4 row 1) ----------
+
+def e2a_window(spec, run, t, path, bi, cache):
+    """pin the decoding and prepare the argument-provenance window on this arm's target process"""
+    att = spec["attribution"]
+    lst = att.get("listing")
+    if not lst:
+        raise SystemExit("attribution.listing (pclnsym listing of the shipped binary) is required")
+    att["_listing"] = os.path.abspath(os.path.join(ROOT, lst))
+    listing = attribution.Listing(att["_listing"])
+    off = attribution.file_offset(path, listing.addr(att["symbol"]))
+    facts = attribution.pin_decoding(path, off, bi.get("goarch"), bi["go"])
+    facts.update(symbol=att["symbol"], offset=hex(off), registers=att["registers"])
+    pid = int(sh(ENGINE, "inspect", "-f", "{{.State.Pid}}", f"{t.name}-target").strip())
+    return attribution.ArgWindow(run, pid, os.path.abspath(path), off, att["registers"]), facts
+
+
+def row1(spec, ev, controls, verdict, e2a):
+    """plan §4 row 1: affected evidence only if every condition holds; otherwise the sub-state that is missing"""
+    by = {}
+    for r in ev:  # every rule naming the same arms must hold
+        by[tuple(r["arms"])] = by.get(tuple(r["arms"]), True) and r["ok"]
+    req = spec["attribution"]["rule"]
+    checks = {
+        "trigger_verdict": verdict == "triggered",
+        "baseline_equals_shipped": all(by.get(tuple(a), False) for a in req["baselineRules"]),
+        "vulnerable_triggers": all(by.get(tuple(a), False) for a in req["vulnerableRules"]),
+        "fixed_does_not": all(by.get(tuple(a), False) for a in req["fixedRules"]),
+        "shipped_separates": all(by.get(tuple(a), False) for a in req["shippedRules"]),
+        "controls": all(c["ok"] for c in controls),
+        "e2a_attributed": bool(e2a) and e2a["state"] == "attributed_client",
+    }
+    if all(checks.values()):
+        result = "affected_evidence"
+    elif e2a and e2a["state"] == "instrumentation_failed":
+        result = "instrumentation_failed"
+    elif verdict == "inconclusive":
+        result = "inconclusive"
+    elif not checks["vulnerable_triggers"] or not checks["fixed_does_not"]:
+        result = "trigger_not_validated"
+    elif not checks["baseline_equals_shipped"]:
+        result = "arm_unavailable"
+    elif not checks["shipped_separates"]:
+        result = "shipped_not_triggered_cause_unknown"
+    else:
+        result = "attribution_incomplete"
+    return {"result": result, "checks": checks}
 
 
 def main():
@@ -441,12 +552,16 @@ def main():
         if arm.get("from") == "target":
             path, go = binary, bi["go"]
         else:
-            go = arm_go(arm, fixes)
+            go = bi["go"] if arm.get("go") == "shipped" else arm_go(arm, fixes)
             log(f"build {arm['name']} with go{go}")
-            path = build(spec, source_tree(src), go, tags, os.path.join(cache, doc["metadata"]["name"]))
+            path = build(spec, source_tree(src), go, tags, os.path.join(cache, doc["metadata"]["name"]),
+                         arm.get("extraLdflags"))
         info = buildinfo(path) if spec.get("recordDefaultGODEBUG", True) else {}
         resolved["arms"][arm["name"]] = {"go": go, "default_godebug": info.get("default_godebug"),
                                          "godebug_env": arm.get("godebug")}
+        if info and arm.get("from") != "target":
+            # comparability: same source and go.mod, so the dependency graph must equal the shipped binary's
+            resolved["arms"][arm["name"]]["deps_match_shipped"] = info.get("deps") == bi.get("deps")
         arms.append((arm, path))
     if not arms:
         raise SystemExit("no arm selected")
@@ -456,26 +571,71 @@ def main():
     trig = spec["trigger"]
     pname = next(iter(trig.get("parameters", {"n": [1]})))
     values = trig.get("parameters", {pname: [1]})[pname]
-    rows, controls = [], []
+    marked = bool((trig["request"].get("payload") or {}).get("marker"))
+    att = spec.get("attribution")
+    rows, controls, harness, e2a = [], [], [], None
     try:
         for arm, path in arms:
             log(f"run {arm['name']}")
             t = Target(spec, run, arm["name"], path, ident, arm.get("godebug"))
+            win = None
             try:
                 t.request(trig["request"]["method"], trig["request"]["path"], trig["request"].get("headers", {}))  # warm-up
                 for c in trig.get("controls", []):
                     st = t.request(trig["request"]["method"], trig["request"]["path"], {}, auth=c.get("auth") != "none")[0]
                     controls.append({"arm": arm["name"], "control": c["name"], "expect": c["expectStatus"], "status": st,
                                      "ok": st == c["expectStatus"]})
+                calib, sent, others = {}, {}, {}
+                if att and arm.get("attribute"):
+                    win, facts = e2a_window(spec, run, t, path, bi, cache)
+                    win.start(out)
+                    for v in att["calibration"]:  # benign inputs with known bytes, sent inside the window
+                        mk = attribution.marker()
+                        pth, hdr = payload(trig["request"], {pname: v}, mk)
+                        calib[mk] = hdr[att["argument"]["header"]].encode()
+                        t.request(trig["request"]["method"], pth, hdr)
+                ncpu, cpuinfo = t.cpus_allowed()
+                resolved["arms"][arm["name"]]["cpu_bound"] = cpuinfo
+                tick = 1 / os.sysconf("SC_CLK_TCK")
                 for v, k in itertools.product(values, range(trig["repeats"])):
-                    pth, hdr = payload(trig["request"], {pname: v})
+                    mk = attribution.marker() if marked and v != 0 else None
+                    pth, hdr = payload(trig["request"], {pname: v}, mk)
+                    t.verify_target()
+                    w0 = time.monotonic()
                     c0 = t.cpu()
-                    st, size, dt = t.request(trig["request"]["method"], pth, hdr,
-                                             timeout=spec["safety"].get("timeoutSeconds", 600))
-                    time.sleep(0.5)
+                    try:
+                        st, size, dt = t.request(trig["request"]["method"], pth, hdr,
+                                                 timeout=spec["safety"].get("timeoutSeconds", 600), verified=True)
+                    except (OSError, http.client.HTTPException, ssl.SSLError) as ex:
+                        harness.append({"arm": arm["name"], pname: v, "repeat": k + 1, "error": type(ex).__name__})
+                        continue
+                    c1 = t.cpu()
+                    win_s = time.monotonic() - w0  # encloses both CPU reads
+                    cpu_s = round(c1 - c0, 2)
                     rows.append({"arm": arm["name"], pname: v, "repeat": k + 1, "status": st, "body_bytes": size,
-                                 "seconds": round(dt, 3), "server_cpu_s": round(t.cpu() - c0, 2)})
+                                 "seconds": round(dt, 3), "server_cpu_s": cpu_s, "window_s": round(win_s, 3),
+                                 "cpus_allowed": ncpu})
+                    # plausibility: a process on ncpu CPUs cannot use more than ncpu x window; each of the two reads
+                    # can be off by one accounting tick
+                    if cpu_s > ncpu * win_s + 2 * tick:
+                        harness.append({"arm": arm["name"], pname: v, "repeat": k + 1, "error": "cpu_exceeds_window",
+                                        "server_cpu_s": cpu_s, "window_s": round(win_s, 3), "cpus_allowed": ncpu})
+                    time.sleep(0.5)  # pause between requests, outside the measurement window
+                    if win and mk is not None:
+                        (sent if when_ok(att["trigger"], {pname: v}) else others)[mk] = hdr[att["argument"]["header"]].encode()
+                if win:
+                    script, stats = win.stop()
+                    win = None
+                    hits, lost, failed = attribution.parse(script, stats, attribution.Listing(att["_listing"]))
+                    e2a = {"arm": arm["name"], "symbol": att["symbol"], "decoding": facts,
+                           **attribution.evaluate(hits, lost, failed, calib, sent, others),
+                           "lost_events": lost, "failed_reads": failed, "hits": len(hits)}
+                st = json.loads(sh(ENGINE, "inspect", f"{t.name}-target"))[0].get("State") or {}
+                if st.get("OOMKilled") or not st.get("Running"):
+                    harness.append({"arm": arm["name"], "error": "target OOM-killed or stopped"})
             finally:
+                if win:
+                    win.stop()
                 t.close()
     finally:
         shutil.rmtree(run_dir, ignore_errors=True)  # the run's keys and token are not kept
@@ -486,7 +646,10 @@ def main():
         w.writerows(rows)
     ev = evaluate(spec["oracle"], rows, pname)
     vulnerable_rules = [r for r in ev if "fixed" not in " ".join(r["arms"])]
-    if ev and all(r["ok"] for r in ev) and all(c["ok"] for c in controls):
+    unavailable = [a for a, x in resolved["arms"].items() if x.get("deps_match_shipped") is False]
+    if harness or unavailable:
+        verdict = "inconclusive"  # a harness failure or an incomparable arm is never a result
+    elif ev and all(r["ok"] for r in ev) and all(c["ok"] for c in controls):
         verdict = "triggered"
     elif not any(r["ok"] for r in vulnerable_rules):
         verdict = "not-triggered"
@@ -495,7 +658,12 @@ def main():
     summary = (f"{verdict}: " + "; ".join(f"{'ok' if r['ok'] else 'FAIL'} {','.join(r['arms'])} when {r['when']}"
                                           for r in ev) + f"; controls {sum(c['ok'] for c in controls)}/{len(controls)} ok")
     status = {"phase": "Succeeded", "verdict": verdict, "resolved": resolved, "oracle": ev, "summary": summary,
-              "evidence": os.path.relpath(out, ROOT)}
+              "evidence": os.path.relpath(out, ROOT), "harness_errors": harness, "arms_unavailable": unavailable}
+    if att:
+        status["e2a"] = e2a
+        status["row1"] = row1(spec, ev, controls, verdict, e2a)
+        summary += f"; E2a {e2a['state'] if e2a else 'not run'}; row 1: {status['row1']['result']}"
+        status["summary"] = summary
     json.dump({"status": status, "controls": controls, "seconds": round(time.time() - t0)},
               open(os.path.join(out, "status.json"), "w"), indent=1)
     log(summary)

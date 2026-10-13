@@ -1,0 +1,137 @@
+# Exercise layer P1 (feasibility gate): GO-2026-6609 on the official kube-apiserver v1.28.2 under the full row-1 rule
+# of the exercise-layer plan: four arms (shipped, baseline = same source with the shipped Go, last vulnerable, first
+# fixed), a benign baseline input with rank separation and thresholds fixed here, and argument provenance (E2a) on
+# the shipped arm: the marked Range header must reach net/http.parseRange as its argument.
+# Lab only: the runner starts the target itself with its own CA and token (lab/trigger/runner.py); E2a needs sudo.
+apiVersion: vexproof.graphsentinel.github.io/v1alpha1
+kind: TriggerTest
+metadata:
+  name: kube-apiserver-v1-28-2-go-2026-6609-l5
+  namespace: vexproof
+spec:
+  target:
+    binary:
+      url: https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kube-apiserver
+      sha256: a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c
+    source:
+      repo: https://github.com/kubernetes/kubernetes
+      ref: v1.28.2
+      mainPackage: ./cmd/kube-apiserver
+  vulnerability:
+    osv: GO-2026-6609
+  build:
+    go: auto
+    tags: auto
+    goMod: unchanged
+    extraLdflags: -checklinkname=0
+  arms:
+  - name: shipped
+    from: target
+    attribute: true
+  - name: baseline
+    go: shipped
+    extraLdflags: ""
+  - name: vulnerable-rebuild
+    go: lastVulnerable
+  - name: fixed-rebuild
+    go: firstFixed
+  recordDefaultGODEBUG: true
+  runtime:
+    sidecars:
+    - name: etcd
+      image: registry.k8s.io/etcd:3.5.9-0@sha256:e013d0d5e4e25d00c61a7ff839927a1f36479678f11e49502b53a5e0b14f10c3
+      args:
+      - etcd
+      - --data-dir=/tmp/etcd
+      - --listen-client-urls=http://127.0.0.1:2379
+      - --advertise-client-urls=http://127.0.0.1:2379
+    args:
+    - --etcd-servers=http://127.0.0.1:2379
+    - --service-account-issuer=https://kubernetes.default.svc
+    - --service-account-key-file=/pki/sa.pub
+    - --service-account-signing-key-file=/pki/sa.key
+    - --service-cluster-ip-range=10.96.0.0/16
+    - --tls-cert-file=/pki/server.pem
+    - --tls-private-key-file=/pki/server.key
+    - --token-auth-file=/pki/tokens.csv
+    - --authorization-mode=RBAC
+    - --secure-port=6443
+    port: 6443
+    limits:
+      cpuset: 0-1        # hard affinity: 2 CPUs (bound for the per-request plausibility check)
+      memory: 4g
+    readiness:
+      path: /readyz
+      expectStatus: 200
+    auth:
+      type: bearer
+      tokenSource: lab-generated
+  trigger:
+    request:
+      method: GET
+      path: /openapi/v2
+      headers:
+        Accept: application/json
+      payload:
+        generator: http-range
+        header: Range
+        count: '{{n}}'
+        marker: true
+    parameters:
+      n:
+      - 0          # whole document, no Range header: the cost control for the fixed arm
+      - 1
+      - 50000
+    repeats: 5
+    controls:
+    - name: anonymous
+      auth: none
+      expectStatus: 403
+  measure:
+  - status
+  - bodyBytes
+  - seconds
+  - serverCPU
+  # thresholds fixed before the runs (review l5-r9, after pilot runs 1-3): shipped, baseline and vulnerable arms:
+  # every request's server CPU at n = 50000 > 5 x the largest server CPU at n = 1 of the same arm; fixed arm: every request at 50,000 ranges answers 200 and its
+  # CPU stays below 5 x the shipped arm's median for the whole document (n = 0, same body cost); n = 1 answers 206.
+  # CPU is per request: utime+stime of the target process read on the host immediately before sending and after the
+  # body is read (0.01 s ticks; denominators floored at 0.01 s); the monotonic window encloses both reads; a request
+  # whose CPU exceeds cpus_allowed x window + 2 ticks is a measurement failure (run inconclusive, request reported).
+  # The window still contains whatever background work the server does concurrently. Arms run in this order, values
+  # in this order, 5 repeats each, one warm-up request per arm (review l5-r11).
+  oracle:
+  - arms: [shipped]
+    when: n > 200
+    expect: {status: 206, separation: {benign: n == 1, factor: 5}}
+  - arms: [baseline]
+    when: n > 200
+    expect: {status: 206, separation: {benign: n == 1, factor: 5}, statusSameAs: shipped}
+  - arms: [vulnerable-rebuild]
+    when: n > 200
+    expect: {status: 206, separation: {benign: n == 1, factor: 5}}
+  - arms: [fixed-rebuild]
+    when: n > 200
+    expect: {status: 200, maxCPUBelow: {arm: shipped, when: n == 0, factor: 5}}
+  - arms: [fixed-rebuild]
+    when: n == 1
+    expect: {status: 206}
+  attribution:
+    symbol: net/http.parseRange          # parseRange(s string, size int64): amd64 ABIInternal s.ptr=RAX, s.len=RBX
+    registers: {pointer: ax, length: bx}
+    argument: {header: Range}
+    listing: lab/.runtime/in/evidence/c9-autochain-v1.28.2/pclnsym-all-kube-apiserver.txt
+    calibration: [2, 4, 12]              # benign, distinct lengths (21, 29, 75 bytes), none equal to n=1 or n=50000
+    trigger: n > 200
+    rule:
+      shippedRules: [[shipped]]
+      baselineRules: [[baseline]]
+      vulnerableRules: [[vulnerable-rebuild]]
+      fixedRules: [[fixed-rebuild]]   # both fixed-arm rules (row 1 needs every rule naming the arm)
+  safety:
+    environment: lab-only
+    maxRequestBytes: 1Mi
+    timeoutSeconds: 600
+    onUnexpectedTrigger: stop-and-report
+  output:
+    evidenceDir: results/triggertest-go-2026-6609-l5
