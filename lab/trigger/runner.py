@@ -231,7 +231,7 @@ class Target:
     """the arm's containers: a holder that owns the network namespace and publishes the port on 127.0.0.1,
     the sidecars and the target binary joined to it"""
 
-    def __init__(self, spec, run, arm_name, binary, ident, godebug=None):
+    def __init__(self, spec, run, arm_name, binary, ident, godebug=None, cover_dir=None):
         self.spec, self.rt, self.ident, self.run = spec, spec["runtime"], ident, run
         self.name = f"vexproof-tt-{run}-{arm_name}".lower()
         lbl = ["--label", f"{LABEL}=trigger", "--label", f"{LABEL}.run={run}"]
@@ -252,6 +252,8 @@ class Target:
             cmd += ["-v", f"{p}:{f['mountPath']}:ro"]
         if godebug:
             cmd += ["-e", f"GODEBUG={godebug}"]
+        if cover_dir:  # a coverage build writes its counters here when stopped with SIGTERM (stop())
+            cmd += ["-v", f"{os.path.abspath(cover_dir)}:/cov", "-e", "GOCOVERDIR=/cov"]
         lim = self.rt.get("limits", {})
         if lim.get("cpus"):
             cmd += ["--cpus", str(lim["cpus"])]
@@ -341,6 +343,10 @@ class Target:
         leader = next(ln.split(":", 1)[1].strip() for ln in open(f"/proc/{self.pid}/status")
                       if ln.startswith("Cpus_allowed_list:"))
         return self._count(eff), {"cgroup_cpuset_effective": eff, "leader_affinity": leader}
+
+    def stop(self, seconds=60):
+        """SIGTERM to the target and wait: a coverage build flushes its counters on a graceful exit"""
+        sh(ENGINE, "stop", "-t", str(seconds), f"{self.name}-target", check=False)
 
     def close(self):
         ids = sh(ENGINE, "ps", "-aq", "--filter", f"name=^{self.name}-", check=False).split()

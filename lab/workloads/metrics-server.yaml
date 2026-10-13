@@ -1,0 +1,29 @@
+# Workload profile for metrics-server v0.9.0 (exercise layer P3, plan §10). Versioned: the counted runs record its sha256.
+# Lab only: the driver (lab/p3/cov.py metrics) runs the CI recipe (ci/vexproof.py) with a fresh k3d cluster per run
+# (the lab platform's k3s, pinned by digest in ci/metrics-server.json; the project's own release manifest, sha256-checked
+# by lab/full.py), the coverage build of the release source with coverpkg extended to the stdlib packages of the
+# target's automatic chains, and the commands below; the deployment is scaled to 0 so the server flushes its counters.
+# Input classes: inbound = requests metrics-server receives (the metrics API through the aggregator: kubectl top and
+# direct GETs); upstream (kubelet-facing) = the kubelets' /metrics/resource responses that metrics-server scrapes by
+# itself every resolution period. Only well-formed requests and kubelet responses are exercised; adversarial kubelet
+# responses and malformed inbound requests are NOT exercised.
+name: metrics-server
+version: 1
+unexercised:
+- adversarial or malformed kubelet responses (the kubelet-facing upstream path)
+- malformed inbound requests to the metrics API
+exercise:
+- {cmd: "sleep 45", expect: 0, inputs: []}
+- {cmd: "KC top nodes", expect: 0, inputs: [inbound, upstream-kubelet]}
+- {cmd: "KC top pods -A", expect: 0, inputs: [inbound, upstream-kubelet]}
+- {cmd: "KC top pods -A --containers", expect: 0, inputs: [inbound, upstream-kubelet]}
+- {cmd: "KC get --raw /apis/metrics.k8s.io/v1beta1", expect: 0, inputs: [inbound]}
+- {cmd: "KC get --raw /apis/metrics.k8s.io/v1beta1/nodes", expect: 0, inputs: [inbound, upstream-kubelet]}
+- {cmd: "KC get --raw /apis/metrics.k8s.io/v1beta1/pods", expect: 0, inputs: [inbound, upstream-kubelet]}
+- {cmd: "KC get --raw /apis/metrics.k8s.io/v1beta1/namespaces/kube-system/pods", expect: 0, inputs: [inbound, upstream-kubelet]}
+- {cmd: "KC get --raw '/apis/metrics.k8s.io/v1beta1/pods?labelSelector=k8s-app%3Dmetrics-server'", expect: 0, inputs: [inbound]}
+- {cmd: "KC get --raw /apis/metrics.k8s.io/v1beta1/nodes/k3d-CLUSTER-server-0", expect: 0, inputs: [inbound, upstream-kubelet]}
+- {cmd: "KC get --raw '/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy/livez'", expect: 0, inputs: [inbound]}
+- {cmd: "KC get --raw '/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy/readyz?verbose'", expect: 0, inputs: [inbound]}
+- {cmd: "sleep 20", expect: 0, inputs: [upstream-kubelet]}
+- {cmd: "KC top pods -A --containers", expect: 0, inputs: [inbound, upstream-kubelet]}

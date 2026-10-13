@@ -1,0 +1,104 @@
+# Workload profile for kubectl (exercise layer P3, plan §10). Versioned: the counted runs record this file's sha256.
+# Lab only: the driver (lab/p3/cov.py) creates a dedicated k3d cluster per release and per run, with the k3s image of
+# the same Kubernetes version pinned by digest, its own kubeconfig and the API on 127.0.0.1; k3s is only the server
+# kubectl talks to, not the official kube-apiserver. Every command runs the coverage-instrumented kubectl with its own
+# GOCOVERDIR; the driver counts invocations and checks that each left a counter file.
+# Input classes: local = CLI arguments and files; inbound = requests the kubectl process itself receives (its local
+# listeners for proxy and port-forward); upstream = responses of the API server (or of a pod through it).
+# Only well-formed server responses are exercised; malformed or adversarial upstream responses are NOT exercised.
+# expect: the frozen list of acceptable exit codes (diff: 1 = differences found; plugin list: 1 = no plugins; proxy: -2 =
+# ended by SIGINT); background commands also need their probe's HTTP status (expect_probe).
+# Template fields: {k} = the kubectl under test with --kubeconfig, {ns} = the run's namespace, {d} = the run's
+# scratch directory, {img} = the pinned busybox image. Literals are synthetic lab values.
+name: kubectl
+version: 1
+unexercised:
+- malformed or adversarial API server responses (all commands)
+- the code kubectl proxy runs (it has no shutdown path that writes coverage counters)
+- interactive commands (edit, attach -it, exec -it), plugins installed on the host, credential plugins
+images:
+  busybox: docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+k3s:   # the server kubectl talks to: k3s of the same Kubernetes version (not the official kube-apiserver)
+  v1.28.2: docker.io/rancher/k3s:v1.28.2-k3s1@sha256:8c2599ecfca826bb4f63de10d31c2d54355965cbe2eaa63e7d2ebb7a79ae6772
+  v1.36.5: docker.io/rancher/k3s:v1.36.5-k3s1@sha256:057cfd5a9d51b89f1f0ee139c28d5d5fdd5aa7ddeac2742a0ba90c6dbc0329bb
+fixtures:
+- id: ns
+  cmd: "{k} create namespace {ns}"
+- id: web
+  cmd: "{k} -n {ns} create deployment web --image={img} -- httpd -f -p 8080 -h /etc"
+  wait: "{k} -n {ns} rollout status deployment/web --timeout=180s"
+- id: websvc
+  cmd: "{k} -n {ns} expose deployment web --port=80 --target-port=8080"
+commands:
+- {id: version, cmd: "{k} version -o json", expect: 0, inputs: [local, upstream]}
+- {id: cluster-info, cmd: "{k} cluster-info", expect: 0, inputs: [local, upstream]}
+- {id: api-resources, cmd: "{k} api-resources -o wide", expect: 0, inputs: [local, upstream]}
+- {id: api-versions, cmd: "{k} api-versions", expect: 0, inputs: [local, upstream]}
+- {id: explain, cmd: "{k} explain pod.spec.containers --recursive", expect: 0, inputs: [local, upstream]}
+- {id: get-wide, cmd: "{k} get pods -A -o wide", expect: 0, inputs: [local, upstream]}
+- {id: get-json, cmd: "{k} -n {ns} get deploy,svc,pods -o json", expect: 0, inputs: [local, upstream]}
+- {id: get-yaml, cmd: "{k} -n {ns} get deploy web -o yaml", expect: 0, inputs: [local, upstream]}
+- {id: get-jsonpath, cmd: "{k} -n {ns} get pods -o jsonpath={.items[*].status.podIP}", expect: 0, inputs: [local, upstream]}
+- {id: get-columns, cmd: "{k} -n {ns} get pods -o custom-columns=NAME:.metadata.name,IP:.status.podIP", expect: 0, inputs: [local, upstream]}
+- {id: get-watch, cmd: "{k} -n {ns} get pods --watch --request-timeout=5s", expect: 0, inputs: [local, upstream]}
+- {id: describe, cmd: "{k} -n {ns} describe deployment web", expect: 0, inputs: [local, upstream]}
+- {id: create-cm, cmd: "{k} -n {ns} create configmap lab-cm --from-literal=a=1 --from-literal=b=two", expect: 0, inputs: [local, upstream]}
+- {id: create-generic, cmd: "{k} -n {ns} create secret generic lab-generic --from-literal=k=synthetic-lab-value", expect: 0, inputs: [local, upstream]}
+- {id: create-sa, cmd: "{k} -n {ns} create serviceaccount lab-sa", expect: 0, inputs: [local, upstream]}
+- {id: create-role, cmd: "{k} -n {ns} create role lab-role --verb=get,list --resource=pods", expect: 0, inputs: [local, upstream]}
+- {id: create-binding, cmd: "{k} -n {ns} create rolebinding lab-rb --role=lab-role --serviceaccount={ns}:lab-sa", expect: 0, inputs: [local, upstream]}
+- {id: apply-client, file: cm2.yaml, cmd: "{k} -n {ns} apply -f {d}/cm2.yaml", expect: 0, inputs: [local, upstream]}
+- {id: apply-server, file: cm2.yaml, cmd: "{k} -n {ns} apply --server-side -f {d}/cm2.yaml --force-conflicts", expect: 0, inputs: [local, upstream]}
+- {id: diff, file: cm3.yaml, cmd: "{k} -n {ns} diff -f {d}/cm3.yaml", expect: 1, inputs: [local, upstream]}
+- {id: patch-strategic, cmd: "{k} -n {ns} patch deployment web -p '{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"p\":\"s\"}}}}}'", expect: 0, inputs: [local, upstream]}
+- {id: patch-merge, cmd: "{k} -n {ns} patch configmap lab-cm --type=merge -p '{\"data\":{\"c\":\"3\"}}'", expect: 0, inputs: [local, upstream]}
+- {id: patch-json, cmd: "{k} -n {ns} patch configmap lab-cm --type=json -p '[{\"op\":\"remove\",\"path\":\"/data/a\"}]'", expect: 0, inputs: [local, upstream]}
+- {id: label, cmd: "{k} -n {ns} label configmap lab-cm tier=lab", expect: 0, inputs: [local, upstream]}
+- {id: annotate, cmd: "{k} -n {ns} annotate configmap lab-cm note=lab", expect: 0, inputs: [local, upstream]}
+- {id: scale, cmd: "{k} -n {ns} scale deployment web --replicas=2", expect: 0, inputs: [local, upstream]}
+- {id: rollout-status, cmd: "{k} -n {ns} rollout status deployment/web --timeout=180s", expect: 0, inputs: [local, upstream]}
+- {id: set-env, cmd: "{k} -n {ns} set env deployment/web LAB=1", expect: 0, inputs: [local, upstream]}
+- {id: rollout-history, cmd: "{k} -n {ns} rollout history deployment/web", expect: 0, inputs: [local, upstream]}
+- {id: rollout-undo, cmd: "{k} -n {ns} rollout undo deployment/web", expect: 0, inputs: [local, upstream]}
+- {id: run, cmd: "{k} -n {ns} run lab-run --image={img} --restart=Never -- sh -c 'echo lab; sleep 3600'", expect: 0, inputs: [local, upstream]}
+- {id: wait, cmd: "{k} -n {ns} wait --for=condition=Ready pod/lab-run --timeout=180s", expect: 0, inputs: [local, upstream]}
+- {id: logs, cmd: "{k} -n {ns} logs lab-run", expect: 0, inputs: [local, upstream]}
+- {id: exec, cmd: "{k} -n {ns} exec lab-run -- sh -c 'echo inside; ls /etc | head -3'", expect: 0, inputs: [local, upstream]}
+- {id: cp-to, file: cm2.yaml, cmd: "{k} -n {ns} cp {d}/cm2.yaml lab-run:/tmp/cm2.yaml", expect: 0, inputs: [local, upstream]}
+- {id: cp-from, cmd: "{k} -n {ns} cp lab-run:/tmp/cm2.yaml {d}/back.yaml", expect: 0, inputs: [local, upstream]}
+- {id: port-forward, cmd: "{k} -n {ns} port-forward deployment/web 18080:8080", background: {probe: "http://127.0.0.1:18080/hostname", seconds: 6, expect_probe: 200}, expect: 0, inputs: [local, inbound, upstream]}
+- {id: proxy, cmd: "{k} proxy --port=18001", background: {probe: "http://127.0.0.1:18001/api/v1/namespaces/{ns}/services/web:80/proxy/hostname", seconds: 6, expect_probe: 200}, expect: -2, flush: false, inputs: [local, inbound, upstream]}  # no shutdown path: SIGINT ends it without writing counters, so its execution is not measured
+- {id: events, cmd: "{k} -n {ns} events", expect: 0, inputs: [local, upstream]}
+- {id: auth-can-i, cmd: "{k} auth can-i create pods -n {ns}", expect: 0, inputs: [local, upstream]}
+- {id: auth-whoami, cmd: "{k} auth whoami", expect: 0, inputs: [local, upstream]}
+- {id: csr-create, file: csr.yaml, cmd: "{k} apply -f {d}/csr.yaml", expect: 0, inputs: [local, upstream]}
+- {id: csr-approve, cmd: "{k} certificate approve lab-csr", expect: 0, inputs: [local, upstream]}
+- {id: kustomize, file: kustomization.yaml, cmd: "{k} kustomize {d}", expect: 0, inputs: [local]}
+- {id: config-view, cmd: "{k} config view --minify", expect: 0, inputs: [local]}
+- {id: config-contexts, cmd: "{k} config get-contexts", expect: 0, inputs: [local]}
+- {id: completion, cmd: "{k} completion bash", expect: 0, inputs: [local]}
+- {id: plugin-list, cmd: "{k} plugin list", expect: 1, inputs: [local]}
+- {id: delete, cmd: "{k} -n {ns} delete configmap/lab-cm pod/lab-run --wait=false", expect: 0, inputs: [local, upstream]}
+files:
+  cm2.yaml: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata: {name: lab-cm2}
+    data: {x: "1"}
+  cm3.yaml: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata: {name: lab-cm2}
+    data: {x: "2"}
+  kustomization.yaml: |
+    resources: [cm2.yaml]
+    namePrefix: kz-
+    commonLabels: {lab: kustomize}
+  csr.yaml: |
+    apiVersion: certificates.k8s.io/v1
+    kind: CertificateSigningRequest
+    metadata: {name: lab-csr}
+    spec:
+      request: "{csr_b64}"
+      signerName: kubernetes.io/kube-apiserver-client
+      usages: [client auth]

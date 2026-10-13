@@ -6,7 +6,7 @@ Layers per the measurement contract:
   L3  govulncheck source mode: deepest level reached (module / package / symbol)
   L4  coverage of the vulnerable symbols' function bodies in the running target (positive evidence only)
 
-usage: symcov.py --target NAME --govulncheck G.json --trivy T.json --trivy-target BIN --cov COV.txt
+usage: symcov.py --target NAME --govulncheck G.json --trivy T.json --trivy-target BIN --cov COV.txt --goos GOOS
                  --src VENDOR_ROOT --osv GO-2023-2102,... [--linked PKG,...] > rows.tsv
 """
 import argparse
@@ -92,6 +92,9 @@ def main():
         ap.add_argument(a, required=True)
     ap.add_argument("--linked", default="", help="comma list of instrumented packages (to tell 'not linked' apart)")
     ap.add_argument("--goroot", help="GOROOT/src of the build's Go version: measure stdlib entries too (skipped without)")
+    ap.add_argument("--goos", required=True,
+                    help="the build's GOOS (required): an OSV import restricted to other GOOS values gives no row (its "
+                         "code is not compiled for this build; a same-named function of another file is not it)")
     A = ap.parse_args()
     osv, level = govulncheck(A.govulncheck)
     tids = trivy_ids(A.trivy, A.trivy_target)
@@ -112,6 +115,8 @@ def main():
                 continue  # stdlib judged by the scanner's own Go version in source mode; handled separately
             root = A.goroot if aff["package"]["name"] == "stdlib" else A.src
             for imp in aff.get("ecosystem_specific", {}).get("imports", []):
+                if imp.get("goos") and A.goos not in imp["goos"]:
+                    continue
                 pkg, syms = imp["path"], imp.get("symbols", [])
                 ranges = func_ranges(os.path.join(root, pkg))
                 total = hit = found = 0

@@ -533,3 +533,49 @@ def test_inflated_counter_invalidates_the_gate(tmp_path):
         (gd / "GO-1.json").write_text(json.dumps(g))
     c = exercised(tmp_path, tamper=inflate)
     assert c["substate"] == "gate_invalid" and "inconsistent counters" in c["status_note"]
+
+
+def test_symcov_skips_imports_of_another_goos(tmp_path):
+    """a windows-only OSV import must not produce a coverage row on a linux build (same-named linux function)"""
+    gv = tmp_path / "gv.json"
+    gv.write_text(json.dumps({"osv": {"id": "GO-1", "aliases": [], "affected": [{"package": {"name": "m"},
+        "ecosystem_specific": {"imports": [{"path": "m/p", "symbols": ["F"], "goos": ["windows"]}]}}]}})
+        + json.dumps({"finding": {"osv": "GO-1", "trace": [{"module": "m", "package": "m/p", "function": "F"}]}}))
+    tv = tmp_path / "trivy.json"
+    tv.write_text(json.dumps({"Results": []}))
+    src = tmp_path / "src" / "m" / "p"
+    src.mkdir(parents=True)
+    (src / "p.go").write_text("package p\n\nfunc F() {\n\tprintln()\n}\n")
+    cov = tmp_path / "cov.txt"
+    cov.write_text("mode: set\nm/p/p.go:3.10,5.2 1 1\n")
+    def rows(goos):
+        args = [sys.executable, f"{ROOT}/lab/symcov.py", "--target", "t", "--govulncheck", str(gv), "--trivy", str(tv),
+                "--trivy-target", "t", "--cov", str(cov), "--src", str(tmp_path / "src"), "--osv", "GO-1"]
+        p = subprocess.run(args + (["--goos", goos] if goos else []), capture_output=True, text=True)
+        if p.returncode:
+            return None
+        return [ln for ln in p.stdout.splitlines()[1:] if ln]
+    assert rows(None) is None  # --goos is required: no silent fallback to the old, GOOS-blind mapping
+    assert rows("linux") == []
+    assert len(rows("windows")) == 1 and "executed" in rows("windows")[0]
+
+
+def test_symcov_goos_filter_is_per_import(tmp_path):
+    """an excluded windows import must not suppress another, applicable import of the same advisory"""
+    gv = tmp_path / "gv.json"
+    gv.write_text(json.dumps({"osv": {"id": "GO-1", "aliases": [], "affected": [{"package": {"name": "m"},
+        "ecosystem_specific": {"imports": [{"path": "m/p", "symbols": ["F"], "goos": ["windows"]},
+                                           {"path": "m/q", "symbols": ["G"]}]}}]}})
+        + json.dumps({"finding": {"osv": "GO-1", "trace": [{"module": "m", "package": "m/q", "function": "G"}]}}))
+    (tmp_path / "trivy.json").write_text(json.dumps({"Results": []}))
+    for pkg, fn in (("p", "F"), ("q", "G")):
+        d = tmp_path / "src" / "m" / pkg
+        d.mkdir(parents=True)
+        (d / f"{pkg}.go").write_text(f"package {pkg}\n\nfunc {fn}() {{\n\tprintln()\n}}\n")
+    (tmp_path / "cov.txt").write_text("mode: set\nm/p/p.go:3.10,5.2 1 1\nm/q/q.go:3.10,5.2 1 1\n")
+    out = subprocess.run([sys.executable, f"{ROOT}/lab/symcov.py", "--target", "t", "--govulncheck", str(gv),
+                          "--trivy", str(tmp_path / "trivy.json"), "--trivy-target", "t", "--cov", str(tmp_path / "cov.txt"),
+                          "--src", str(tmp_path / "src"), "--goos", "linux", "--osv", "GO-1"],
+                         capture_output=True, text=True, check=True).stdout
+    rows = [ln.split("\t") for ln in out.splitlines()[1:] if ln]
+    assert [r[5] for r in rows] == ["m/q"] and rows[0][10] == "executed"

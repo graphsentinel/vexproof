@@ -93,7 +93,8 @@ def main():
     log.write(f"symbol-level OSV: {json.dumps(targets)}\n")
 
     # 2. coverage build (main package must be listed, or no counters are written)
-    coverpkg = ",".join([cfg["main_pkg"]] + pkgs)
+    # coverpkg_extra (optional): further packages to instrument, e.g. the stdlib packages of a target's automatic chains
+    coverpkg = ",".join([cfg["main_pkg"]] + pkgs + [p for p in cfg.get("coverpkg_extra", []) if p not in pkgs])
     # -buildvcs=false: like the measured build (no VCS stamp); git in the container cannot read a host-owned checkout
     sh(f"{go} go build -trimpath -buildvcs=false -cover -coverpkg={coverpkg} -o /out/{cfg['binary']} {cfg['main_dir']}", log)
 
@@ -132,8 +133,10 @@ def main():
     sh(f"{kc} -n {ns} rollout status deployment/{dep} --timeout=180s", log)
 
     # 6. exercise
+    ran = []
     for cmd in cfg["exercise"]:
-        sh(cmd.replace("KC", kc), log, check=False)
+        ran.append({"cmd": cmd, "rc": sh(cmd.replace("KC", kc), log, check=False)})
+    json.dump(ran, open(os.path.join(out, "exercise.json"), "w"), indent=1)  # exit codes, for callers that check them
 
     # 7. collect: graceful stop flushes the counters
     sh(f"{kc} -n {ns} scale deployment/{dep} --replicas=0", log)
@@ -150,7 +153,8 @@ def main():
     with open(rows, "w") as fh:
         for oid in targets:
             r = sh(f"python3 {LAB}/symcov.py --target {cfg['binary']} --govulncheck {gv} --trivy {out}/trivy.json "
-                   f"--trivy-target {cfg['binary']} --cov {out}/cov.txt --src {src}/vendor --osv {oid}", log, capture=True)
+                   f"--trivy-target {cfg['binary']} --cov {out}/cov.txt --src {src}/vendor --goos linux --osv {oid}", log,
+                   capture=True)  # the CI build is linux/amd64
             lines = r.strip().split("\n")
             for i, line in enumerate(lines):
                 if i == 0 and not first:

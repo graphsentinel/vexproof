@@ -1,0 +1,114 @@
+# Workload profile for kube-apiserver (exercise layer P3, plan §10). Versioned: the counted runs record its sha256.
+# Lab only: the driver (lab/p3/cov.py apiserver) starts the coverage rebuild of the official source in the trigger
+# runner's lab pod (own CA, certificate pinned, 127.0.0.1 only, etcd sidecar, an HTML backend sidecar), drives it with
+# the official kubectl of the same release and with direct requests, then stops it with SIGTERM so it flushes its
+# coverage counters. There are no nodes and no controllers: node-dependent kubectl commands are not applicable here
+# (logs, exec, cp, port-forward, attach, rollout status). Paths that go through a kubelet are not counted as API server
+# exposure.
+# Input classes: inbound = requests the API server receives (all commands and requests below); upstream = responses
+# it receives from backends it calls (the service proxy to the HTML backend). Only well-formed requests and responses
+# are exercised; malformed inbound requests beyond the listed ones and adversarial backend responses are NOT exercised.
+name: kube-apiserver
+version: 1
+unexercised:
+- malformed or adversarial requests other than those listed; adversarial backend (proxy, webhook, aggregated API) responses
+- node-dependent paths (logs, exec, cp, port-forward, attach) and controllers (no nodes, no controller-manager)
+not_applicable: [logs, exec, cp-to, cp-from, port-forward, rollout-status, wait]
+etcd:
+  v1.28.2: registry.k8s.io/etcd:3.5.9-0@sha256:e013d0d5e4e25d00c61a7ff839927a1f36479678f11e49502b53a5e0b14f10c3
+  v1.36.5: registry.k8s.io/etcd:3.6.8-0@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5
+backend: docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+# backend fixture (as c12): there is no kubelet, so the backend pod's status is set by hand to the backend sidecar's IP
+backend_fixture:
+- {id: default-sa, cmd: "{k} -n default create serviceaccount default", expect: 0}
+- {id: backend-objects, cmd: "{k} apply -f {d}/backend.yaml", expect: 0}
+- {id: backend-pod-status, cmd: "{k} -n default patch pod htmlpod --subresource=status --type=merge -p '{\"status\":{\"phase\":\"Running\",\"podIP\":\"{backend_ip}\",\"podIPs\":[{\"ip\":\"{backend_ip}\"}]}}'", expect: 0}
+- {id: backend-endpoints, cmd: "{k} apply -f {d}/endpoints.yaml", expect: 0}
+# kubectl commands: the official kubectl of the same release, kubeconfig with the run's CA, server name and token
+kubectl:
+- {id: api-resources, cmd: "{k} api-resources -o wide", expect: 0}
+- {id: api-versions, cmd: "{k} api-versions", expect: 0}
+- {id: explain, cmd: "{k} explain pod.spec.containers --recursive", expect: 0}
+- {id: create-ns, cmd: "{k} create namespace vxp3", expect: 0}
+- {id: create-deploy, cmd: "{k} -n vxp3 create deployment web --image={img}", expect: 0}
+- {id: create-cm, cmd: "{k} -n vxp3 create configmap lab-cm --from-literal=a=1", expect: 0}
+- {id: create-generic, cmd: "{k} -n vxp3 create secret generic lab-generic --from-literal=k=synthetic-lab-value", expect: 0}
+- {id: create-sa, cmd: "{k} -n vxp3 create serviceaccount lab-sa", expect: 0}
+- {id: create-default-sa, cmd: "{k} -n vxp3 create serviceaccount default", expect: 0}  # no controller-manager here
+- {id: create-role, cmd: "{k} -n vxp3 create role lab-role --verb=get,list --resource=pods", expect: 0}
+- {id: create-binding, cmd: "{k} -n vxp3 create rolebinding lab-rb --role=lab-role --serviceaccount=vxp3:lab-sa", expect: 0}
+- {id: get-json, cmd: "{k} -n vxp3 get deploy,cm,sa -o json", expect: 0}
+- {id: get-watch, cmd: "{k} -n vxp3 get cm --watch --request-timeout=3s", expect: 0}
+- {id: describe, cmd: "{k} -n vxp3 describe deployment web", expect: 0}
+- {id: apply-client, file: cm2.yaml, cmd: "{k} -n vxp3 apply -f {d}/cm2.yaml", expect: 0}
+- {id: apply-server, file: cm2.yaml, cmd: "{k} -n vxp3 apply --server-side --force-conflicts -f {d}/cm2.yaml", expect: 0}
+- {id: diff, file: cm3.yaml, cmd: "{k} -n vxp3 diff -f {d}/cm3.yaml", expect: 1}
+- {id: patch-strategic, cmd: "{k} -n vxp3 patch deployment web -p '{\"spec\":{\"replicas\":2}}'", expect: 0}
+- {id: patch-merge, cmd: "{k} -n vxp3 patch configmap lab-cm --type=merge -p '{\"data\":{\"c\":\"3\"}}'", expect: 0}
+- {id: patch-json, cmd: "{k} -n vxp3 patch configmap lab-cm --type=json -p '[{\"op\":\"remove\",\"path\":\"/data/a\"}]'", expect: 0}
+- {id: label, cmd: "{k} -n vxp3 label configmap lab-cm tier=lab", expect: 0}
+- {id: scale, cmd: "{k} -n vxp3 scale deployment web --replicas=3", expect: 0}
+- {id: run, cmd: "{k} -n vxp3 run lab-run --image={img} --restart=Never", expect: 0}
+- {id: auth-can-i, cmd: "{k} auth can-i create pods -n vxp3", expect: 0}
+- {id: auth-whoami, cmd: "{k} auth whoami", expect: 0}
+- {id: csr-create, file: csr.yaml, cmd: "{k} apply -f {d}/csr.yaml", expect: 0}
+- {id: csr-approve, cmd: "{k} certificate approve lab-csr", expect: 0}
+- {id: events, cmd: "{k} -n vxp3 events", expect: 0}
+- {id: delete, cmd: "{k} -n vxp3 delete configmap/lab-cm pod/lab-run --wait=false", expect: 0}
+# direct inbound requests with the run's token (status = the frozen expected HTTP status)
+requests:
+- {id: version, method: GET, path: /version, status: 200}
+- {id: healthz, method: GET, path: "/healthz?verbose", status: 200}
+- {id: livez, method: GET, path: "/livez?verbose", status: 200}
+- {id: metrics, method: GET, path: /metrics, status: 200}
+- {id: openapi-v2, method: GET, path: /openapi/v2, headers: {Accept: application/json}, status: 200}
+- {id: openapi-v2-range-1, method: GET, path: /openapi/v2, headers: {Accept: application/json, Range: "bytes=0-99"}, status: 206}
+- {id: openapi-v2-range-100, method: GET, path: /openapi/v2, headers: {Accept: application/json}, range_count: 100, status: [200, 206]}
+- {id: openapi-v3, method: GET, path: /openapi/v3, status: 200}
+- {id: openapi-v3-apps, method: GET, path: /openapi/v3/apis/apps/v1, status: 200}
+- {id: discovery-aggregated, method: GET, path: /apis, headers: {Accept: "application/json;g=apidiscovery.k8s.io;v=v2;as=APIGroupDiscoveryList,application/json"}, status: 200}
+- {id: query-params-1000, method: GET, path: /api/v1/namespaces, query_count: 1000, status: 200}
+- {id: watch, method: GET, path: "/api/v1/namespaces?watch=1&timeoutSeconds=2", status: 200}
+- {id: anonymous, method: GET, path: /api/v1/namespaces, auth: none, status: 403}
+- {id: service-proxy, method: GET, path: /api/v1/namespaces/default/services/htmlsvc:http/proxy/hostname, status: 200, needs: backend}
+files:
+  cm2.yaml: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata: {name: lab-cm2}
+    data: {x: "1"}
+  cm3.yaml: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata: {name: lab-cm2}
+    data: {x: "2"}
+  csr.yaml: |
+    apiVersion: certificates.k8s.io/v1
+    kind: CertificateSigningRequest
+    metadata: {name: lab-csr}
+    spec:
+      request: "{csr_b64}"
+      signerName: kubernetes.io/kube-apiserver-client
+      usages: [client auth]
+  backend.yaml: |
+    apiVersion: v1
+    kind: Pod
+    metadata: {name: htmlpod, namespace: default}
+    spec: {containers: [{name: c, image: "{img}"}]}
+    ---
+    apiVersion: v1
+    kind: Service
+    metadata: {name: htmlsvc, namespace: default}
+    spec: {ports: [{name: http, port: 80, targetPort: 8080, protocol: TCP}]}
+  endpoints.yaml: |
+    apiVersion: v1
+    kind: Endpoints
+    metadata: {name: htmlsvc, namespace: default}
+    subsets: [{addresses: [{ip: "{backend_ip}", targetRef: {kind: Pod, name: htmlpod, namespace: default}}], ports: [{name: http, port: 8080, protocol: TCP}]}]
+    ---
+    apiVersion: discovery.k8s.io/v1
+    kind: EndpointSlice
+    metadata: {name: htmlsvc-1, namespace: default, labels: {kubernetes.io/service-name: htmlsvc}}
+    addressType: IPv4
+    endpoints: [{addresses: ["{backend_ip}"], conditions: {ready: true}, targetRef: {kind: Pod, name: htmlpod, namespace: default}}]
+    ports: [{name: http, port: 8080, protocol: TCP}]
