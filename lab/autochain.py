@@ -46,6 +46,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from chain import count, govulncheck_paths, inventory_names, row_state, stream, strip_generics  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "trigger"))
+from gate import check as gate_check, sha256 as gate_sha  # noqa: E402
 
 
 def norm(fn):
@@ -71,7 +73,8 @@ def binary_levels(path):
 # under_investigation sub-states (private plan "exercise layer" §5): orthogonal dimensions, one headline label.
 # Values within one dimension are mutually exclusive. Phase 0 derives them from the existing layers; the exercise layer
 # (entry attribution, differential triggers) fills instrumentation, execution attribution and trigger later.
-HEADLINE_ORDER = ("contradictory_rows", "layers_disagree", "instrumentation_failed", "not_measured", "inconclusive",
+HEADLINE_ORDER = ("contradictory_rows", "layers_disagree", "instrumentation_failed", "gate_invalid", "not_measured",
+                  "inconclusive", "unevaluated",
                   "trigger_not_validated", "arm_unavailable", "mitigated_by_configuration",
                   "shipped_not_triggered_cause_unknown", "candidate_awaiting_review", "rejected",
                   "observed_upstream_input_only", "attribution_incomplete", "observed_no_input_path_demonstrated",
@@ -94,7 +97,7 @@ def headline(d):
         "observed_no_input_path_demonstrated": d["execution"] == "observed" and d["input_path"] == "no_input_path_demonstrated",
         "observed_input_path_not_analysed": d["execution"] == "observed" and d["input_path"] == "not_run",
         "not_observed": d["execution"].startswith("not_observed"),
-        **{k: d["trigger"] == k for k in ("inconclusive", "trigger_not_validated", "arm_unavailable",
+        **{k: d["trigger"] == k for k in ("inconclusive", "unevaluated", "gate_invalid", "trigger_not_validated", "arm_unavailable",
                                           "mitigated_by_configuration", "shipped_not_triggered_cause_unknown",
                                           "trigger_class_unsupported")},
         **{k: k in d["data"] for k in ("osv_without_symbols", "symbols_too_coarse", "symbols_missing_possibly_inlined",
@@ -117,6 +120,10 @@ def main():
     ap.add_argument("--coarse", type=int, default=10, help="more reached symbols than this: CodeQL sinks too coarse")
     ap.add_argument("--reviews", help="dir of <OSV>.json review files (verdict confirmed / plausible / rejected)")
     ap.add_argument("--profile", default="lab-workload", help="name of the workload profile behind --cov")
+    ap.add_argument("--exercise-root", default=".", help="directory the gate files' run and spec paths are relative to")
+    ap.add_argument("--exercise", help="dir of <OSV>.json exercise-layer gate files (lab/trigger/gate.py); with it, an "
+                                       "affected candidate needs a passed gate for this binary and a confirmed review "
+                                       "citing it, else it stays under_investigation (unevaluated / inconclusive)")
     A = ap.parse_args()
     rep = json.load(open(A.report))
     if not (isinstance(rep, dict) and isinstance(rep.get("rows"), list) and rep.get("target") and rep.get("govulncheck_file")):
@@ -311,11 +318,34 @@ def main():
                 runtime["review"] = review
                 base = (f"executed under the lab workload ({runtime['blocks']} blocks in {', '.join(runtime['executed_packages'])}) "
                         f"and a CodeQL path from received input reaches a sink of a reached symbol")
-                if review and review["verdict"] == "confirmed":
+                gate_ok, gate_why = None, None
+                rejected = bool(review) and review["verdict"] == "rejected"
+                gf = os.path.join(A.exercise, f"{r['osv']}.json") if A.exercise else None
+                if A.exercise:  # exercise-layer policy: no affected without a passed gate for this binary and OSV
+                    if not os.path.exists(gf):
+                        if not rejected:  # a human rejection stays the headline of an unexercised candidate
+                            dims["trigger"] = "unevaluated"
+                        gate_why = "not exercised (no gate file)"
+                    else:
+                        gate_ok, gate_why = gate_check(gf, A.binary, r["osv"], A.exercise_root)
+                        runtime["exercise_gate"] = {"file": gf, "result": gate_why}
+                        if not gate_ok:
+                            dims["trigger"] = "inconclusive" if gate_why.startswith("gate failed") else "gate_invalid"
+                # the review must name the validated gate unambiguously: its sha256
+                cites = bool(review) and bool(gate_ok) and review.get("exercise_gate_sha256") == gate_sha(gf)
+                if A.exercise and not gate_ok and not rejected:
+                    status, just = "under_investigation", None
+                    note = f"affected candidate: {base}; {gate_why}" + (f"; review: {review['verdict']}" if review else "")
+                elif A.exercise and review and review["verdict"] == "confirmed" and not cites:
+                    status, just = "under_investigation", None
+                    dims["review"] = "candidate_awaiting_review"
+                    note = f"affected candidate: {base}; {gate_why}; the confirmed review does not cite the gate file"
+                elif review and review["verdict"] == "confirmed":
                     status, just = "affected", None
-                    note = f"{base}; review confirmed: {review['reason']}"
+                    note = f"{base}; " + (f"{gate_why}; " if gate_why else "") + f"review confirmed: {review['reason']}"
                 elif review and review["verdict"] == "rejected":
                     status, just = "under_investigation", None
+                    base += f"; {gate_why}" if gate_why else ""
                     dims["review"] = "rejected"
                     runtime["affected_candidate"] = False
                     note = f"{base}; candidate rejected in review: {review['reason']}"

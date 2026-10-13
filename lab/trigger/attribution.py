@@ -183,12 +183,17 @@ def match(hits, expected):
     return counts, unmatched
 
 
-def evaluate(hits, lost, failed, calib, trigger, others=None, per_request=1):
+def evaluate(hits, lost, failed, calib, trigger, others=None, per_request=None):
     """calib, trigger, others (the other marked requests of the window, e.g. benign baselines): marker -> argument
     bytes. Returns the E2a result of one window (plan §3 E2a, §4 row 1)."""
     others = others or {}
     expected = {**calib, **trigger, **others}
     counts, unmatched = match(hits, expected)
+    # hits per request on this path: given by the spec, or learned from the calibration requests (all must agree)
+    seen = {counts[k] for k in calib}
+    learned = next(iter(seen)) if len(seen) == 1 and min(seen) >= 1 else None
+    if per_request is None:
+        per_request = learned
     lens = [len(v) for v in calib.values()]
     checks = {
         "calibration_inputs": len(calib) >= 3 and len(set(lens)) == len(lens) and max(lens) > 64,
@@ -196,7 +201,7 @@ def evaluate(hits, lost, failed, calib, trigger, others=None, per_request=1):
         "markers_unique": len({v[:64] for v in expected.values()}) == len(expected),
         "no_lost_events": lost == 0,
         "no_failed_reads": failed == 0,
-        "calibration_counts": all(counts[k] == per_request for k in calib),
+        "calibration_counts": per_request is not None and all(counts[k] == per_request for k in calib),
         "other_request_counts": all(counts[k] == per_request for k in others),
         "trigger_counts": bool(trigger) and all(counts[k] == per_request for k in trigger),
     }
@@ -205,7 +210,8 @@ def evaluate(hits, lost, failed, calib, trigger, others=None, per_request=1):
                                               "calibration_counts", "other_request_counts"))
     state = ("attributed_client" if instrumentation and checks["trigger_counts"]
              else "instrumentation_failed" if not instrumentation else "attribution_incomplete")
-    return {"state": state, "checks": checks, "per_marker": {str(k): v for k, v in counts.items()},
+    return {"state": state, "checks": checks, "hits_per_request": per_request,
+            "per_marker": {str(k): v for k, v in counts.items()},
             "unmatched_hits": len(unmatched),
             "unmatched_lengths": sorted({h["length"] for h in unmatched}),
             "example_stack": next((h["stack"][:30] for h in hits if h["length"] in {len(v) for v in trigger.values()}), None)}

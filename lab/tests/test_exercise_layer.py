@@ -171,3 +171,51 @@ def test_fixed_arm_cap_is_relative_to_the_shipped_whole_document():
 
 def test_whole_document_request_has_no_range():
     assert "Range" not in R.payload(REQ, {"n": 0}, None)[1]
+
+
+def test_hits_per_request_is_learned_from_calibration():
+    c, t, o = window()
+    hits = [hit(v) for v in [*c.values(), *t.values(), *o.values()] for _ in range(6)]
+    r = A.evaluate(hits, 0, 0, c, t, o)
+    assert r["state"] == "attributed_client" and r["hits_per_request"] == 6
+
+
+def test_calibration_disagreeing_on_hits_per_request_fails():
+    c, t, o = window()
+    k = next(iter(c))
+    hits = [hit(v) for v in [*c.values(), *t.values(), *o.values()] for _ in range(6)] + [hit(c[k])]
+    assert A.evaluate(hits, 0, 0, c, t, o)["state"] == "instrumentation_failed"
+
+
+def test_query_argument_bytes():
+    req = {"path": "/api/v1/namespaces", "payload": {"generator": "query-params", "count": "{{n}}"}}
+    pth, hdr = R.payload(req, {"n": 3}, 12345)
+    assert R.argument_bytes({"argument": {"query": True}}, pth, hdr) == b"m12345=1&p1=1&p2=1"
+
+
+def test_csr_pem_input_and_size_matched_control():
+    import base64
+    import json as js
+    trig, ctl = R.csr_pem(3, 12345), R.csr_pem(-3, 12345)
+    assert trig.count(b"-----BEGIN A-----") == 3 and trig.endswith(b"-----END A-----\n") and trig.startswith(b"m12345\n")
+    assert len(ctl) == len(trig) and b"BEGIN" not in ctl
+    req = {"payload": {"generator": "csr-pem", "count": "{{n}}"}}
+    body = js.loads(R.payload_body(req, {"n": 3}, 12345))
+    assert base64.b64decode(body["spec"]["request"]) == trig
+    assert R.argument_bytes({"argument": {"csrPem": True}}, "/x", {}, {"n": 3}, 12345) == trig
+
+
+def test_fixed_arm_must_be_suppressed_relative_to_the_vulnerable_arm():
+    rule = [{"arms": ["fixed-rebuild"], "when": "n > 50000",
+             "expect": {"belowArm": {"arm": "vulnerable-rebuild", "when": "n > 50000", "factor": 5}}}]
+    vul = [{"arm": "vulnerable-rebuild", "n": 90000, "status": 200, "server_cpu_s": x} for x in (0.2, 0.3, 0.25, 0.4, 0.22)]
+    fx = [{"arm": "fixed-rebuild", "n": 90000, "status": 200, "server_cpu_s": x} for x in (0.01, 0.02, 0.015, 0.01, 0.03)]
+    assert R.evaluate(rule, vul + fx, "n")[0]["ok"]
+    fx[0]["server_cpu_s"] = 0.05  # 5 x 0.05 = 0.25 >= 0.2
+    assert not R.evaluate(rule, vul + fx, "n")[0]["ok"]
+
+
+def test_conditions_accept_negative_values():
+    assert R.when_ok("n == -20000", {"n": -20000}) and not R.when_ok("n > 1", {"n": -20000}) and R.when_ok("n < 2", {"n": -20000})
+    with pytest.raises(SystemExit):
+        R.when_ok("n ~ 3", {"n": 3})

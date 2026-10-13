@@ -368,13 +368,168 @@ def test_every_reachable_dimension_combination_has_a_headline():
             ("none", "candidate_awaiting_review", "rejected")):
         if (meas == "not_measured") != (exe == "n/a"):
             continue  # execution is set exactly when coverage rows exist
-        if exe == "observed" and inp == "client" and rev == "none":
-            continue  # executed + request path + specific symbols is a candidate: review is never "none"
         if inp == "not_decidable":
             data = [["symbols_too_coarse"]] if exe == "observed" else [[]]
         else:
             data = [[]]
         for dt in data + [["osv_without_symbols"]]:
-            d = {"consistency": cons, "instrumentation": "not_run", "measurement": meas, "execution": exe,
-                 "input_path": inp, "trigger": "none", "review": rev, "data": dt}
-            assert m.headline(d) != "unclassified", d
+            for trg in ("none", "unevaluated", "inconclusive", "gate_invalid"):
+                if trg != "none" and not (exe == "observed" and inp == "client"):
+                    continue  # gate states only exist for affected candidates
+                if exe == "observed" and inp == "client" and rev == "none" and trg == "none":
+                    continue  # a candidate always has a review state or (with --exercise) a gate state
+                d = {"consistency": cons, "instrumentation": "not_run", "measurement": meas, "execution": exe,
+                     "input_path": inp, "trigger": trg, "review": rev, "data": dt}
+                assert m.headline(d) != "unclassified", d
+
+
+# --- exercise-layer gate policy (--exercise) ---
+def make_gate(tmp_path, binary_bytes, rows=("affected_evidence",), osv="GO-1"):
+    """real evidence files + a gate built by lab/trigger/gate.py"""
+    import hashlib
+    sys.path.insert(0, f"{ROOT}/lab/trigger")
+    import gate as G
+    spec = tmp_path / "spec.yaml"
+    spec.write_text(json.dumps({"spec": {"vulnerability": {"osv": osv}, "target": {
+        "binary": {"sha256": hashlib.sha256(binary_bytes).hexdigest()},
+        "source": {"ref": "v1", "mainPackage": "./cmd/t"}}}}))
+    runs = []
+    for i, x in enumerate(rows):
+        d = tmp_path / f"run{i}"
+        d.mkdir()
+        (d / "status.json").write_text(json.dumps({"status": {
+            "row1": {"result": x}, "e2a": {"checks": {"trigger_counts": x == "affected_evidence"}},
+            "oracle": [], "resolved": {"shipped_sha256": hashlib.sha256(binary_bytes).hexdigest()}}}))
+        for f in ("results.tsv", "resolved.json", "e2a-perf.data"):
+            (d / f).write_text(f"{f}{i}")
+        runs.append(str(d))
+    g = G.build(str(spec), {}, len(rows), runs, str(tmp_path))
+    gd = tmp_path / "gates"
+    gd.mkdir()
+    (gd / f"{osv}.json").write_text(json.dumps(g))
+    return gd, G
+
+
+def exercised(tmp_path, verdict="confirmed", cite=True, binary_bytes=b"m/p.(*T).F", rows=("affected_evidence",),
+              tamper=None, osv="GO-1"):
+    raw = b"m/p.(*T).F"
+    args = runtime_inputs(tmp_path, executed=True, request_sinks=2, verdict=verdict)
+    gd, G = make_gate(tmp_path, binary_bytes, rows, osv)
+    if tamper:
+        tamper(tmp_path, gd)
+    if verdict and cite:
+        rv = tmp_path / "rv" / "GO-1.json"
+        r = json.loads(rv.read_text())
+        r["exercise_gate_sha256"] = G.sha256(str(gd / f"{osv}.json")) if (gd / f"{osv}.json").exists() else ""
+        rv.write_text(json.dumps(r))
+    return run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], raw, "symbol",
+               extra=args + ["--exercise", str(gd), "--exercise-root", str(tmp_path)])
+
+
+def test_passed_gate_and_citing_review_is_affected(tmp_path):
+    assert exercised(tmp_path)["vex_status"] == "affected"
+
+
+def test_passed_gate_without_citing_review_waits(tmp_path):
+    c = exercised(tmp_path, cite=False)
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "candidate_awaiting_review"
+
+
+def test_failed_gate_is_inconclusive_even_with_review(tmp_path):
+    c = exercised(tmp_path, rows=("affected_evidence", "inconclusive"))
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "inconclusive"
+    assert "e2a: trigger_counts" in c["status_note"]
+
+
+def test_gate_for_another_binary_is_invalid(tmp_path):
+    c = exercised(tmp_path, binary_bytes=b"another binary")
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "gate_invalid"
+
+
+def test_gate_for_another_osv_is_invalid(tmp_path):
+    def rename(tp, gd):
+        (gd / "GO-2.json").rename(gd / "GO-1.json")
+    c = exercised(tmp_path, osv="GO-2", tamper=rename, cite=False)
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "gate_invalid"
+
+
+def test_changed_evidence_invalidates_the_gate(tmp_path):
+    def edit(tp, gd):
+        (tp / "run0" / "results.tsv").write_text("edited")
+    c = exercised(tmp_path, tamper=edit)
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "gate_invalid"
+    assert "evidence changed" in c["status_note"]
+
+
+def test_gate_whose_result_does_not_match_its_runs_is_invalid(tmp_path):
+    def lie(tp, gd):
+        g = json.loads((gd / "GO-1.json").read_text())
+        g["result"] = "passed"
+        (gd / "GO-1.json").write_text(json.dumps(g))
+    c = exercised(tmp_path, rows=("affected_evidence", "inconclusive"), tamper=lie)
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "gate_invalid"
+
+
+def test_malformed_gate_is_invalid(tmp_path):
+    def garble(tp, gd):
+        (gd / "GO-1.json").write_text("{not json")
+    c = exercised(tmp_path, tamper=garble, cite=False)
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "gate_invalid"
+
+
+def test_zero_runs_cannot_pass(tmp_path):
+    with pytest.raises(SystemExit):
+        make_gate(tmp_path, b"x", rows=())
+
+
+def test_rejected_candidate_with_failed_gate_keeps_both_dimensions(tmp_path):
+    c = exercised(tmp_path, verdict="rejected", rows=("affected_evidence", "inconclusive"))
+    assert c["substate_dimensions"]["review"] == "rejected" and c["substate_dimensions"]["trigger"] == "inconclusive"
+
+
+def test_headline_order_of_gate_states():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("autochain", f"{ROOT}/lab/autochain.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    o = m.HEADLINE_ORDER
+    assert o.index("instrumentation_failed") < o.index("gate_invalid") < o.index("not_measured") < o.index("inconclusive") \
+        < o.index("unevaluated") < o.index("candidate_awaiting_review") < o.index("rejected")
+
+
+def test_no_gate_file_is_unevaluated(tmp_path):
+    raw = b"m/p.(*T).F"
+    args = runtime_inputs(tmp_path, executed=True, request_sinks=2, verdict="confirmed")
+    d = tmp_path / "gates"
+    d.mkdir()
+    c = run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], raw, "symbol", extra=args + ["--exercise", str(d)])
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "unevaluated"
+
+
+def test_rejected_candidate_stays_rejected_under_the_gate_policy(tmp_path):
+    raw = b"m/p.(*T).F"
+    args = runtime_inputs(tmp_path, executed=True, request_sinks=2, verdict="rejected")
+    d = tmp_path / "gates"
+    d.mkdir()
+    c = run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], raw, "symbol", extra=args + ["--exercise", str(d)])
+    assert c["vex_status"] == "under_investigation" and c["substate"] == "rejected"
+
+
+def test_incomplete_manifest_invalidates_the_gate(tmp_path):
+    def drop(tp, gd):
+        g = json.loads((gd / "GO-1.json").read_text())
+        g["runs"][0]["files"] = {"status.json": g["runs"][0]["files"]["status.json"]}
+        (gd / "GO-1.json").write_text(json.dumps(g))
+        for f in ("results.tsv", "resolved.json", "e2a-perf.data"):
+            (tp / "run0" / f).unlink()
+    c = exercised(tmp_path, tamper=drop)
+    assert c["substate"] == "gate_invalid" and "incomplete evidence manifest" in c["status_note"]
+
+
+def test_inflated_counter_invalidates_the_gate(tmp_path):
+    def inflate(tp, gd):
+        g = json.loads((gd / "GO-1.json").read_text())
+        g["affected_evidence_runs"] = 99
+        (gd / "GO-1.json").write_text(json.dumps(g))
+    c = exercised(tmp_path, tamper=inflate)
+    assert c["substate"] == "gate_invalid" and "inconsistent counters" in c["status_note"]

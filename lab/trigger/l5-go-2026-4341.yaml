@@ -1,0 +1,146 @@
+# Exercise layer P2: GO-2026-4341 (net/url: no limit on the number of query parameters) on the official
+# kube-apiserver v1.28.2 under the row-1 rule. The request's query string is the attacker-controlled input; in this
+# server it is bounded by the 1 MiB request-header limit, so the trigger is ~90,000 parameters (~800 KB).
+# Arms: shipped, baseline (shipped Go), vulnerable (last vulnerable Go), fixed (first fixed Go with the limit active:
+# GODEBUG=urlmaxqueryparams=10000, the documented default; the old go line of v1.28.2's go.mod turns it off), and an
+# informational fixed arm as built (limit off; not part of the rule). E2a: the marked query string must reach
+# net/url.parseQuery(m Values, query string) as its argument (query.ptr RBX, query.len RCX; m in RAX).
+# CPU: cgroup cpu.stat usage_usec. Lab only (lab/trigger/runner.py starts the target; E2a needs sudo).
+apiVersion: vexproof.graphsentinel.github.io/v1alpha1
+kind: TriggerTest
+metadata:
+  name: kube-apiserver-v1-28-2-go-2026-4341-l5
+  namespace: vexproof
+spec:
+  target:
+    binary:
+      url: https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kube-apiserver
+      sha256: a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c
+    source:
+      repo: https://github.com/kubernetes/kubernetes
+      ref: v1.28.2
+      mainPackage: ./cmd/kube-apiserver
+  vulnerability:
+    osv: GO-2026-4341
+  build:
+    go: auto
+    tags: auto
+    goMod: unchanged
+    extraLdflags: -checklinkname=0
+  arms:
+  - name: shipped
+    from: target
+    attribute: true
+  - name: baseline
+    go: shipped
+    extraLdflags: ""
+  - name: vulnerable-rebuild
+    go: lastVulnerable
+  - name: fixed-rebuild
+    go: firstFixed
+    godebug: urlmaxqueryparams=10000
+  - name: fixed-as-built       # informational: the old go line turns the limit off (no rule names this arm)
+    go: firstFixed
+  recordDefaultGODEBUG: true
+  runtime:
+    sidecars:
+    - name: etcd
+      image: registry.k8s.io/etcd:3.5.9-0@sha256:e013d0d5e4e25d00c61a7ff839927a1f36479678f11e49502b53a5e0b14f10c3
+      args:
+      - etcd
+      - --data-dir=/tmp/etcd
+      - --listen-client-urls=http://127.0.0.1:2379
+      - --advertise-client-urls=http://127.0.0.1:2379
+    args:
+    - --etcd-servers=http://127.0.0.1:2379
+    - --service-account-issuer=https://kubernetes.default.svc
+    - --service-account-key-file=/pki/sa.pub
+    - --service-account-signing-key-file=/pki/sa.key
+    - --service-cluster-ip-range=10.96.0.0/16
+    - --tls-cert-file=/pki/server.pem
+    - --tls-private-key-file=/pki/server.key
+    - --token-auth-file=/pki/tokens.csv
+    - --authorization-mode=RBAC
+    - --secure-port=6443
+    port: 6443
+    cpuCounter: cgroup   # cpu.stat usage_usec of the container cgroup (microseconds)
+    limits:
+      cpuset: 0-1        # hard affinity: 2 CPUs (bound for the per-request plausibility check)
+      memory: 4g
+    readiness:
+      path: /readyz
+      expectStatus: 200
+    auth:
+      type: bearer
+      tokenSource: lab-generated
+  trigger:
+    request:
+      method: GET
+      path: /api/v1/namespaces
+      payload:
+        generator: query-params
+        count: '{{n}}'
+        marker: true
+    parameters:
+      n:
+      - 1          # benign
+      - 10000      # empirical cost budget for the fixed arm (10,000 parameters on the shipped arm)
+      - 90000      # trigger, ~800 KB of query string (below the 1 MiB request-header limit)
+    repeats: 5
+    controls:
+    - name: anonymous
+      auth: none
+      expectStatus: 403
+  measure:
+  - status
+  - bodyBytes
+  - seconds
+  - serverCPU
+  # thresholds fixed before the runs: shipped, baseline and vulnerable arms: every request's CPU at n = 90000 > 5 x the
+  # largest CPU at n = 1 of the same arm (floor 1 ms, strict >); baseline statuses = shipped; fixed arm (limit active):
+  # every request at n = 90000 answers 200, its CPU < 5 x the shipped arm's median at n = 10000 (an empirical cost
+  # budget; the fix rejects an oversized query before parsing; floor 1 ms, strict <), and 5 x its largest CPU at
+  # n = 90000 < the smallest CPU of the vulnerable arm at n = 90000 (suppression); fixed at n = 1 answers 200.
+  # "CPU" is the container's CPU during the request (not isolated parsing CPU). Controls are sent before the E2a
+  # window opens; hits per request are learned per run from the calibration requests before the trigger requests.
+  # Every condition is evaluated within one run (same-run extrema); the n = 10000 reference is measured on the
+  # shipped arm (review l5-r16). CPU per request from the cgroup counter, read on
+  # the host right before sending and after the body; the monotonic window encloses both reads; a request whose CPU
+  # exceeds cpus x window + 1 ms is a measurement failure (run inconclusive). Arms and values run in this order,
+  # 5 repeats, one warm-up request per arm.
+  oracle:
+  - arms: [shipped]
+    when: n > 50000
+    expect: {status: 200, separation: {benign: n == 1, factor: 5, floor: 0.001}}
+  - arms: [baseline]
+    when: n > 50000
+    expect: {status: 200, separation: {benign: n == 1, factor: 5, floor: 0.001}, statusSameAs: shipped}
+  - arms: [vulnerable-rebuild]
+    when: n > 50000
+    expect: {status: 200, separation: {benign: n == 1, factor: 5, floor: 0.001}}
+  - arms: [fixed-rebuild]
+    when: n > 50000
+    expect: {status: 200, maxCPUBelow: {arm: shipped, when: n == 10000, factor: 5, floor: 0.001},
+             belowArm: {arm: vulnerable-rebuild, when: n > 50000, factor: 5}}
+  - arms: [fixed-rebuild]
+    when: n == 1
+    expect: {status: 200}
+  attribution:
+    symbol: net/url.parseQuery          # parseQuery(m Values, query string): amd64 ABIInternal m=RAX, query.ptr=RBX, query.len=RCX
+    registers: {pointer: bx, length: cx}
+    argument: {query: true}
+    listing: lab/.runtime/in/evidence/c9-autochain-v1.28.2/pclnsym-all-kube-apiserver.txt
+    calibration: [2, 4, 14]              # benign, distinct lengths (13, 23, 77 bytes); hits per request learned from them
+    trigger: n > 50000
+    rule:
+      shippedRules: [[shipped]]
+      baselineRules: [[baseline]]
+      vulnerableRules: [[vulnerable-rebuild]]
+      fixedRules: [[fixed-rebuild]]
+  safety:
+    environment: lab-only
+    maxRequestBytes: 1Mi
+    timeoutSeconds: 600
+    onUnexpectedTrigger: stop-and-report
+  output:
+    evidenceDir: results/triggertest-go-2026-4341-l5

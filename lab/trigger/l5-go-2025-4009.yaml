@@ -1,0 +1,147 @@
+# Exercise layer P2: GO-2025-4009 (encoding/pem: quadratic Decode on some invalid inputs) on the official
+# kube-apiserver v1.28.2 under the row-1 rule. Input path: CertificateSigningRequest create -> spec.request (PEM, base64
+# in JSON) -> certificates.ParseCSR -> pem.Decode. Trigger from Go's fix (CL "encoding/pem: make Decode complexity
+# linear"): n BEGIN lines and one END line at the end; control: the same number of bytes without BEGIN lines.
+# The request needs permission to create CertificateSigningRequests (the lab token is system:masters); the claim is
+# limited to such an authenticated client. CPU: cgroup cpu.stat usage_usec. Lab only (the runner starts the target).
+apiVersion: vexproof.graphsentinel.github.io/v1alpha1
+kind: TriggerTest
+metadata:
+  name: kube-apiserver-v1-28-2-go-2025-4009-l5
+  namespace: vexproof
+spec:
+  target:
+    binary:
+      url: https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kube-apiserver
+      sha256: a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c
+    source:
+      repo: https://github.com/kubernetes/kubernetes
+      ref: v1.28.2
+      mainPackage: ./cmd/kube-apiserver
+  vulnerability:
+    osv: GO-2025-4009
+  build:
+    go: auto
+    tags: auto
+    goMod: unchanged
+    extraLdflags: -checklinkname=0
+  arms:
+  - name: shipped
+    from: target
+    attribute: true
+  - name: baseline
+    go: shipped
+    extraLdflags: ""
+  - name: vulnerable-rebuild
+    go: lastVulnerable
+  - name: fixed-rebuild
+    go: firstFixed
+  recordDefaultGODEBUG: true
+  runtime:
+    sidecars:
+    - name: etcd
+      image: registry.k8s.io/etcd:3.5.9-0@sha256:e013d0d5e4e25d00c61a7ff839927a1f36479678f11e49502b53a5e0b14f10c3
+      args:
+      - etcd
+      - --data-dir=/tmp/etcd
+      - --listen-client-urls=http://127.0.0.1:2379
+      - --advertise-client-urls=http://127.0.0.1:2379
+    args:
+    - --etcd-servers=http://127.0.0.1:2379
+    - --service-account-issuer=https://kubernetes.default.svc
+    - --service-account-key-file=/pki/sa.pub
+    - --service-account-signing-key-file=/pki/sa.key
+    - --service-cluster-ip-range=10.96.0.0/16
+    - --tls-cert-file=/pki/server.pem
+    - --tls-private-key-file=/pki/server.key
+    - --token-auth-file=/pki/tokens.csv
+    - --authorization-mode=RBAC
+    - --secure-port=6443
+    port: 6443
+    cpuCounter: cgroup   # cpu.stat usage_usec of the container cgroup (microseconds)
+    limits:
+      cpuset: 0-1        # hard affinity: 2 CPUs (bound for the per-request plausibility check)
+      memory: 4g
+    readiness:
+      path: /readyz
+      expectStatus: 200
+    auth:
+      type: bearer
+      tokenSource: lab-generated
+  trigger:
+    request:
+      method: POST
+      path: /apis/certificates.k8s.io/v1/certificatesigningrequests
+      payload:
+        generator: csr-pem
+        count: '{{n}}'
+        marker: true
+    parameters:
+      n:
+      - 1          # one BEGIN/END pair: small benign request
+      - -20000     # size-matched control: 20,000 filler lines of the same length, no BEGIN line (480 KB body)
+      - 20000      # trigger: 20,000 BEGIN lines and one END line (480 KB body)
+    repeats: 5
+    controls:
+    - name: anonymous
+      auth: none
+      expectStatus: 403
+  measure:
+  - status
+  - bodyBytes
+  - seconds
+  - serverCPU
+  # thresholds fixed before the runs: every arm answers 422 (invalid CSR) at n = 20000, -20000 and 1; shipped, baseline
+  # and vulnerable arms: every request's CPU at n = 20000 > 5 x the largest CPU of the same arm at the size-matched
+  # control n = -20000 (floor 1 ms, strict >); baseline statuses = shipped; fixed arm: 5 x its largest CPU at n = 20000
+  # < the smallest CPU of the vulnerable arm at n = 20000 (suppression), and its largest CPU at n = 20000 < 5 x the
+  # shipped arm's median at the control n = -20000 (same body size; floor 1 ms, strict <). "CPU" is the container's
+  # CPU during the request, from the cgroup counter read on the host right before sending and after the body; the
+  # monotonic window encloses both reads; CPU > cpus x window + 1 ms is a measurement failure (run inconclusive).
+  # Every condition is evaluated within one run. Controls are sent before the E2a window opens; hits per request are
+  # learned per run from the calibration requests. Arms and values in this order, 5 repeats, one warm-up per arm.
+  oracle:
+  - arms: [shipped]
+    when: n > 1
+    expect: {status: 422, separation: {benign: n == -20000, factor: 5, floor: 0.001}}
+  - arms: [baseline]
+    when: n > 1
+    expect: {status: 422, separation: {benign: n == -20000, factor: 5, floor: 0.001}, statusSameAs: shipped}
+  - arms: [vulnerable-rebuild]
+    when: n > 1
+    expect: {status: 422, separation: {benign: n == -20000, factor: 5, floor: 0.001}}
+  - arms: [fixed-rebuild]
+    when: n > 1
+    expect: {status: 422, maxCPUBelow: {arm: shipped, when: n == -20000, factor: 5, floor: 0.001},
+             belowArm: {arm: vulnerable-rebuild, when: n > 1, factor: 5}}
+  - arms: [fixed-rebuild]
+    when: n < 2
+    expect: {status: 422}
+  - arms: [shipped]          # the control and the small request answer 422 in every arm too (review l5-r17)
+    when: n < 2
+    expect: {status: 422}
+  - arms: [baseline]
+    when: n < 2
+    expect: {status: 422}
+  - arms: [vulnerable-rebuild]
+    when: n < 2
+    expect: {status: 422}
+  attribution:
+    symbol: encoding/pem.Decode         # Decode(data []byte): amd64 ABIInternal data.ptr=RAX, data.len=RBX, cap=RCX
+    registers: {pointer: ax, length: bx}
+    argument: {csrPem: true}
+    listing: lab/.runtime/in/evidence/c9-autochain-v1.28.2/pclnsym-all-kube-apiserver.txt
+    calibration: [2, 3, 5]               # benign, distinct lengths (59, 77, 113 bytes); hits per request learned from them
+    trigger: n > 1
+    rule:
+      shippedRules: [[shipped]]
+      baselineRules: [[baseline]]
+      vulnerableRules: [[vulnerable-rebuild]]
+      fixedRules: [[fixed-rebuild]]
+  safety:
+    environment: lab-only
+    maxRequestBytes: 1Mi           # the 480 KB body is checked against this before any request
+    timeoutSeconds: 600
+    onUnexpectedTrigger: stop-and-report
+  output:
+    evidenceDir: results/triggertest-go-2025-4009-l5
