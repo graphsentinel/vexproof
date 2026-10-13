@@ -1,0 +1,17 @@
+
+==> launch vexproof-e2e-2604: Ubuntu 26.04, 8 CPU, 16G, 60G
+
+==> copy source: committed tree ad973b74ae6be5a16fe644c56caf0c18689b95c4
+
+==> FULL=1 scripts/platform.sh install && scripts/platform.sh cluster-up
+01-platform-install-cluster-up: exit 0, 214 s
+
+==> RUNS=5 FULL=1 scripts/lab.sh all
+02-lab-all: exit 0, 2290 s
+raw results: raw-results-main.tar.gz
+
+==> scripts/lab.sh reinstall && scripts/lab.sh status
+03-lab-reinstall: exit 1, 15 s
+
+==> fetch results
+result: exit 1

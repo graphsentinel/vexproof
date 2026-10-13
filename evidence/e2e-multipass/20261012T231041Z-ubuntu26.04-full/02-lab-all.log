@@ -1,0 +1,104 @@
+
+==> lab/pclnsym -> lab/.runtime/bin/pclnsym (go1.27.2)
+
+==> reference inputs (lab/fixtures.tsv: sha256 of every published file, unpacked into lab/.runtime/in)
+190 inputs unpacked into /home/ubuntu/lab/lab/.runtime/in/evidence
+
+==> official binaries (linux/amd64, sha256 from scripts/versions.env)
+  v1.28.2/kube-apiserver (downloaded, sha256 ok)
+  v1.28.2/kubectl (downloaded, sha256 ok)
+  v1.36.5/kube-apiserver (downloaded, sha256 ok)
+  v1.36.5/kubelet (downloaded, sha256 ok)
+  v1.36.5/kubectl (downloaded, sha256 ok)
+  metrics-server-v0.9.0/metrics-server (downloaded, sha256 ok)
+
+==> full .gopclntab listings regenerated from the official binaries (not published; checked against the measured ones)
+regenerated files match
+
+==> trigger images (docker)
+  etcd, base image pulled
+
+==> custom resources in k3d-vexproof (labelled app.kubernetes.io/managed-by=vexproof-lab)
+  triggertests.vexproof.graphsentinel.github.io
+  vexscans.vexproof.graphsentinel.github.io
+installed
+
+==> run 1/5 (/home/ubuntu/lab/lab/.runtime/work/run-1)
+  unit       exit 0, 9 s
+  chains     exit 0, 6 s
+  triage     exit 0, 53 s
+  decisions  exit 0, 1 s
+  trigger    exit 0, 35 s
+  crd        exit 0, 1 s
+
+==> run 2/5 (/home/ubuntu/lab/lab/.runtime/work/run-2)
+  unit       exit 0, 9 s
+  chains     exit 0, 7 s
+  triage     exit 0, 55 s
+  decisions  exit 0, 0 s
+  trigger    exit 0, 15 s
+  crd        exit 0, 1 s
+
+==> run 3/5 (/home/ubuntu/lab/lab/.runtime/work/run-3)
+  unit       exit 0, 8 s
+  chains     exit 0, 7 s
+  triage     exit 0, 55 s
+  decisions  exit 0, 0 s
+  trigger    exit 0, 15 s
+  crd        exit 0, 1 s
+
+==> run 4/5 (/home/ubuntu/lab/lab/.runtime/work/run-4)
+  unit       exit 0, 7 s
+  chains     exit 0, 6 s
+  triage     exit 0, 50 s
+  decisions  exit 0, 0 s
+  trigger    exit 0, 15 s
+  crd        exit 0, 1 s
+
+==> run 5/5 (/home/ubuntu/lab/lab/.runtime/work/run-5)
+  unit       exit 0, 8 s
+  chains     exit 0, 6 s
+  triage     exit 0, 55 s
+  decisions  exit 0, 0 s
+  trigger    exit 0, 15 s
+  crd        exit 0, 1 s
+
+==> FULL=1: lab/full.py
+  full: exit 0, 1722 s
+# vexproof lab: 5 fast-path run(s) + FULL
+
+| run | steps ok | rows as expected | different | missing | unexpected |
+|---|---|---|---|---|---|
+| 1 | 6/6 | 249/249 | 0 | 0 | 0 |
+| 2 | 6/6 | 249/249 | 0 | 0 | 0 |
+| 3 | 6/6 | 249/249 | 0 | 0 | 0 |
+| 4 | 6/6 | 249/249 | 0 | 0 | 0 |
+| 5 | 6/6 | 249/249 | 0 | 0 | 0 |
+
+FULL=1: exit 0 (results/full/)
+- ok metrics-server source: v0.9.0 2a7c4b2c7d46
+- ok release manifest sha256: https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
+- ok step source completed: 56 s
+- ok ci chain GO-2026-5970 (measured under_investigation|): under_investigation|
+- ok ci chain GO-2026-6061 (measured under_investigation|): under_investigation|
+- ok ci chain GO-2026-6348 (measured under_investigation|): under_investigation|
+- ok ci chain GO-2026-6603 (measured under_investigation|): under_investigation|
+- ok ci chain GO-2026-6610 (measured under_investigation|): under_investigation|
+- ok ci chain GO-2026-6611 (measured under_investigation|): under_investigation|
+- ok ci chain GO-2026-6612 (measured under_investigation|): under_investigation|
+- ok ci chain GO-2026-6617 (measured under_investigation|): under_investigation|
+- ok ci chains for OSVs published after the measurement (listed, not compared): none
+- ok step ci completed: 272 s
+- ok mode-b vxb_framer_readmetaframe fires on the official binary: 60
+- ok mode-b vxb_serverconn_closestream fires on the official binary: 56
+- ok mode-b vxb_serverconn_processheaders fires on the official binary: 56
+- ok mode-b other probes (reported; 0 hits is not 'not executed'): {'vxb_clientconnreadloop_handleresponse': 4, 'vxb_transport_roundtripopt': 0, 'vxb_transportresponsebody_read': 0, 'vxb_transportresponsebody_read_value': 27}
+- ok step mode-b completed: 160 s
+- ok codeql all-args: queries compiled: 23/23
+- ok codeql all-args: taint and sink-site queries ran: 23/23
+- ok codeql all-args: OSVs with a taint path (measured ['GO-2026-6348', 'GO-2026-6603', 'GO-2026-6611', 'GO-2026-6612', 'GO-2026-6613', 'GO-2026-6617']): ['GO-2026-6348', 'GO-2026-6603', 'GO-2026-6611', 'GO-2026-6612', 'GO-2026-6613', 'GO-2026-6617']
+- ok step codeql completed: 1232 s
+- ok step cleanup completed: 1 s
+
+**Result: OK**
+

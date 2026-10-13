@@ -128,7 +128,10 @@ binaries (sha256-checked), regenerates their full symbol listings and checks the
 runs the fast path 5 times and compares every result with `lab/expected.tsv`. It ends with `Result: OK` (exit 0) or a
 list of differences (exit 1). The summary is in `lab/.runtime/summary.md`, each run's outputs in `results/run-<n>/`.
 
-Measured in a multipass VM (see [Versions](#versions)): VM_RESOURCES_PLACEHOLDER
+Measured in multipass VMs with 8 vCPUs, 16 GB RAM and a 60 GB disk: `platform.sh install && cluster-up` 1.5–2 min,
+`lab.sh all` with 5 runs 9.3 min on Ubuntu 26.04 (about 75–90 s per run after the first install) and 3.4 min with
+1 run on Ubuntu 24.04. `FULL=1` adds 29 min (CodeQL database 20 min of it); after it the VM used 14 GB of disk
+(4.9 GB under `lab/.runtime/`).
 
 ## How-to
 
@@ -220,7 +223,14 @@ v1.28.2 and v1.36.5, metrics-server v0.9.0) and the measurement tools (govulnche
 versions the results were measured with; a newer one is a separate run. v1.37.1 ships the fixed OpenTelemetry SDK, so
 the v1.36.5 finding does not apply there.
 
-E2E: E2E_PLACEHOLDER
+End-to-end runs from the committed tree in fresh multipass VMs (`scripts/multipass-e2e.sh`: install, cluster, all
+runs, reinstall + one more run, uninstall, platform check), outputs in `evidence/e2e-multipass/`:
+
+| Run | Ubuntu | Commit | Result |
+|---|---|---|---|
+| [20261012T235455Z-ubuntu26.04](evidence/e2e-multipass/20261012T235455Z-ubuntu26.04/summary.md) | 26.04.1 | `055d17f` | 5 runs, 6/6 steps and 249/249 expected rows each; reinstall, uninstall OK |
+| [20261012T235620Z-ubuntu24.04](evidence/e2e-multipass/20261012T235620Z-ubuntu24.04/summary.md) | 24.04 | `055d17f` | 1 run, 6/6 steps, 249/249; reinstall, uninstall OK |
+| [20261012T231041Z-ubuntu26.04-full](evidence/e2e-multipass/20261012T231041Z-ubuntu26.04-full/main/results/full/summary.json) | 26.04.1 | `ad973b7` | 5 runs 249/249 + `FULL=1` 25/25 checks; its reinstall step stopped on a `lab.sh status` exit code, fixed in `055d17f` (no lab code change) |
 
 ## Layout
 

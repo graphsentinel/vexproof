@@ -1,0 +1,16 @@
+
+==> run 1/1 (/home/ubuntu/lab/lab/.runtime/work/run-1)
+  unit       exit 0, 9 s
+  chains     exit 0, 6 s
+  triage     exit 0, 54 s
+  decisions  exit 0, 0 s
+  trigger    exit 0, 17 s
+  crd        exit 0, 1 s
+# vexproof lab: 1 fast-path run(s)
+
+| run | steps ok | rows as expected | different | missing | unexpected |
+|---|---|---|---|---|---|
+| 1 | 6/6 | 249/249 | 0 | 0 | 0 |
+
+**Result: OK**
+

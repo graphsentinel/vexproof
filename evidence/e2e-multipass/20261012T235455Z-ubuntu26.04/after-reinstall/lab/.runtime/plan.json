@@ -1,0 +1,13 @@
+{
+ "runs": 1,
+ "steps": [
+  "unit",
+  "chains",
+  "triage",
+  "decisions",
+  "trigger",
+  "crd"
+ ],
+ "full": false,
+ "complete": 1
+}

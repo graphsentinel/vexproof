@@ -1,0 +1,33 @@
+  CRD triggertests.vexproof.graphsentinel.github.io deleted
+  CRD vexscans.vexproof.graphsentinel.github.io deleted
+  namespace vexproof deleted
+uninstalled (kept: lab/.runtime/cache and bin, results/)
+
+==> reference inputs (lab/fixtures.tsv: sha256 of every published file, unpacked into lab/.runtime/in)
+190 inputs unpacked into /home/ubuntu/lab/lab/.runtime/in/evidence
+
+==> official binaries (linux/amd64, sha256 from scripts/versions.env)
+  v1.28.2/kube-apiserver (cached)
+  v1.28.2/kubectl (cached)
+  v1.36.5/kube-apiserver (cached)
+  v1.36.5/kubelet (cached)
+  v1.36.5/kubectl (cached)
+  metrics-server-v0.9.0/metrics-server (cached)
+
+==> full .gopclntab listings regenerated from the official binaries (not published; checked against the measured ones)
+regenerated files match
+
+==> trigger images (docker)
+  etcd, base image pulled
+
+==> custom resources in k3d-vexproof (labelled app.kubernetes.io/managed-by=vexproof-lab)
+  triggertests.vexproof.graphsentinel.github.io
+  vexscans.vexproof.graphsentinel.github.io
+installed
+
+==> lab
+  installed 2026-10-13T00:02:46Z
+  pclnsym built
+  cached official binaries: 6 of 6
+  lab containers running: 0
+  custom resources: 2

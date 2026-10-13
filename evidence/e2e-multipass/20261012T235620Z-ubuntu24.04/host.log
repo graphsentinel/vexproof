@@ -1,0 +1,27 @@
+
+==> launch vexproof-e2e-2404: Ubuntu 24.04, 8 CPU, 16G, 60G
+
+==> copy source: committed tree 055d17fd0577cbd2e918d1196a2c92753dc06a19
+
+==> FULL=0 scripts/platform.sh install && scripts/platform.sh cluster-up
+01-platform-install-cluster-up: exit 0, 119 s
+
+==> RUNS=1 FULL=0 scripts/lab.sh all
+02-lab-all: exit 0, 204 s
+raw results: raw-results-main.tar.gz
+
+==> scripts/lab.sh reinstall && scripts/lab.sh status
+03-lab-reinstall: exit 0, 15 s
+
+==> RUNS=1 scripts/lab.sh test
+04-lab-test-after-reinstall: exit 0, 89 s
+raw results: raw-results-after-reinstall.tar.gz
+
+==> scripts/lab.sh uninstall
+05-lab-uninstall: exit 0, 7 s
+
+==> scripts/platform.sh status && kubectl --context k3d-vexproof wait --for=condition=Ready node --all --timeout=60s
+06-platform-after-uninstall: exit 0, 1 s
+
+==> fetch results
+result: exit 0

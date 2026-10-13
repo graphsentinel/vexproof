@@ -1,0 +1,40 @@
+
+==> lab/pclnsym -> lab/.runtime/bin/pclnsym (go1.27.2)
+
+==> reference inputs (lab/fixtures.tsv: sha256 of every published file, unpacked into lab/.runtime/in)
+190 inputs unpacked into /home/ubuntu/lab/lab/.runtime/in/evidence
+
+==> official binaries (linux/amd64, sha256 from scripts/versions.env)
+  v1.28.2/kube-apiserver (downloaded, sha256 ok)
+  v1.28.2/kubectl (downloaded, sha256 ok)
+  v1.36.5/kube-apiserver (downloaded, sha256 ok)
+  v1.36.5/kubelet (downloaded, sha256 ok)
+  v1.36.5/kubectl (downloaded, sha256 ok)
+  metrics-server-v0.9.0/metrics-server (downloaded, sha256 ok)
+
+==> full .gopclntab listings regenerated from the official binaries (not published; checked against the measured ones)
+regenerated files match
+
+==> trigger images (docker)
+  etcd, base image pulled
+
+==> custom resources in k3d-vexproof (labelled app.kubernetes.io/managed-by=vexproof-lab)
+  triggertests.vexproof.graphsentinel.github.io
+  vexscans.vexproof.graphsentinel.github.io
+installed
+
+==> run 1/1 (/home/ubuntu/lab/lab/.runtime/work/run-1)
+  unit       exit 0, 7 s
+  chains     exit 0, 6 s
+  triage     exit 0, 69 s
+  decisions  exit 0, 0 s
+  trigger    exit 0, 29 s
+  crd        exit 0, 1 s
+# vexproof lab: 1 fast-path run(s)
+
+| run | steps ok | rows as expected | different | missing | unexpected |
+|---|---|---|---|---|---|
+| 1 | 6/6 | 249/249 | 0 | 0 | 0 |
+
+**Result: OK**
+
