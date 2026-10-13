@@ -1,0 +1,397 @@
+{
+ "status": {
+  "phase": "Succeeded",
+  "verdict": "inconclusive",
+  "resolved": {
+   "shipped_sha256": "a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c",
+   "shipped_go": "1.20.8",
+   "tags": "selinux,notest",
+   "goos": "linux",
+   "git_version": "v1.28.2",
+   "git_commit": "89a4ea3e1e4ddd7f7572286090359983e0387b2f",
+   "ref_check": "match",
+   "osv_fixed_go": [
+    "1.24.12",
+    "1.25.6"
+   ],
+   "engine": "docker",
+   "arms": {
+    "shipped": {
+     "go": "1.20.8",
+     "default_godebug": null,
+     "godebug_env": null,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    },
+    "baseline": {
+     "go": "1.20.8",
+     "default_godebug": null,
+     "godebug_env": null,
+     "deps_match_shipped": true,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    },
+    "vulnerable-rebuild": {
+     "go": "1.24.11",
+     "default_godebug": "asynctimerchan=1,gotestjsonbuildtext=1,gotypesalias=0,httpcookiemaxnum=0,httplaxcontentlength=1,httpmuxgo121=1,httpservecontentkeepheaders=1,multipathtcp=0,panicnil=1,randseednop=0,rsa1024min=0,tls10server=1,tls3des=1,tlsmlkem=0,tlsrsakex=1,tlsunsafeekm=1,winreadlinkvolume=0,winsymlink=0,x509keypairleaf=0,x509negativeserial=1,x509rsacrt=0,x509usepolicies=0",
+     "godebug_env": null,
+     "deps_match_shipped": true,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    },
+    "fixed-rebuild": {
+     "go": "1.24.12",
+     "default_godebug": "asynctimerchan=1,gotestjsonbuildtext=1,gotypesalias=0,httpcookiemaxnum=0,httplaxcontentlength=1,httpmuxgo121=1,httpservecontentkeepheaders=1,multipathtcp=0,panicnil=1,randseednop=0,rsa1024min=0,tls10server=1,tls3des=1,tlsmlkem=0,tlsrsakex=1,tlsunsafeekm=1,urlmaxqueryparams=0,winreadlinkvolume=0,winsymlink=0,x509keypairleaf=0,x509negativeserial=1,x509rsacrt=0,x509usepolicies=0",
+     "godebug_env": "urlmaxqueryparams=10000",
+     "deps_match_shipped": true,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    },
+    "fixed-as-built": {
+     "go": "1.24.12",
+     "default_godebug": "asynctimerchan=1,gotestjsonbuildtext=1,gotypesalias=0,httpcookiemaxnum=0,httplaxcontentlength=1,httpmuxgo121=1,httpservecontentkeepheaders=1,multipathtcp=0,panicnil=1,randseednop=0,rsa1024min=0,tls10server=1,tls3des=1,tlsmlkem=0,tlsrsakex=1,tlsunsafeekm=1,urlmaxqueryparams=0,winreadlinkvolume=0,winsymlink=0,x509keypairleaf=0,x509negativeserial=1,x509rsacrt=0,x509usepolicies=0",
+     "godebug_env": null,
+     "deps_match_shipped": true,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    }
+   }
+  },
+  "oracle": [
+   {
+    "arms": [
+     "shipped"
+    ],
+    "when": "n > 50000",
+    "expect": {
+     "status": 200,
+     "separation": {
+      "benign": "n == 1",
+      "factor": 5,
+      "floor": 0.001
+     }
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 200",
+      "observed": [
+       200
+      ],
+      "ok": true
+     },
+     {
+      "check": "shipped: min CPU at n > 50000 > 5 x max CPU at n == 1",
+      "observed": {
+       "benign": [
+        0.0039,
+        0.0104,
+        0.0146
+       ],
+       "trigger": [
+        0.2336,
+        0.2596,
+        0.4529
+       ]
+      },
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "baseline"
+    ],
+    "when": "n > 50000",
+    "expect": {
+     "status": 200,
+     "separation": {
+      "benign": "n == 1",
+      "factor": 5,
+      "floor": 0.001
+     },
+     "statusSameAs": "shipped"
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 200",
+      "observed": [
+       200
+      ],
+      "ok": true
+     },
+     {
+      "check": "baseline: min CPU at n > 50000 > 5 x max CPU at n == 1",
+      "observed": {
+       "benign": [
+        0.0027,
+        0.0032,
+        0.0047
+       ],
+       "trigger": [
+        0.2334,
+        0.2354,
+        0.3286
+       ]
+      },
+      "ok": true
+     },
+     {
+      "check": "baseline: statuses per n == shipped",
+      "observed": [],
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "vulnerable-rebuild"
+    ],
+    "when": "n > 50000",
+    "expect": {
+     "status": 200,
+     "separation": {
+      "benign": "n == 1",
+      "factor": 5,
+      "floor": 0.001
+     }
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 200",
+      "observed": [
+       200
+      ],
+      "ok": true
+     },
+     {
+      "check": "vulnerable-rebuild: min CPU at n > 50000 > 5 x max CPU at n == 1",
+      "observed": {
+       "benign": [
+        0.004,
+        0.0051,
+        0.0165
+       ],
+       "trigger": [
+        0.2125,
+        0.3011,
+        0.3306
+       ]
+      },
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "fixed-rebuild"
+    ],
+    "when": "n > 50000",
+    "expect": {
+     "status": 200,
+     "maxCPUBelow": {
+      "arm": "shipped",
+      "when": "n == 10000",
+      "factor": 5,
+      "floor": 0.001
+     },
+     "belowArm": {
+      "arm": "vulnerable-rebuild",
+      "when": "n > 50000",
+      "factor": 5
+     }
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 200",
+      "observed": [
+       200
+      ],
+      "ok": true
+     },
+     {
+      "check": "fixed-rebuild: max CPU at n > 50000 < 5 x median CPU of shipped at n == 10000 (floor 0.001 s)",
+      "observed": {
+       "max": 0.0524,
+       "cap": 0.14300000000000002
+      },
+      "ok": true
+     },
+     {
+      "check": "fixed-rebuild: 5 x max CPU at n > 50000 < min CPU of vulnerable-rebuild at n > 50000",
+      "observed": {
+       "max": 0.0524,
+       "ref_min": 0.2125
+      },
+      "ok": false
+     }
+    ],
+    "ok": false
+   },
+   {
+    "arms": [
+     "fixed-rebuild"
+    ],
+    "when": "n == 1",
+    "expect": {
+     "status": 200
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 200",
+      "observed": [
+       200
+      ],
+      "ok": true
+     }
+    ],
+    "ok": true
+   }
+  ],
+  "summary": "inconclusive: ok shipped when n > 50000; ok baseline when n > 50000; ok vulnerable-rebuild when n > 50000; FAIL fixed-rebuild when n > 50000; ok fixed-rebuild when n == 1; controls 5/5 ok; E2a attribution_incomplete; row 1: inconclusive",
+  "evidence": "results/p2-4341-2",
+  "harness_errors": [],
+  "arms_unavailable": [],
+  "e2a": {
+   "arm": "shipped",
+   "symbol": "net/url.parseQuery",
+   "decoding": {
+    "goarch": "amd64",
+    "go": "1.20.8",
+    "prologue": "4c8d6424e84d3b66100f865702000048",
+    "abi": "amd64 ABIInternal",
+    "symbol": "net/url.parseQuery",
+    "offset": "0x1ac5c0",
+    "registers": {
+     "pointer": "bx",
+     "length": "cx"
+    }
+   },
+   "state": "attribution_incomplete",
+   "checks": {
+    "calibration_inputs": true,
+    "calibration_distinct_from_trigger": true,
+    "markers_unique": true,
+    "no_lost_events": true,
+    "no_failed_reads": true,
+    "calibration_counts": true,
+    "other_request_counts": true,
+    "trigger_counts": false
+   },
+   "hits_per_request": 6,
+   "per_marker": {
+    "24429": 6,
+    "16123": 6,
+    "16083": 6,
+    "66745": 7,
+    "85423": 6,
+    "37191": 6,
+    "68253": 6,
+    "65357": 6,
+    "66259": 6,
+    "76305": 6,
+    "59017": 6,
+    "18675": 6,
+    "62653": 6,
+    "24925": 6,
+    "68693": 6,
+    "60325": 6,
+    "73365": 6,
+    "26601": 6
+   },
+   "unmatched_hits": 10,
+   "unmatched_lengths": [
+    0
+   ],
+   "example_stack": [
+    "net/url.parseQuery",
+    "k8s.io/apiserver/pkg/endpoints/request.(*RequestInfoFactory).NewRequestInfo",
+    "k8s.io/apiserver/pkg/endpoints/filters.WithRequestInfo.func1",
+    "net/http.HandlerFunc.ServeHTTP",
+    "k8s.io/apiserver/pkg/endpoints/filters.withRequestReceivedTimestampWithClock.func1",
+    "net/http.HandlerFunc.ServeHTTP",
+    "k8s.io/apiserver/pkg/endpoints/filters.WithMuxAndDiscoveryComplete.func1",
+    "net/http.HandlerFunc.ServeHTTP",
+    "k8s.io/apiserver/pkg/server/filters.withPanicRecovery.func1",
+    "net/http.HandlerFunc.ServeHTTP",
+    "k8s.io/apiserver/pkg/endpoints/filters.withAuditInit.func1",
+    "net/http.HandlerFunc.ServeHTTP",
+    "k8s.io/apiserver/pkg/server.(*APIServerHandler).ServeHTTP",
+    "net/http.serverHandler.ServeHTTP",
+    "net/http.(*conn).serve",
+    "net/http.(*Server).Serve.func3",
+    "runtime.goexit"
+   ],
+   "lost_events": 0,
+   "failed_reads": 0,
+   "hits": 119
+  },
+  "row1": {
+   "result": "inconclusive",
+   "checks": {
+    "trigger_verdict": false,
+    "baseline_equals_shipped": true,
+    "vulnerable_triggers": true,
+    "fixed_does_not": false,
+    "shipped_separates": true,
+    "controls": true,
+    "e2a_attributed": false
+   }
+  }
+ },
+ "controls": [
+  {
+   "arm": "shipped",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  },
+  {
+   "arm": "baseline",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  },
+  {
+   "arm": "vulnerable-rebuild",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  },
+  {
+   "arm": "fixed-rebuild",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  },
+  {
+   "arm": "fixed-as-built",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  }
+ ],
+ "seconds": 104
+}

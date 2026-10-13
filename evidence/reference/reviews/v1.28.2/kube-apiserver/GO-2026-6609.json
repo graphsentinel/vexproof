@@ -10,5 +10,8 @@
   "verdict": "plausible",
   "reason": "see git history"
  },
- "trigger_spec": "examples/triggertest-go-2026-6609.yaml"
+ "trigger_spec": "examples/triggertest-go-2026-6609.yaml",
+ "exercise_gate": "evidence/gates/v1.28.2/kube-apiserver/GO-2026-6609.json",
+ "exercise_gate_sha256": "82638a4ebae01d14d98ce12da3b73f43950dfa7866399c72922921789cfef26c",
+ "exercise_note": "row-1 rule of the exercise layer: all 5 pre-registered runs affected_evidence (lab/trigger/gate.py)"
 }

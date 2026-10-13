@@ -1,0 +1,434 @@
+{
+ "status": {
+  "phase": "Succeeded",
+  "verdict": "triggered",
+  "resolved": {
+   "shipped_sha256": "a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c",
+   "shipped_go": "1.20.8",
+   "tags": "selinux,notest",
+   "goos": "linux",
+   "git_version": "v1.28.2",
+   "git_commit": "89a4ea3e1e4ddd7f7572286090359983e0387b2f",
+   "ref_check": "match",
+   "osv_fixed_go": [
+    "1.24.8",
+    "1.25.2"
+   ],
+   "engine": "docker",
+   "arms": {
+    "shipped": {
+     "go": "1.20.8",
+     "default_godebug": null,
+     "godebug_env": null,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    },
+    "baseline": {
+     "go": "1.20.8",
+     "default_godebug": null,
+     "godebug_env": null,
+     "deps_match_shipped": true,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    },
+    "vulnerable-rebuild": {
+     "go": "1.24.7",
+     "default_godebug": "asynctimerchan=1,gotestjsonbuildtext=1,gotypesalias=0,httplaxcontentlength=1,httpmuxgo121=1,httpservecontentkeepheaders=1,multipathtcp=0,panicnil=1,randseednop=0,rsa1024min=0,tls10server=1,tls3des=1,tlsmlkem=0,tlsrsakex=1,tlsunsafeekm=1,winreadlinkvolume=0,winsymlink=0,x509keypairleaf=0,x509negativeserial=1,x509rsacrt=0,x509usepolicies=0",
+     "godebug_env": null,
+     "deps_match_shipped": true,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    },
+    "fixed-rebuild": {
+     "go": "1.24.8",
+     "default_godebug": "asynctimerchan=1,gotestjsonbuildtext=1,gotypesalias=0,httpcookiemaxnum=0,httplaxcontentlength=1,httpmuxgo121=1,httpservecontentkeepheaders=1,multipathtcp=0,panicnil=1,randseednop=0,rsa1024min=0,tls10server=1,tls3des=1,tlsmlkem=0,tlsrsakex=1,tlsunsafeekm=1,winreadlinkvolume=0,winsymlink=0,x509keypairleaf=0,x509negativeserial=1,x509rsacrt=0,x509usepolicies=0",
+     "godebug_env": null,
+     "deps_match_shipped": true,
+     "cpu_bound": {
+      "cgroup_cpuset_effective": "0-1",
+      "leader_affinity": "0-1"
+     }
+    }
+   }
+  },
+  "oracle": [
+   {
+    "arms": [
+     "shipped"
+    ],
+    "when": "n > 1",
+    "expect": {
+     "status": 422,
+     "separation": {
+      "benign": "n == -20000",
+      "factor": 5,
+      "floor": 0.001
+     }
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     },
+     {
+      "check": "shipped: min CPU at n > 1 > 5 x max CPU at n == -20000",
+      "observed": {
+       "benign": [
+        0.0495,
+        0.1557,
+        0.1914
+       ],
+       "trigger": [
+        12.9439,
+        15.9518,
+        17.3177
+       ]
+      },
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "baseline"
+    ],
+    "when": "n > 1",
+    "expect": {
+     "status": 422,
+     "separation": {
+      "benign": "n == -20000",
+      "factor": 5,
+      "floor": 0.001
+     },
+     "statusSameAs": "shipped"
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     },
+     {
+      "check": "baseline: min CPU at n > 1 > 5 x max CPU at n == -20000",
+      "observed": {
+       "benign": [
+        0.1502,
+        0.1726,
+        0.2242
+       ],
+       "trigger": [
+        15.8288,
+        18.7182,
+        22.8959
+       ]
+      },
+      "ok": true
+     },
+     {
+      "check": "baseline: statuses per n == shipped",
+      "observed": [],
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "vulnerable-rebuild"
+    ],
+    "when": "n > 1",
+    "expect": {
+     "status": 422,
+     "separation": {
+      "benign": "n == -20000",
+      "factor": 5,
+      "floor": 0.001
+     }
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     },
+     {
+      "check": "vulnerable-rebuild: min CPU at n > 1 > 5 x max CPU at n == -20000",
+      "observed": {
+       "benign": [
+        0.0795,
+        0.1187,
+        0.1504
+       ],
+       "trigger": [
+        14.544,
+        17.5802,
+        20.2855
+       ]
+      },
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "fixed-rebuild"
+    ],
+    "when": "n > 1",
+    "expect": {
+     "status": 422,
+     "maxCPUBelow": {
+      "arm": "shipped",
+      "when": "n == -20000",
+      "factor": 5,
+      "floor": 0.001
+     },
+     "belowArm": {
+      "arm": "vulnerable-rebuild",
+      "when": "n > 1",
+      "factor": 5
+     }
+    },
+    "rows": 5,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     },
+     {
+      "check": "fixed-rebuild: max CPU at n > 1 < 5 x median CPU of shipped at n == -20000 (floor 0.001 s)",
+      "observed": {
+       "max": 0.3043,
+       "cap": 0.7785
+      },
+      "ok": true
+     },
+     {
+      "check": "fixed-rebuild: 5 x max CPU at n > 1 < min CPU of vulnerable-rebuild at n > 1",
+      "observed": {
+       "max": 0.3043,
+       "ref_min": 14.544
+      },
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "fixed-rebuild"
+    ],
+    "when": "n < 2",
+    "expect": {
+     "status": 422
+    },
+    "rows": 10,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "shipped"
+    ],
+    "when": "n < 2",
+    "expect": {
+     "status": 422
+    },
+    "rows": 10,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "baseline"
+    ],
+    "when": "n < 2",
+    "expect": {
+     "status": 422
+    },
+    "rows": 10,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     }
+    ],
+    "ok": true
+   },
+   {
+    "arms": [
+     "vulnerable-rebuild"
+    ],
+    "when": "n < 2",
+    "expect": {
+     "status": 422
+    },
+    "rows": 10,
+    "checks": [
+     {
+      "check": "status == 422",
+      "observed": [
+       422
+      ],
+      "ok": true
+     }
+    ],
+    "ok": true
+   }
+  ],
+  "summary": "triggered: ok shipped when n > 1; ok baseline when n > 1; ok vulnerable-rebuild when n > 1; ok fixed-rebuild when n > 1; ok fixed-rebuild when n < 2; ok shipped when n < 2; ok baseline when n < 2; ok vulnerable-rebuild when n < 2; controls 4/4 ok; E2a attributed_client; row 1: affected_evidence",
+  "evidence": "results/p2-4009-2",
+  "harness_errors": [],
+  "arms_unavailable": [],
+  "e2a": {
+   "arm": "shipped",
+   "symbol": "encoding/pem.Decode",
+   "decoding": {
+    "goarch": "amd64",
+    "go": "1.20.8",
+    "prologue": "4c8da42420ffffff4d3b66100f86b409",
+    "abi": "amd64 ABIInternal",
+    "symbol": "encoding/pem.Decode",
+    "offset": "0x26ae80",
+    "registers": {
+     "pointer": "ax",
+     "length": "bx"
+    }
+   },
+   "state": "attributed_client",
+   "checks": {
+    "calibration_inputs": true,
+    "calibration_distinct_from_trigger": true,
+    "markers_unique": true,
+    "no_lost_events": true,
+    "no_failed_reads": true,
+    "calibration_counts": true,
+    "other_request_counts": true,
+    "trigger_counts": true
+   },
+   "hits_per_request": 1,
+   "per_marker": {
+    "65677": 1,
+    "13979": 1,
+    "15133": 1,
+    "49089": 1,
+    "69339": 1,
+    "61077": 1,
+    "72511": 1,
+    "61325": 1,
+    "28793": 1,
+    "79267": 1,
+    "50039": 1,
+    "40137": 1,
+    "54225": 1,
+    "80919": 1,
+    "84909": 1,
+    "62455": 1,
+    "24671": 1,
+    "60841": 1
+   },
+   "unmatched_hits": 0,
+   "unmatched_lengths": [],
+   "example_stack": [
+    "encoding/pem.Decode",
+    "k8s.io/kubernetes/pkg/apis/certificates/validation.validateCSR",
+    "k8s.io/kubernetes/pkg/apis/certificates/validation.validateCertificateSigningRequest",
+    "k8s.io/kubernetes/pkg/apis/certificates/validation.ValidateCertificateSigningRequestCreate",
+    "k8s.io/kubernetes/pkg/registry/certificates/certificates.(*csrStrategy).Validate",
+    "k8s.io/apiserver/pkg/registry/rest.BeforeCreate",
+    "k8s.io/apiserver/pkg/registry/generic/registry.(*Store).Create",
+    "k8s.io/kubernetes/pkg/registry/certificates/certificates/storage.(*REST).Create",
+    "k8s.io/apiserver/pkg/endpoints/handlers.(*namedCreaterAdapter).Create",
+    "k8s.io/apiserver/pkg/endpoints/handlers.createHandler.func1.1",
+    "k8s.io/apiserver/pkg/endpoints/handlers.createHandler.func1.2",
+    "k8s.io/apiserver/pkg/endpoints/handlers/finisher.finishRequest.func1",
+    "runtime.goexit"
+   ],
+   "lost_events": 0,
+   "failed_reads": 0,
+   "hits": 18
+  },
+  "row1": {
+   "result": "affected_evidence",
+   "checks": {
+    "trigger_verdict": true,
+    "baseline_equals_shipped": true,
+    "vulnerable_triggers": true,
+    "fixed_does_not": true,
+    "shipped_separates": true,
+    "controls": true,
+    "e2a_attributed": true
+   }
+  }
+ },
+ "controls": [
+  {
+   "arm": "shipped",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  },
+  {
+   "arm": "baseline",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  },
+  {
+   "arm": "vulnerable-rebuild",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  },
+  {
+   "arm": "fixed-rebuild",
+   "control": "anonymous",
+   "expect": 403,
+   "status": 403,
+   "ok": true
+  }
+ ],
+ "seconds": 270
+}

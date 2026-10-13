@@ -1,0 +1,81 @@
+{
+ "osv": "GO-2026-6609",
+ "n": 5,
+ "spec_sha256": "dbcbd6f4f7b8854fb2fdaf175ae60ba34fa2014d55e7cdeb15b70ec049d4c70f",
+ "spec_path": "lab/trigger/l5-go-2026-6609.yaml",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "shipped_sha256": "a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c",
+ "spec": "lab/trigger/l5-go-2026-6609.yaml",
+ "frozen_sha256": {
+  "spec": "dbcbd6f4",
+  "runner": "b76cfe69",
+  "attribution": "97ae2124"
+ },
+ "gate": "all 5 counted runs give affected_evidence",
+ "counted_runs": 5,
+ "result": "passed",
+ "affected_evidence_runs": 5,
+ "runs": [
+  {
+   "run": "cohort2-1",
+   "path": "evidence/c15-l5-p1/cohort2-1",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "2e80f685f9511c5a255ae8e40363698bf7419dc1fe8d949f719d5bf2c30d0b85",
+    "results.tsv": "dcd2ba6aa32a78b365a6aeb8cc4485999205755532c9a48d97790cbe2f6cb51a",
+    "resolved.json": "59ba5c3af845dc36f4d259e14832ef5b630cc24d161e70836dc72e57289d04b8",
+    "e2a-perf.data": "396caf77a1dc53d43d8016b31b552816fb9884371f8b7e0429301cc2e71a8857"
+   }
+  },
+  {
+   "run": "cohort2-2",
+   "path": "evidence/c15-l5-p1/cohort2-2",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "58da24e3b82797ff9898c24a8bcdebc6b6be177de1996d12ed9b3b08266acb38",
+    "results.tsv": "d37cbfd530eadf75f772953d260f800995275b0acf36dfd46ac6f9d5a3d6d6e0",
+    "resolved.json": "59ba5c3af845dc36f4d259e14832ef5b630cc24d161e70836dc72e57289d04b8",
+    "e2a-perf.data": "8dd18adbcd99ac61e6aba66773820a9f6d066cba394eb95d2a071f132a81ff1d"
+   }
+  },
+  {
+   "run": "cohort2-3",
+   "path": "evidence/c15-l5-p1/cohort2-3",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "a0d9d7c6e386cf097d89eb5e32175a714b670494edcbd1d0be727bbfc2a511ea",
+    "results.tsv": "49da72c07afeb9ed0a1c437ec4dd73067424389bf3b7643cc84b50b22b27a92b",
+    "resolved.json": "59ba5c3af845dc36f4d259e14832ef5b630cc24d161e70836dc72e57289d04b8",
+    "e2a-perf.data": "c6a710d5941aecc5f0812ef3eb2af286b41b8632f4da5732ca93050bd4925963"
+   }
+  },
+  {
+   "run": "cohort2-4",
+   "path": "evidence/c15-l5-p1/cohort2-4",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "38c0a9b8121419ff5f3309832eea9e67963182dc651063ecac71af3db795b742",
+    "results.tsv": "d7faa7a89f8e49b8eb45d5d02b0aa3e6f283752df83c9b296424fa8830afe804",
+    "resolved.json": "59ba5c3af845dc36f4d259e14832ef5b630cc24d161e70836dc72e57289d04b8",
+    "e2a-perf.data": "77dc07b0e204eaf895fade8940b10f32ee21a2bf547eed5d93b737de5f021863"
+   }
+  },
+  {
+   "run": "cohort2-5",
+   "path": "evidence/c15-l5-p1/cohort2-5",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "eefdd1c6c73cb80494aa8c089417cd3b18ec38873fe7bde62c3c447bc2e9db75",
+    "results.tsv": "fae332dd6646e8c14321d61da8659731343cebad0aa575b2259ec9d14b46590a",
+    "resolved.json": "59ba5c3af845dc36f4d259e14832ef5b630cc24d161e70836dc72e57289d04b8",
+    "e2a-perf.data": "f9c1c8a089170ced5e7735f19dbcf1f1ee0c0e213047a0785627fcc439f22d41"
+   }
+  }
+ ]
+}

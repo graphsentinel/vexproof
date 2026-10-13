@@ -14,10 +14,12 @@ auto() {  # release-dir target purl [extra autochain args]
     --binary "$BIN/$r/$t" --buildinfo "evidence/c9-autochain-$r/buildinfo-$t.txt" \
     --out "results/chains-auto/$r/$t" --purl "$p" "$@" > /dev/null
 }
-# runtime layer: coverage run c12 (FULL=1 rebuilds it) + CodeQL batch (all-args, source kinds) + review files
+# runtime layer: coverage run c12 (FULL=1 rebuilds it) + CodeQL batch (all-args, source kinds) + review files;
+# exercise layer: affected needs a passed gate (evidence/gates, lab/trigger/gate.py) cited by a confirmed review
 auto v1.28.2 kube-apiserver "pkg:golang/k8s.io/kubernetes@v1.28.2#cmd/kube-apiserver" \
   --cov evidence/c12-cov-v1.28.2/measurements.tsv --codeql evidence/c11-codeql-batch/v1.28.2--kube-apiserver-all-args \
-  --reviews evidence/reviews/v1.28.2/kube-apiserver
+  --reviews evidence/reviews/v1.28.2/kube-apiserver \
+  --exercise evidence/gates/v1.28.2/kube-apiserver --exercise-root .
 auto v1.28.2 kubectl "pkg:golang/k8s.io/kubernetes@v1.28.2#cmd/kubectl"
 auto v1.36.5 kube-apiserver "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kube-apiserver"
 auto v1.36.5 kubelet "pkg:golang/k8s.io/kubernetes@v1.36.5#cmd/kubelet"

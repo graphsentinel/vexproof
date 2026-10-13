@@ -1,0 +1,81 @@
+{
+ "osv": "GO-2025-4009",
+ "n": 5,
+ "spec_sha256": "54be8b4d4cb2f7c135bee68bf2ec18860d7d52d15cbcaf966d2986230c75b5d2",
+ "spec_path": "lab/trigger/l5-go-2025-4009.yaml",
+ "target": "kube-apiserver",
+ "release": "v1.28.2",
+ "shipped_sha256": "a6f95173a6de7e57057aca8c37e73c774f807e2b12660c563d351e089dd0a92c",
+ "spec": "lab/trigger/l5-go-2025-4009.yaml",
+ "frozen_sha256": {
+  "spec": "54be8b4d",
+  "runner": "83aa2a63",
+  "attribution": "9bbfde2c"
+ },
+ "gate": "all 5 counted runs give affected_evidence",
+ "counted_runs": 5,
+ "result": "passed",
+ "affected_evidence_runs": 5,
+ "runs": [
+  {
+   "run": "p2-4009-1",
+   "path": "evidence/c16-l5-p2/p2-4009-1",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "2b8d2defb1e7b4349b04d64a37870927cc49dc04032c997e7f3869bde87bb687",
+    "results.tsv": "ab26ff70c263dac4f8a2b3a1e6da4bbf6671c425da8ef85e0c5117ef6b7fe0f0",
+    "resolved.json": "1c7e2551e416e46512b4cb75db237a4d01aea08d50f77da2d034dc7b92331b90",
+    "e2a-perf.data": "b0e3e966f060c1a659b68976d3fde746aa8eb3cd5898fe793ce48324d8b47f27"
+   }
+  },
+  {
+   "run": "p2-4009-2",
+   "path": "evidence/c16-l5-p2/p2-4009-2",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "a2497ed6f0c19de230dfda1c85a0d693e823e313fc894b8f44c75034bf15b97c",
+    "results.tsv": "41ff29df08765dd4c27f231f30625a54a8c9c00f45a4a060fd4f0845ca806a41",
+    "resolved.json": "1c7e2551e416e46512b4cb75db237a4d01aea08d50f77da2d034dc7b92331b90",
+    "e2a-perf.data": "13aeef6a2c1cf1ea8090784d96d87a516f1d3ae6065366bc6e1ffa7f5e6d71f8"
+   }
+  },
+  {
+   "run": "p2-4009-3",
+   "path": "evidence/c16-l5-p2/p2-4009-3",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "1c962a3a6ba8af074b2f38be1c7e3a772c108cf88c6793df1d04ecd42ac4988c",
+    "results.tsv": "1f16c4c6996b42cfee2e949f2bce0b13964a71ba96b48e7e78ddc35ec56ee2f8",
+    "resolved.json": "1c7e2551e416e46512b4cb75db237a4d01aea08d50f77da2d034dc7b92331b90",
+    "e2a-perf.data": "54f8c190b6d7d3f68e48ba9743bb9d6199dbd8711db760a051918d74425a555b"
+   }
+  },
+  {
+   "run": "p2-4009-4",
+   "path": "evidence/c16-l5-p2/p2-4009-4",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "be98615896936d4b4255321519751ec3c456bf73c79648c8bb7aeb80a0f604f0",
+    "results.tsv": "e7912f745606420fc0de75d4d486373bc9236ac2c64f821ee8243d2c20ecd6b8",
+    "resolved.json": "1c7e2551e416e46512b4cb75db237a4d01aea08d50f77da2d034dc7b92331b90",
+    "e2a-perf.data": "ad1a73c0ea4a6eb1fa30eacb0398f51bdb2018ad9b7e4042ff1ee138407d474c"
+   }
+  },
+  {
+   "run": "p2-4009-5",
+   "path": "evidence/c16-l5-p2/p2-4009-5",
+   "row1": "affected_evidence",
+   "failing": [],
+   "files": {
+    "status.json": "95fa7b127bb60e5ab74ab2ddf2b68cf039ff90c3779656f2ebb1985847873662",
+    "results.tsv": "b0f2489461c5c7b19e10db458b6156a1fd4500ede80efc5e679b6e59ca9ac999",
+    "resolved.json": "1c7e2551e416e46512b4cb75db237a4d01aea08d50f77da2d034dc7b92331b90",
+    "e2a-perf.data": "bf90b7d3107200f26a7d6b2bf1a900063e31216d7ae0d01184c7b51124ff38cc"
+   }
+  }
+ ]
+}

@@ -336,7 +336,7 @@ class Target:
         cg = next(ln.split("::", 1)[1].strip() for ln in open(f"/proc/{self.pid}/cgroup") if ln.startswith("0::"))
         eff = open(f"/sys/fs/cgroup{cg}/cpuset.cpus.effective").read().strip()
         want = str(self.rt.get("limits", {}).get("cpuset", ""))
-        if not want or self._count(eff) != self._count(want) or eff != want:
+        if want and eff != want:  # without a cpuset in the spec, the cgroup's effective set is still the bound
             raise SystemExit(f"cpuset not enforced as specified: cgroup {eff!r}, spec {want!r}")
         leader = next(ln.split(":", 1)[1].strip() for ln in open(f"/proc/{self.pid}/status")
                       if ln.startswith("Cpus_allowed_list:"))

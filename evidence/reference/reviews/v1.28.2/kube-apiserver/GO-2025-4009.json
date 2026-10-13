@@ -4,5 +4,8 @@
  "release": "v1.28.2",
  "verdict": "confirmed",
  "reason": "Request body (apiserver handlers rest.go:376) -> CSR validation -> certificates.ParseCSR -> pem.Decode (helpers.go:32). Advisory: quadratic parsing of untrusted PEM. Needs permission to create CertificateSigningRequests. pem.Decode executed in the lab run, possibly via another caller.",
- "reviewer": "lab review (2026-10-09); not a maintainer decision"
+ "reviewer": "lab review (2026-10-09); not a maintainer decision",
+ "exercise_gate": "evidence/gates/v1.28.2/kube-apiserver/GO-2025-4009.json",
+ "exercise_gate_sha256": "51769d9034f243bc1e6aa6055b79572c3b99a048cdf5a973b9fae6528e0e143b",
+ "exercise_note": "row-1 rule of the exercise layer: all 5 pre-registered runs affected_evidence (lab/trigger/gate.py)"
 }
