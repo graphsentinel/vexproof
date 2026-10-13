@@ -1,0 +1,42 @@
+{
+ "osv": "GO-2026-6061",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": null,
+ "packages": {
+  "google.golang.org/grpc/internal/transport": {
+   "symbols": [
+    "ClientStream.Close",
+    "ClientStream.Header",
+    "ClientStream.Read",
+    "ClientStream.RecvCompress",
+    "ClientStream.TrailersOnly",
+    "ClientStream.Write",
+    "NewHTTP2Client",
+    "Stream.ReadMessageHeader",
+    "http2Client.Close",
+    "http2Client.GracefulClose",
+    "http2Client.NewStream"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 3,
+ "taint_sinks_by_source": {
+  "request": 3,
+  "response": 3
+ },
+ "taint_path_rows": 9,
+ "taint_sinks": [
+  "google.golang.org/grpc/internal/transport/http2_client.go:417",
+  "google.golang.org/grpc/stream.go:1131",
+  "google.golang.org/grpc/stream.go:1483"
+ ],
+ "sink_sites_outside_pkg": 31,
+ "sinks_in_binary": 3,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": []
+}

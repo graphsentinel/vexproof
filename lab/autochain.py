@@ -78,7 +78,7 @@ HEADLINE_ORDER = ("contradictory_rows", "layers_disagree", "instrumentation_fail
                   "trigger_not_validated", "arm_unavailable", "mitigated_by_configuration",
                   "shipped_not_triggered_cause_unknown", "candidate_awaiting_review", "rejected",
                   "observed_upstream_input_only", "attribution_incomplete", "observed_no_input_path_demonstrated",
-                  "observed_input_path_not_analysed",
+                  "observed_input_path_not_analysed", "observed_path_outside_binary",
                   "not_observed", "osv_without_symbols", "symbols_too_coarse", "symbols_missing_possibly_inlined",
                   "no_positive_control", "trigger_class_unsupported")
 
@@ -96,6 +96,7 @@ def headline(d):
         "attribution_incomplete": d["execution"] == "attribution_incomplete",
         "observed_no_input_path_demonstrated": d["execution"] == "observed" and d["input_path"] == "no_input_path_demonstrated",
         "observed_input_path_not_analysed": d["execution"] == "observed" and d["input_path"] == "not_run",
+        "observed_path_outside_binary": d["execution"] == "observed" and d["input_path"] == "path_outside_binary",
         "not_observed": d["execution"].startswith("not_observed"),
         **{k: d["trigger"] == k for k in ("inconclusive", "unevaluated", "gate_invalid", "trigger_not_validated", "arm_unavailable",
                                           "mitigated_by_configuration", "shipped_not_triggered_cause_unknown",
@@ -277,9 +278,22 @@ def main():
             coarse = not c.get("symbols") or c["symbols"] > A.coarse
             in_bin = (c.get("sinks_in_binary") or 0) + (c.get("main_sinks") or 0) > 0
             req, resp = by_src.get("request", 0) > 0 and in_bin, by_src.get("response", 0) > 0 and in_bin
+            # a demonstrated path is never "no path": unscored (no shipped-binary listing given to the batch) or scored
+            # with no sink in the binary's packages are their own states
+            has_path = bool(c.get("taint_results"))
+            unscored = has_path and c.get("sinks_in_binary") is None and not (c.get("main_sinks") or 0)
+            outside = has_path and not unscored and not in_bin
+            kind_unknown = has_path and in_bin and not req and not resp  # e.g. a batch from before source kinds existed
+            # DEC-08: "no path" counts only if the same database sees call sites of this OSV's sinks; without them the
+            # database did not see the code (the vendor trap), so the input path is not analysed
+            sites = (c.get("sink_sites_outside_pkg") or 0) > 0
             cqtxt = ("not run" if not c else f"path from request ({by_src.get('request', 0)} sinks)" if req
                      else f"path only from upstream responses ({by_src.get('response', 0)} sinks)" if resp
-                     else f"no path, {c.get('sink_sites_outside_pkg') or 0} sink sites" if c.get("compiled") else "no query")
+                     else "path found, not scored against the shipped binary" if unscored
+                     else "path found, but no sink in a package of the shipped binary" if outside
+                     else "path found, source kind not recorded by the batch: not analysed" if kind_unknown
+                     else f"no path, {c.get('sink_sites_outside_pkg')} sink sites" if c.get("compiled") and sites
+                     else "no path and no sink sites in the database: not analysed" if c.get("compiled") else "no query")
             runtime["codeql"] = cqtxt
             runtime["coarse_symbols"] = coarse
             if rows:
@@ -287,7 +301,8 @@ def main():
                 dims["execution"] = "observed" if exe else f"not_observed({A.profile})"
             if c:
                 dims["input_path"] = ("not_decidable" if coarse else "client" if req else "upstream_only" if resp
-                                      else "no_input_path_demonstrated" if c.get("compiled") else "not_run")
+                                      else "not_run" if unscored or kind_unknown else "path_outside_binary" if outside
+                                      else "no_input_path_demonstrated" if c.get("compiled") and sites else "not_run")
             if coarse and exe:
                 data.append("symbols_too_coarse")
             if bad:
@@ -358,7 +373,7 @@ def main():
                 why = ("CodeQL path only from upstream HTTP responses (trust boundary)" if resp and not coarse
                        else f"OSV symbols too coarse for CodeQL ({c.get('symbols')} reached)" if coarse
                        else f"CodeQL: {cqtxt}" + ("; candidate: vulnerable_code_cannot_be_controlled_by_adversary"
-                                                  if c.get("compiled") and not req and not resp else ""))
+                                                  if c.get("compiled") and sites and not has_path else ""))
                 status, just = "under_investigation", None
                 note = f"executed under the lab workload ({runtime['blocks']} blocks); {why}"
             elif rows:

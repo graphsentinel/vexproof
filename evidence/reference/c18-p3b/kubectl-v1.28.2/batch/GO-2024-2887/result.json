@@ -1,0 +1,23 @@
+{
+ "osv": "GO-2024-2887",
+ "group": "under_investigation",
+ "severity": "critical",
+ "model": null,
+ "packages": {
+  "net/netip": {
+   "symbols": [
+    "Addr.IsLoopback",
+    "Addr.IsMulticast"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks_by_source": {},
+ "taint_path_rows": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 0
+}

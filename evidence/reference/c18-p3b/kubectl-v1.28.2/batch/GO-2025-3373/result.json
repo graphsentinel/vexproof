@@ -1,0 +1,41 @@
+{
+ "osv": "GO-2025-3373",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": null,
+ "packages": {
+  "crypto/x509": {
+   "symbols": [
+    "CertPool.AppendCertsFromPEM",
+    "Certificate.Verify",
+    "Certificate.VerifyHostname",
+    "HostnameError.Error",
+    "ParseCertificate",
+    "ParseCertificateRequest",
+    "ParseECPrivateKey",
+    "ParsePKCS1PrivateKey",
+    "ParsePKCS8PrivateKey"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 3,
+ "taint_sinks_by_source": {
+  "response": 3
+ },
+ "taint_path_rows": 3,
+ "taint_sinks": [
+  "k8s.io/client-go/util/cert/pem.go:49",
+  "k8s.io/client-go/util/certificate/csr/csr.go:363",
+  "k8s.io/kubectl/pkg/util/certificate/certificate.go:33"
+ ],
+ "sink_sites_outside_pkg": 19,
+ "sinks_in_binary": 2,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [
+  "k8s.io/client-go/util/certificate/csr"
+ ]
+}

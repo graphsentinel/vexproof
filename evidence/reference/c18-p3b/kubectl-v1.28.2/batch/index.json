@@ -1,0 +1,740 @@
+{
+ "report": "/home/ubuntu/lab/lab/.runtime/work/run-1/results/report/v1.28.2--kubectl.json",
+ "db": "/home/ubuntu/lab/lab/.runtime/p3b/kubectl-v1.28.2/db",
+ "timing": {
+  "compile_s": 19,
+  "taint_s": 119,
+  "sites_s": 71
+ },
+ "mode": "all-args",
+ "model": null,
+ "results": [
+  {
+   "osv": "GO-2023-2102",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 2,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2023-2186",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2023-2382",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2024-2598",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2024-2599",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2024-2600",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2024-2687",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 396,
+   "taint_results": 54,
+   "sinks_in_binary": 53,
+   "taint_sinks_by_source": {
+    "request": 53,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2024-2887",
+   "severity": "critical",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2024-2888",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2024-2963",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3373",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 19,
+   "taint_results": 3,
+   "sinks_in_binary": 2,
+   "taint_sinks_by_source": {
+    "response": 3
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3420",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3447",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3503",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3563",
+   "severity": "critical",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3595",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 1,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3751",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-3956",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 5,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4007",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 19,
+   "taint_results": 3,
+   "sinks_in_binary": 2,
+   "taint_sinks_by_source": {
+    "response": 3
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4008",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 16,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4009",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 7,
+   "taint_results": 3,
+   "sinks_in_binary": 2,
+   "taint_sinks_by_source": {
+    "response": 3
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4010",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 30,
+   "taint_results": 4,
+   "sinks_in_binary": 4,
+   "taint_sinks_by_source": {
+    "response": 4
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4011",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4012",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4013",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4014",
+   "severity": "low",
+   "compiled": true,
+   "sink_sites_outside_pkg": 1,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4155",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2025-4175",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4337",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 16,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4340",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 16,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4341",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 7,
+   "taint_results": 3,
+   "sinks_in_binary": 2,
+   "taint_sinks_by_source": {
+    "request": 2,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4601",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 30,
+   "taint_results": 4,
+   "sinks_in_binary": 4,
+   "taint_sinks_by_source": {
+    "response": 4
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4602",
+   "severity": "low",
+   "compiled": true,
+   "sink_sites_outside_pkg": 7,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4869",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 1,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4870",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 16,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4918",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4946",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4947",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4958",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 6,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4971",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 14,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-4976",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 3,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5026",
+   "severity": "critical",
+   "compiled": true,
+   "sink_sites_outside_pkg": 21,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5037",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5038",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 2,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5039",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5856",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 16,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5970",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 12,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5972",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6089",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 2,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6090",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 16,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6218",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6603",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 405,
+   "taint_results": 54,
+   "sinks_in_binary": 53,
+   "taint_sinks_by_source": {
+    "request": 53,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6605",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 23,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6607",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 16,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6608",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6609",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6610",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6611",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 405,
+   "taint_results": 54,
+   "sinks_in_binary": 53,
+   "taint_sinks_by_source": {
+    "request": 53,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6612",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 405,
+   "taint_results": 54,
+   "sinks_in_binary": 53,
+   "taint_sinks_by_source": {
+    "request": 53,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6613",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 444,
+   "taint_results": 54,
+   "sinks_in_binary": 53,
+   "taint_sinks_by_source": {
+    "request": 53,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6617",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 405,
+   "taint_results": 54,
+   "sinks_in_binary": 53,
+   "taint_sinks_by_source": {
+    "request": 53,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  }
+ ],
+ "rescored_with_pclnsym": "pclnsym-all-kubectl.txt"
+}

@@ -1,0 +1,31 @@
+{
+ "osv": "GO-2026-4971",
+ "group": "under_investigation",
+ "severity": "high",
+ "model": null,
+ "packages": {
+  "net": {
+   "symbols": [
+    "Dialer.Dial",
+    "Dialer.DialContext",
+    "Listen"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 1,
+ "taint_sinks_by_source": {
+  "request": 1
+ },
+ "taint_path_rows": 2,
+ "taint_sinks": [
+  "k8s.io/apimachinery/pkg/util/proxy/dial.go:51"
+ ],
+ "sink_sites_outside_pkg": 14,
+ "sinks_in_binary": 1,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": []
+}

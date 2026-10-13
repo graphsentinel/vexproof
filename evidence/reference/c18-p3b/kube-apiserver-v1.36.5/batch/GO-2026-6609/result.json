@@ -1,0 +1,32 @@
+{
+ "osv": "GO-2026-6609",
+ "group": "under_investigation",
+ "severity": "unknown",
+ "model": null,
+ "packages": {
+  "net/http": {
+   "symbols": [
+    "ServeContent",
+    "ServeFile"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 1,
+ "taint_sinks_by_source": {
+  "request": 1
+ },
+ "taint_path_rows": 1,
+ "taint_sinks": [
+  "https___github.com_kubernetes_kubernetes_v1.36.5/pkg/routes/logs.go:52"
+ ],
+ "sink_sites_outside_pkg": 26,
+ "sinks_in_binary": 0,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [
+  "https___github.com_kubernetes_kubernetes_v1.36.5/pkg/routes"
+ ]
+}

@@ -1,0 +1,227 @@
+{
+ "report": "results/report/metrics-server-v0.9.0--metrics-server.json",
+ "db": "../_upstream/codeql-db-ms/metrics-server-vendor",
+ "timing": {
+  "compile_s": 6,
+  "taint_s": 48,
+  "sites_s": 43
+ },
+ "mode": "all-args",
+ "model": null,
+ "results": [
+  {
+   "osv": "GO-2026-5026",
+   "severity": "critical",
+   "compiled": true,
+   "sink_sites_outside_pkg": 18,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5856",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 15,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5970",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 20,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-5972",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6061",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 5,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6089",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 4,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6090",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 15,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6091",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 10,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6218",
+   "severity": "medium",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6348",
+   "severity": "high",
+   "compiled": true,
+   "sink_sites_outside_pkg": 8,
+   "taint_results": 41,
+   "unstable_proposals": 0,
+   "error": "",
+   "sinks_in_binary": 2
+  },
+  {
+   "osv": "GO-2026-6505",
+   "severity": "low",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6599",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 10,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6600",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 10,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6603",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 849,
+   "taint_results": 241,
+   "unstable_proposals": 0,
+   "error": "",
+   "sinks_in_binary": 130
+  },
+  {
+   "osv": "GO-2026-6605",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 18,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6607",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 15,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6608",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6609",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 15,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6610",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 18,
+   "taint_results": 0,
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6611",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 849,
+   "taint_results": 241,
+   "unstable_proposals": 0,
+   "error": "",
+   "sinks_in_binary": 130
+  },
+  {
+   "osv": "GO-2026-6612",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 849,
+   "taint_results": 241,
+   "unstable_proposals": 0,
+   "error": "",
+   "sinks_in_binary": 130
+  },
+  {
+   "osv": "GO-2026-6613",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 823,
+   "taint_results": 235,
+   "unstable_proposals": 0,
+   "error": "",
+   "sinks_in_binary": 128
+  },
+  {
+   "osv": "GO-2026-6617",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 849,
+   "taint_results": 241,
+   "unstable_proposals": 0,
+   "error": "",
+   "sinks_in_binary": 130
+  }
+ ],
+ "rescored_with_pclnsym": "pclnsym-all-metrics-server.txt"
+}

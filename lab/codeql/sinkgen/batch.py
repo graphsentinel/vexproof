@@ -19,6 +19,8 @@ A path is evidence that untrusted data can reach the sink in this code base. "No
 sees sink call sites (DEC-08). The LLM proposal itself is never evidence.
 
 usage: batch.py --report results/report/<rel>--<target>.json --vendor SRC/vendor --goroot GOROOT/src --db DB --out DIR
+                [--pclnsym LISTING]          (marks sinks in packages the shipped binary contains)
+       batch.py --rescore DIR --pclnsym LISTING   (re-derive those fields for an existing batch, no CodeQL run)
                 [--model MODEL] [--ollama URL] [--workers 6] [--samples 3] [--only GO-..,GO-..]
        --mode all-args needs no LLM; --mode llm needs a model on an Ollama endpoint (local by default, see sinkgen.py)
 """
@@ -108,10 +110,65 @@ def propose(job, model, url, samples):
     return job, res
 
 
+def taint_rows(tc):
+    """the combined taint query's decoded #select rows -> {osv: [sink location]}, {osv: {source kind: {location}}}"""
+    rows = list(csv.reader(open(tc)))
+    h = rows[0]
+    mcol, ucol = h.index("col3"), h.index("URL for col0")
+    by, kinds = {}, {}
+    for row in rows[1:]:
+        oid, kind = (row[mcol].split(":", 2) + ["", ""])[:2]
+        loc = row[ucol].split("/vendor/")[-1].split("/src/")[-1].rsplit(":", 3)[0]
+        by.setdefault(oid, []).append(loc)
+        kinds.setdefault(oid, {}).setdefault(kind, set()).add(loc)
+    return by, kinds
+
+
+def linked_packages(pclnsym):
+    """the packages of the shipped binary, from its full .gopclntab listing"""
+    linked = set()
+    for ln in open(pclnsym):
+        t = ln.split("\t")
+        if len(t) > 1:
+            fn = t[1].removeprefix("vendor/")
+            head, _, tail = fn.rpartition("/")
+            linked.add((head + "/" if head else "") + tail.split(".", 1)[0])
+    return linked
+
+
+def binary_fields(sink_locations, linked):
+    """sinks in packages the shipped binary contains (module code), own-module sinks, packages it lacks"""
+    locs = set(sink_locations)
+    dep = [x for x in locs if "." in x.split("/", 1)[0]]  # module path: domain first
+    pk = {x.rsplit("/", 1)[0] for x in dep}
+    return {"sinks_in_binary": sum(1 for x in dep if x.rsplit("/", 1)[0] in linked),
+            "sinks_main_module": len(locs) - len(dep),  # own code: not checked here
+            "sink_packages_not_in_binary": sorted(p for p in pk if p not in linked)[:10]}
+
+
+def rescore(out, pclnsym):
+    """re-derive the shipped-binary fields of an existing batch from its archived combined/taint.csv (no CodeQL run):
+    the same computation a run with --pclnsym does"""
+    by, _ = taint_rows(os.path.join(out, "combined", "taint.csv"))
+    linked = linked_packages(pclnsym)
+    idx = json.load(open(os.path.join(out, "index.json")))
+    for x in idx["results"]:
+        if x.get("taint_results"):
+            f = binary_fields(by.get(x["osv"], []), linked)
+            x["sinks_in_binary"] = f["sinks_in_binary"]
+            rf = os.path.join(out, x["osv"], "result.json")
+            r = json.load(open(rf))
+            r.update(f)
+            json.dump(r, open(rf, "w"), indent=1)
+    idx["rescored_with_pclnsym"] = os.path.basename(pclnsym)
+    json.dump(idx, open(os.path.join(out, "index.json"), "w"), indent=1)
+    print(f"rescored {sum(1 for x in idx['results'] if x.get('taint_results'))} OSVs with a path")
+
+
 def main():
     ap = argparse.ArgumentParser()
     for a in ("--report", "--vendor", "--goroot", "--db", "--out"):
-        ap.add_argument(a, required=True)
+        ap.add_argument(a)  # required unless --rescore (checked below)
     ap.add_argument("--model", default=os.environ.get("VEXPROOF_LLM_MODEL"),
                     help="model name on the Ollama endpoint (or VEXPROOF_LLM_MODEL); needed for --mode llm")
     ap.add_argument("--ollama", default=os.environ.get("VEXPROOF_OLLAMA_URL", "http://localhost:11434"),
@@ -123,7 +180,16 @@ def main():
                          "(deterministic over-approximation: the baseline that a 'no path' needs)")
     ap.add_argument("--only", default="")
     ap.add_argument("--pclnsym", help="full .gopclntab listing of the shipped binary: marks sinks in packages it lacks")
+    ap.add_argument("--rescore", help="an existing batch output dir: re-derive the shipped-binary fields with --pclnsym")
     A = ap.parse_args()
+    if A.rescore:
+        if not A.pclnsym:
+            raise SystemExit("--rescore needs --pclnsym")
+        return rescore(A.rescore, A.pclnsym)
+    missing = [x for x in ("report", "vendor", "goroot", "db", "out", "pclnsym") if not getattr(A, x)]  # --pclnsym too:
+    # without the shipped binary's listing every path would look as if it had no sink in the binary
+    if missing:
+        raise SystemExit(f"missing: {', '.join('--' + x for x in missing)}")
     if A.mode == "llm" and not A.model:
         raise SystemExit("--mode llm needs --model (or VEXPROOF_LLM_MODEL)")
     rep = json.load(open(A.report))
@@ -263,32 +329,11 @@ def main():
                                 "--output", tc, tb)[0]:
             print("taint failed:", log)
         else:
-            rows = list(csv.reader(open(tc)))
-            h = rows[0]
-            mcol, ucol = h.index("col3"), h.index("URL for col0")
-            by, kinds = {}, {}
-            for row in rows[1:]:
-                oid, kind = (row[mcol].split(":", 2) + ["", ""])[:2]
-                loc = row[ucol].split("/vendor/")[-1].split("/src/")[-1].rsplit(":", 3)[0]
-                by.setdefault(oid, []).append(loc)
-                kinds.setdefault(oid, {}).setdefault(kind, set()).add(loc)
-            linked = None
-            if A.pclnsym:
-                linked = set()
-                for ln in open(A.pclnsym):
-                    t = ln.split("\t")
-                    if len(t) > 1:
-                        fn = t[1].removeprefix("vendor/")
-                        head, _, tail = fn.rpartition("/")
-                        linked.add((head + "/" if head else "") + tail.split(".", 1)[0])
+            by, kinds = taint_rows(tc)
+            linked = linked_packages(A.pclnsym) if A.pclnsym else None
             for oid, _ in ok:
                 if linked is not None:
-                    locs = set(by.get(oid, []))
-                    dep = [x for x in locs if "." in x.split("/", 1)[0]]  # module path: domain first
-                    pk = {x.rsplit("/", 1)[0] for x in dep}
-                    recs[oid]["sinks_in_binary"] = sum(1 for x in dep if x.rsplit("/", 1)[0] in linked)
-                    recs[oid]["sinks_main_module"] = len(locs) - len(dep)  # own code: not checked here
-                    recs[oid]["sink_packages_not_in_binary"] = sorted(p for p in pk if p not in linked)[:10]
+                    recs[oid].update(binary_fields(by.get(oid, []), linked))
                 recs[oid]["taint_results"] = len(set(by.get(oid, [])))  # distinct sink locations reached
                 # source kind: "request" = input the program receives (remote), "response" = body of an HTTP response
                 # the program asked for (an upstream server: a trust-boundary judgement, not attacker input by default)

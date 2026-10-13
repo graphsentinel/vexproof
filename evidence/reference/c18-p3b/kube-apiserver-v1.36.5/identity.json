@@ -1,0 +1,33 @@
+{
+ "target": "kube-apiserver",
+ "release": "v1.36.5",
+ "codeql": "2.25.2",
+ "go_version": "go version go1.26.8 linux/amd64",
+ "go_env": {
+  "GOOS": "linux",
+  "GOARCH": "amd64",
+  "CGO_ENABLED": "0",
+  "GOFLAGS": "-mod=vendor",
+  "GOTOOLCHAIN": "local"
+ },
+ "tags": "selinux,notest,grpcnotrace",
+ "source": {
+  "ref": "v1.36.5",
+  "tree": "311703920f6b8cb8d2151dc9f25c3744af4a812d"
+ },
+ "vendor_modules_sha256": "fcb436d5bff88ece5856c88fd9836704d7f649b978966e24a9aa46c06c48cd50",
+ "shipped_go": "1.26.8",
+ "shipped_sha256": "5132c822dd6f8b5713130a006117eb7b800738ac7d4e6d3f0cdd6d306bde14fb",
+ "extract_vendor_dirs": true,
+ "command": "go build -tags selinux,notest,grpcnotrace -o /dev/null ./cmd/kube-apiserver",
+ "db_seconds": 1129,
+ "report": "lab/.runtime/work/run-1/results/report/v1.36.5--kube-apiserver.json",
+ "batch_rc": 0,
+ "template_sha256": "3d95417cc2e82ba1d87e1447dd0e40d25466e366151acdb7ea032dc1b2ce8697",
+ "batch_sha256": "993f6e670c6431d9a621c5a0ee972f6d1b5d0438b153e377bfcbb1b24248d466",
+ "osvs": 14,
+ "compiled": 14,
+ "with_sink_sites": 12,
+ "with_path": 12,
+ "db_kept": false
+}

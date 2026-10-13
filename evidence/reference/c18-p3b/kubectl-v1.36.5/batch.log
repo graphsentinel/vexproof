@@ -1,0 +1,5 @@
+0 proposals for 10 OSVs in 0s
+10 of 10 OSVs in the combined query (17s compile)
+timing: {"compile_s": 17, "taint_s": 121, "sites_s": 45}
+proposals differed between samples for 0 of 10 OSVs
+10 OSVs: 10 queries compiled, 7 with a taint path, 1 no path with sink sites, 2 no sink sites

@@ -1,0 +1,34 @@
+{
+ "osv": "GO-2025-4010",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": null,
+ "packages": {
+  "net/url": {
+   "symbols": [
+    "Parse",
+    "ParseRequestURI",
+    "URL.Parse"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 4,
+ "taint_sinks_by_source": {
+  "response": 4
+ },
+ "taint_path_rows": 8,
+ "taint_sinks": [
+  "github.com/go-openapi/jsonreference/reference.go:112",
+  "k8s.io/apimachinery/pkg/util/proxy/transport.go:194",
+  "k8s.io/kube-openapi/pkg/validation/spec/schema.go:149",
+  "k8s.io/kubectl/pkg/cmd/util/helpers.go:268"
+ ],
+ "sink_sites_outside_pkg": 30,
+ "sinks_in_binary": 4,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": []
+}

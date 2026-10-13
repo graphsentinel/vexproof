@@ -1,0 +1,24 @@
+osv	severity	compiled	sink_sites_outside_pkg	taint_results	unstable_proposals	error
+GO-2026-5026	critical	True	18	0	0	
+GO-2026-5856	medium	True	15	0	0	
+GO-2026-5970	high	True	20	0	0	
+GO-2026-5972	high	True	0	0	0	
+GO-2026-6061	high	True	5	0	0	
+GO-2026-6089	high	True	4	0	0	
+GO-2026-6090	high	True	15	0	0	
+GO-2026-6091	medium	True	10	0	0	
+GO-2026-6218	medium	True	0	0	0	
+GO-2026-6348	high	True	8	41	0	
+GO-2026-6505	low	True	0	0	0	
+GO-2026-6599	unknown	True	10	0	0	
+GO-2026-6600	unknown	True	10	0	0	
+GO-2026-6603	unknown	True	849	241	0	
+GO-2026-6605	unknown	True	18	0	0	
+GO-2026-6607	unknown	True	15	0	0	
+GO-2026-6608	unknown	True	0	0	0	
+GO-2026-6609	unknown	True	15	0	0	
+GO-2026-6610	unknown	True	18	0	0	
+GO-2026-6611	unknown	True	849	241	0	
+GO-2026-6612	unknown	True	849	241	0	
+GO-2026-6613	unknown	True	823	235	0	
+GO-2026-6617	unknown	True	849	241	0	

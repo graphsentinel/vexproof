@@ -1,0 +1,29 @@
+{
+ "osv": "GO-2025-3595",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": null,
+ "packages": {
+  "golang.org/x/net/html": {
+   "symbols": [
+    "Tokenizer.Next"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 1,
+ "taint_sinks_by_source": {
+  "response": 1
+ },
+ "taint_path_rows": 1,
+ "taint_sinks": [
+  "k8s.io/apimachinery/pkg/util/proxy/transport.go:185"
+ ],
+ "sink_sites_outside_pkg": 1,
+ "sinks_in_binary": 1,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": []
+}

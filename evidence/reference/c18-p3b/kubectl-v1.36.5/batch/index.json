@@ -1,0 +1,143 @@
+{
+ "report": "/home/ubuntu/lab/lab/.runtime/work/run-1/results/report/v1.36.5--kubectl.json",
+ "db": "/home/ubuntu/lab/lab/.runtime/p3b/kubectl-v1.36.5/db",
+ "timing": {
+  "compile_s": 17,
+  "taint_s": 121,
+  "sites_s": 45
+ },
+ "mode": "all-args",
+ "model": null,
+ "results": [
+  {
+   "osv": "GO-2026-6603",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 521,
+   "taint_results": 67,
+   "sinks_in_binary": 62,
+   "taint_sinks_by_source": {
+    "request": 66,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6605",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 26,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6607",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 28,
+   "taint_results": 1,
+   "sinks_in_binary": 1,
+   "taint_sinks_by_source": {
+    "request": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6608",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6609",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 0,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6610",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 23,
+   "taint_results": 0,
+   "sinks_in_binary": null,
+   "taint_sinks_by_source": {},
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6611",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 521,
+   "taint_results": 67,
+   "sinks_in_binary": 62,
+   "taint_sinks_by_source": {
+    "request": 66,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6612",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 521,
+   "taint_results": 67,
+   "sinks_in_binary": 62,
+   "taint_sinks_by_source": {
+    "request": 66,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6613",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 551,
+   "taint_results": 67,
+   "sinks_in_binary": 62,
+   "taint_sinks_by_source": {
+    "request": 66,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  },
+  {
+   "osv": "GO-2026-6617",
+   "severity": "unknown",
+   "compiled": true,
+   "sink_sites_outside_pkg": 521,
+   "taint_results": 67,
+   "sinks_in_binary": 62,
+   "taint_sinks_by_source": {
+    "request": 66,
+    "response": 1
+   },
+   "unstable_proposals": 0,
+   "error": ""
+  }
+ ],
+ "rescored_with_pclnsym": "pclnsym-all-kubectl.txt"
+}

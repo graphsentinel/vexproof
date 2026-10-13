@@ -1,0 +1,11 @@
+osv	severity	compiled	sink_sites_outside_pkg	taint_results	sinks_in_binary	taint_sinks_by_source	unstable_proposals	error
+GO-2026-6603	unknown	True	521	67		{'request': 66, 'response': 1}	0	
+GO-2026-6605	unknown	True	26	1		{'response': 1}	0	
+GO-2026-6607	unknown	True	28	1		{'request': 1}	0	
+GO-2026-6608	unknown	True	0	0		{}	0	
+GO-2026-6609	unknown	True	0	0		{}	0	
+GO-2026-6610	unknown	True	23	0		{}	0	
+GO-2026-6611	unknown	True	521	67		{'request': 66, 'response': 1}	0	
+GO-2026-6612	unknown	True	521	67		{'request': 66, 'response': 1}	0	
+GO-2026-6613	unknown	True	551	67		{'request': 66, 'response': 1}	0	
+GO-2026-6617	unknown	True	521	67		{'request': 66, 'response': 1}	0	

@@ -418,6 +418,92 @@ def metrics(A):
             f"complete={rec['complete']}")
 
 
+def toolchain(go):
+    """the official Go toolchain of version go (go.dev tarball, sha256 from go.dev's release list), cached"""
+    import tarfile
+    import urllib.request
+    dst = os.path.join(RT, "toolchains", f"go{go}")
+    if os.path.exists(os.path.join(dst, "go", "bin", "go")):
+        return os.path.join(dst, "go")
+    rel = json.load(urllib.request.urlopen("https://go.dev/dl/?mode=json&include=all"))
+    f = next(x for r in rel if r["version"] == f"go{go}" for x in r["files"]
+             if x["os"] == "linux" and x["arch"] == "amd64" and x["kind"] == "archive")
+    os.makedirs(dst, exist_ok=True)
+    tgz = os.path.join(dst, f["filename"])
+    urllib.request.urlretrieve(f"https://go.dev/dl/{f['filename']}", tgz)
+    if sha256(tgz) != f["sha256"]:
+        raise SystemExit(f"{f['filename']}: sha256 mismatch")
+    with tarfile.open(tgz) as t:
+        t.extractall(dst)
+    os.remove(tgz)
+    return os.path.join(dst, "go")
+
+
+def codeql(A):
+    """P3b: a CodeQL database of one target (never shared), built with the shipped Go version and tags, then the
+    all-args batch (lab/codeql/sinkgen/batch.py) over the target's fast-path report"""
+    runner.ENGINE = runner.engine()
+    shipped = os.path.join(BIN, A.release, A.target)
+    bi = runner.buildinfo(shipped)
+    out = os.path.abspath(A.out)
+    if os.path.exists(out):
+        raise SystemExit(f"{out} exists: never overwritten")
+    os.makedirs(out)
+    goroot = toolchain(bi["go"])
+    src = runner.source_tree({"repo": K8S, "ref": A.release})
+    cgo = "1" if re.search(r"CGO_ENABLED=1", bi["raw"]) else "0"
+    env = {**os.environ, "PATH": f"{goroot}/bin:{os.environ['PATH']}", "GOROOT": goroot, "GOTOOLCHAIN": "local",
+           "GOFLAGS": "-mod=vendor", "CGO_ENABLED": cgo, "GOOS": bi.get("goos") or "linux",
+           "GOARCH": bi.get("goarch") or "amd64"}
+    tags = f"-tags {bi['tags']} " if bi["tags"] else ""
+    db = os.path.join(out, "db")
+    t0 = time.time()
+    log(f"codeql database {A.target} {A.release} with go{bi['go']} ({tags.strip() or 'no tags'})")
+    p = subprocess.run(["codeql", "database", "create", db, "--language=go", f"--source-root={src}",
+                        "--extractor-option=go.extract_vendor_dirs=true", f"--command=go build {tags}-o /dev/null {MAIN[A.target]}",
+                        "--overwrite"], env=env, capture_output=True, text=True)
+    open(os.path.join(out, "db-create.log"), "w").write(p.stdout[-20000:] + p.stderr[-20000:])
+    if p.returncode or not glob.glob(os.path.join(db, "db-go", "*.dbscheme")):
+        raise SystemExit(f"database create failed (rc {p.returncode}); see db-create.log")
+    tree = subprocess.run(["git", "-C", src, "rev-parse", "HEAD^{tree}"], capture_output=True, text=True).stdout.strip()
+    ident = {"target": A.target, "release": A.release, "codeql": subprocess.run(["codeql", "version", "--format=terse"],
+             capture_output=True, text=True).stdout.strip(), "go_version": subprocess.run(["go", "version"], env=env,
+             capture_output=True, text=True).stdout.strip(), "go_env": {k: env[k] for k in ("GOOS", "GOARCH", "CGO_ENABLED",
+             "GOFLAGS", "GOTOOLCHAIN")}, "tags": bi["tags"], "source": {"ref": A.release, "tree": tree},
+             "vendor_modules_sha256": sha256(os.path.join(src, "vendor", "modules.txt")),
+             "shipped_go": bi["go"], "shipped_sha256": sha256(shipped), "extract_vendor_dirs": True,
+             "command": f"go build {tags}-o /dev/null {MAIN[A.target]}", "db_seconds": round(time.time() - t0)}
+    # the report's evidence paths are relative to a lab work directory (lab.sh test: lab/.runtime/work/run-1)
+    work = os.path.join(RT, "work", "run-1")
+    rep = os.path.join(work, "results", "report", f"{A.release}--{A.target}.json")
+    if not os.path.exists(rep):
+        raise SystemExit(f"{rep}: no fast-path report (run scripts/lab.sh test first)")
+    ident["report"] = os.path.relpath(rep, ROOT)
+    batch = os.path.join(out, "batch")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "lab", "codeql", "sinkgen", "batch.py"), "--mode", "all-args",
+                        "--report", rep, "--vendor", os.path.join(src, "vendor"), "--goroot", os.path.join(goroot, "src"),
+                        "--db", db, "--out", batch, "--pclnsym",
+                        os.path.join(work, "evidence", f"c9-autochain-{A.release}", f"pclnsym-all-{A.target}.txt")],
+                       env=env, capture_output=True, text=True, cwd=work)
+    open(os.path.join(out, "batch.log"), "w").write(p.stdout[-20000:] + p.stderr[-20000:])
+    ident["batch_rc"] = p.returncode
+    ident["template_sha256"] = sha256(os.path.join(ROOT, "lab", "codeql", "sinkgen", "sinkgen.py"))
+    ident["batch_sha256"] = sha256(os.path.join(ROOT, "lab", "codeql", "sinkgen", "batch.py"))
+    if os.path.exists(os.path.join(batch, "index.json")):
+        res = json.load(open(os.path.join(batch, "index.json")))["results"]
+        ident["osvs"] = len(res)
+        ident["compiled"] = sum(bool(x.get("compiled")) for x in res)
+        ident["with_sink_sites"] = sum((x.get("sink_sites_outside_pkg") or 0) > 0 for x in res)
+        ident["with_path"] = sum(bool(x.get("taint_results")) for x in res)
+    if not A.keep_db and p.returncode == 0 and os.path.exists(os.path.join(batch, "index.json")):
+        # only after a successful batch: rebuildable from the recorded identity, several GB each
+        shutil.rmtree(db, ignore_errors=True)
+        ident["db_kept"] = False
+    json.dump(ident, open(os.path.join(out, "identity.json"), "w"), indent=1)
+    log(f"batch rc {p.returncode}: {ident.get('osvs')} OSVs, {ident.get('compiled')} compiled, "
+        f"{ident.get('with_sink_sites')} with sink sites, {ident.get('with_path')} with a path")
+
+
 # ---------------------------------------------------------------- rows
 def goroot(go, dst):
     if not os.path.isdir(os.path.join(dst, "net")):
@@ -525,6 +611,10 @@ def main():
     for a in ("--release", "--bin", "--profile", "--run", "--out"):
         k.add_argument(a, required=True)
     k.add_argument("--k3s-image")
+    cq = sp.add_parser("codeql")
+    for x in ("--target", "--release", "--out"):
+        cq.add_argument(x, required=True)
+    cq.add_argument("--keep-db", action="store_true")
     ms = sp.add_parser("metrics")
     for x in ("--profile", "--run", "--out"):
         ms.add_argument(x, required=True)
@@ -537,7 +627,7 @@ def main():
     r.add_argument("--n", type=int, default=3, help="pre-registered number of runs")
     r.add_argument("runs", nargs="+")
     A = ap.parse_args()
-    {"build": build, "kubectl": kubectl, "apiserver": apiserver, "metrics": metrics, "rows": rows}[A.cmd](A)
+    {"build": build, "kubectl": kubectl, "apiserver": apiserver, "metrics": metrics, "codeql": codeql, "rows": rows}[A.cmd](A)
 
 
 if __name__ == "__main__":

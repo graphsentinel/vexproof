@@ -1,0 +1,37 @@
+{
+ "osv": "GO-2026-5158",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": null,
+ "packages": {
+  "go.opentelemetry.io/otel/baggage": {
+   "symbols": [
+    "New",
+    "Parse"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/propagation": {
+   "symbols": [
+    "Baggage.Extract"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 1,
+ "taint_sinks_by_source": {
+  "request": 1
+ },
+ "taint_path_rows": 1,
+ "taint_sinks": [
+  "go.opentelemetry.io/otel/propagation/baggage.go:76"
+ ],
+ "sink_sites_outside_pkg": 0,
+ "sinks_in_binary": 1,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": []
+}

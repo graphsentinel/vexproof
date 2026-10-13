@@ -1,0 +1,5 @@
+0 proposals for 14 OSVs in 0s
+14 of 14 OSVs in the combined query (21s compile)
+timing: {"compile_s": 21, "taint_s": 242, "sites_s": 84}
+proposals differed between samples for 0 of 14 OSVs
+14 OSVs: 14 queries compiled, 12 with a taint path, 1 no path with sink sites, 2 no sink sites

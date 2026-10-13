@@ -1,0 +1,33 @@
+{
+ "osv": "GO-2025-4009",
+ "group": "under_investigation",
+ "severity": "medium",
+ "model": null,
+ "packages": {
+  "encoding/pem": {
+   "symbols": [
+    "Decode"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 3,
+ "taint_sinks_by_source": {
+  "response": 3
+ },
+ "taint_path_rows": 3,
+ "taint_sinks": [
+  "k8s.io/client-go/util/cert/pem.go:40",
+  "k8s.io/client-go/util/certificate/csr/csr.go:359",
+  "k8s.io/kubectl/pkg/util/certificate/certificate.go:29"
+ ],
+ "sink_sites_outside_pkg": 7,
+ "sinks_in_binary": 2,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": [
+  "k8s.io/client-go/util/certificate/csr"
+ ]
+}

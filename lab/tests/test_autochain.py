@@ -364,7 +364,7 @@ def test_every_reachable_dimension_combination_has_a_headline():
     for cons, meas, exe, inp, rev in itertools.product(
             ("ok", "contradictory_rows", "layers_disagree"), ("not_measured", "measured(p)"),
             ("n/a", "observed", "not_observed(p)"), ("not_run", "client", "upstream_only", "not_decidable",
-                                                      "no_input_path_demonstrated"),
+                                                      "no_input_path_demonstrated", "path_outside_binary"),
             ("none", "candidate_awaiting_review", "rejected")):
         if (meas == "not_measured") != (exe == "n/a"):
             continue  # execution is set exactly when coverage rows exist
@@ -579,3 +579,47 @@ def test_symcov_goos_filter_is_per_import(tmp_path):
                          capture_output=True, text=True, check=True).stdout
     rows = [ln.split("\t") for ln in out.splitlines()[1:] if ln]
     assert [r[5] for r in rows] == ["m/q"] and rows[0][10] == "executed"
+
+
+def test_no_path_without_sink_sites_is_not_analysed(tmp_path):
+    """DEC-08: a compiled query with no path and no sink call sites in the database says nothing"""
+    args = runtime_inputs(tmp_path, executed=True, request_sinks=0)
+    idx = tmp_path / "cq" / "index.json"
+    d = json.loads(idx.read_text())
+    d["results"][0]["sink_sites_outside_pkg"] = 0
+    idx.write_text(json.dumps(d))
+    c = run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], b"m/p.(*T).F", "symbol", extra=args)
+    assert c["substate"] == "observed_input_path_not_analysed"
+    assert "cannot_be_controlled" not in c["status_note"] and "no sink sites" in c["status_note"]
+
+
+def _path_case(tmp_path, sinks_in_binary):
+    args = runtime_inputs(tmp_path, executed=True, request_sinks=2)
+    idx = tmp_path / "cq" / "index.json"
+    d = json.loads(idx.read_text())
+    if sinks_in_binary is None:
+        d["results"][0].pop("sinks_in_binary", None)
+    else:
+        d["results"][0]["sinks_in_binary"] = sinks_in_binary
+    idx.write_text(json.dumps(d))
+    return run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], b"m/p.(*T).F", "symbol", extra=args)
+
+
+def test_unscored_path_is_not_no_path(tmp_path):
+    c = _path_case(tmp_path, None)
+    assert c["substate"] == "observed_input_path_not_analysed" and "not scored" in c["status_note"]
+
+
+def test_path_outside_the_binary_is_its_own_state(tmp_path):
+    c = _path_case(tmp_path, 0)
+    assert c["substate"] == "observed_path_outside_binary" and "cannot_be_controlled" not in c["status_note"]
+
+
+def test_path_with_unknown_source_kind_is_not_no_path(tmp_path):
+    args = runtime_inputs(tmp_path, executed=True, request_sinks=2)
+    idx = tmp_path / "cq" / "index.json"
+    d = json.loads(idx.read_text())
+    d["results"][0]["taint_sinks_by_source"] = None
+    idx.write_text(json.dumps(d))
+    c = run(tmp_path, IMP, ["m/p.(*T).F", "m/p.G"], b"m/p.(*T).F", "symbol", extra=args)
+    assert c["substate"] == "observed_input_path_not_analysed" and "source kind not recorded" in c["status_note"]

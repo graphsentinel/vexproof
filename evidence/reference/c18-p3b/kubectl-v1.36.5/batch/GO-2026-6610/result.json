@@ -1,0 +1,38 @@
+{
+ "osv": "GO-2026-6610",
+ "group": "under_investigation",
+ "severity": "unknown",
+ "model": null,
+ "packages": {
+  "net/http": {
+   "symbols": [
+    "Client.Do",
+    "Client.Get",
+    "Get",
+    "Transport.CloseIdleConnections",
+    "Transport.RoundTrip",
+    "http2noDialH2RoundTripper.RoundTrip"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "golang.org/x/net/http2": {
+   "symbols": [
+    "Transport.NewClientConn",
+    "Transport.RoundTrip",
+    "noDialH2RoundTripper.NewClientConn",
+    "noDialH2RoundTripper.RoundTrip",
+    "unencryptedTransport.RoundTrip"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 0,
+ "taint_sinks_by_source": {},
+ "taint_path_rows": 0,
+ "taint_sinks": [],
+ "sink_sites_outside_pkg": 23
+}

@@ -1,0 +1,255 @@
+{
+ "osv": "GO-2026-6505",
+ "group": "under_investigation",
+ "severity": "low",
+ "model": null,
+ "packages": {
+  "go.opentelemetry.io/otel/sdk": {
+   "symbols": [
+    "Version",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/trace": {
+   "symbols": [
+    "NeverSample",
+    "NewBatchSpanProcessor",
+    "NewTracerProvider",
+    "ParentBased",
+    "Shutdown$1",
+    "TraceIDRatioBased",
+    "TracerProvider.Shutdown",
+    "TracerProvider.Tracer",
+    "WithResource",
+    "WithSampler",
+    "WithSpanProcessor",
+    "errUnsupportedSampler.Error",
+    "init",
+    "init$1",
+    "logDropped$1",
+    "nonRecordingSpan.AddEvent",
+    "nonRecordingSpan.End",
+    "nonRecordingSpan.IsRecording",
+    "nonRecordingSpan.RecordError",
+    "nonRecordingSpan.SetAttributes",
+    "nonRecordingSpan.SetName",
+    "nonRecordingSpan.SetStatus",
+    "nonRecordingSpan.SpanContext",
+    "nonRecordingSpan.TracerProvider",
+    "recordingSpan.AddEvent",
+    "recordingSpan.End",
+    "recordingSpan.IsRecording",
+    "recordingSpan.RecordError",
+    "recordingSpan.SetAttributes",
+    "recordingSpan.SetName",
+    "recordingSpan.SetStatus",
+    "recordingSpan.SpanContext",
+    "recordingSpan.TracerProvider",
+    "samplerArgParseError.Error",
+    "samplerArgParseError.Unwrap",
+    "tracer.Start",
+    "tracerProviderConfig.MarshalLog"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace": {
+   "symbols": [
+    "Exporter.ExportSpans",
+    "Exporter.Shutdown",
+    "New",
+    "Shutdown$1",
+    "Start$1",
+    "Version",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/trace/internal/env": {
+   "symbols": [
+    "BatchSpanProcessorExportTimeout",
+    "BatchSpanProcessorMaxExportBatchSize",
+    "BatchSpanProcessorMaxQueueSize",
+    "BatchSpanProcessorScheduleDelay",
+    "SpanAttributeCount",
+    "SpanAttributeValueLength",
+    "SpanEventAttributeCount",
+    "SpanEventCount",
+    "SpanLinkAttributeCount",
+    "SpanLinkCount",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc": {
+   "symbols": [
+    "New",
+    "WithDialOption",
+    "WithEndpoint",
+    "WithInsecure",
+    "client.Start",
+    "client.Stop",
+    "client.UploadTraces",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/observ": {
+   "symbols": [
+    "ExportOp.End",
+    "Instrumentation.ExportSpans",
+    "NewInstrumentation",
+    "init",
+    "init$1",
+    "init$2",
+    "init$3",
+    "init$4"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform": {
+   "symbols": [
+    "Spans",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/envconfig": {
+   "symbols": [
+    "EnvOptionsReader.Apply",
+    "WithBool",
+    "WithCertPool",
+    "WithClientCert",
+    "WithDuration",
+    "WithHeaders",
+    "WithURL",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal": {
+   "symbols": [
+    "PartialSuccess.As",
+    "PartialSuccess.Error",
+    "PartialSuccess.Is",
+    "TracePartialSuccessError",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/resource": {
+   "symbols": [
+    "Default",
+    "Default$1",
+    "Environment",
+    "Merge",
+    "New",
+    "NewSchemaless$1",
+    "Resource.Equivalent",
+    "Resource.Iter",
+    "Resource.SchemaURL",
+    "WithAttributes",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/retry": {
+   "symbols": [
+    "Config.RequestFunc",
+    "RequestFunc$1",
+    "RequestFunc$2",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/counter": {
+   "symbols": [
+    "NextExporterID",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/trace/internal/observ": {
+   "symbols": [
+    "BSP.Processed",
+    "BSP.ProcessedQueueFull",
+    "BSP.Shutdown",
+    "NewBSP",
+    "NewTracer",
+    "Tracer.Enabled",
+    "Tracer.SpanEnded",
+    "Tracer.SpanLive",
+    "Tracer.SpanStarted",
+    "init",
+    "init$1"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/x": {
+   "symbols": [
+    "Feature[string].Enabled",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/internal/x": {
+   "symbols": [
+    "Feature[string].Enabled",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/otlpconfig": {
+   "symbols": [
+    "NewGRPCConfig",
+    "NewGRPCOption",
+    "WithEndpoint",
+    "WithInsecure",
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  },
+  "go.opentelemetry.io/otel/sdk/instrumentation": {
+   "symbols": [
+    "init"
+   ],
+   "truncated": false,
+   "mode": "all-args"
+  }
+ },
+ "symbols_from": "govulncheck traces",
+ "compiled": true,
+ "taint_results": 5,
+ "taint_sinks_by_source": {
+  "response": 5,
+  "request": 3
+ },
+ "taint_path_rows": 9,
+ "taint_sinks": [
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/client.go:211",
+  "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/options.go:74",
+  "go.opentelemetry.io/otel/sdk/trace/tracer.go:179",
+  "go.opentelemetry.io/otel/sdk/trace/tracer.go:63",
+  "k8s.io/component-base/tracing/utils.go:65"
+ ],
+ "sink_sites_outside_pkg": 16,
+ "sinks_in_binary": 5,
+ "sinks_main_module": 0,
+ "sink_packages_not_in_binary": []
+}

@@ -1,0 +1,17 @@
+[2026-10-13 22:39:02] [build-stderr] Scanning for files in /home/ubuntu/lab/lab/.runtime/src/https___github.com_kubernetes_kubernetes_v1.36.5...
+[2026-10-13 22:39:03] [build-stderr] /home/ubuntu/lab/lab/.runtime/p3b/kube-apiserver-v1.36.5/db: Indexing files in in /home/ubuntu/lab/lab/.runtime/src/https___github.com_kubernetes_kubernetes_v1.36.5...
+[2026-10-13 22:39:03] [build-stderr] Running command in /home/ubuntu/lab/lab/.runtime/src/https___github.com_kubernetes_kubernetes_v1.36.5: [/opt/codeql-2.25.2/codeql/html/tools/index-files.sh, /home/ubuntu/lab/lab/.runtime/p3b/kube-apiserver-v1.36.5/db/working/files-to-index1901120381012186728.list]
+Initializing database at /home/ubuntu/lab/lab/.runtime/p3b/kube-apiserver-v1.36.5/db.
+Running build command: [go, build, -tags, selinux,notest,grpcnotrace, -o, /dev/null, ./cmd/kube-apiserver]
+Running command in /home/ubuntu/lab/lab/.runtime/src/https___github.com_kubernetes_kubernetes_v1.36.5: [go, build, -tags, selinux,notest,grpcnotrace, -o, /dev/null, ./cmd/kube-apiserver]
+Finalizing database at /home/ubuntu/lab/lab/.runtime/p3b/kube-apiserver-v1.36.5/db.
+Running pre-finalize script /opt/codeql-2.25.2/codeql/go/tools/pre-finalize.sh in /home/ubuntu/lab/lab/.runtime/src/https___github.com_kubernetes_kubernetes_v1.36.5.
+Running command in /home/ubuntu/lab/lab/.runtime/src/https___github.com_kubernetes_kubernetes_v1.36.5: [/opt/codeql-2.25.2/codeql/go/tools/pre-finalize.sh]
+Pre-finalize script /opt/codeql-2.25.2/codeql/go/tools/pre-finalize.sh completed in 2055 ms.
+Running TRAP import for CodeQL database at /home/ubuntu/lab/lab/.runtime/p3b/kube-apiserver-v1.36.5/db...
+Importing TRAP files
+Merging relations
+Finished writing database (relations: 141.46 MiB; string pool: 44.03 MiB).
+TRAP import complete (10m11s).
+Finished zipping source archive (17.21 MiB).
+Successfully created database at /home/ubuntu/lab/lab/.runtime/p3b/kube-apiserver-v1.36.5/db.

@@ -243,8 +243,8 @@ chain	chains-v1.36.5/kubelet/GO-2026-5426	not_affected|vulnerable_code_not_prese
 decisions	ground-truth	6/6
 report	metrics-server-v0.9.0/metrics-server	affected=0 not_affected=0 candidate=0 under_investigation=23 static_reachable=0 static_not_reached=13 scanner_only=0
 report	v1.28.2/kube-apiserver	affected=4 not_affected=4 candidate=3 under_investigation=69 static_reachable=0 static_not_reached=56 scanner_only=0
-report	v1.28.2/kubectl	affected=0 not_affected=3 candidate=0 under_investigation=61 static_reachable=0 static_not_reached=36 scanner_only=0
-report	v1.36.5/kube-apiserver	affected=0 not_affected=1 candidate=0 under_investigation=14 static_reachable=0 static_not_reached=12 scanner_only=0
-report	v1.36.5/kubectl	affected=0 not_affected=0 candidate=0 under_investigation=10 static_reachable=0 static_not_reached=5 scanner_only=0
+report	v1.28.2/kubectl	affected=0 not_affected=3 candidate=9 under_investigation=52 static_reachable=0 static_not_reached=36 scanner_only=0
+report	v1.36.5/kube-apiserver	affected=0 not_affected=1 candidate=3 under_investigation=11 static_reachable=0 static_not_reached=12 scanner_only=0
+report	v1.36.5/kubectl	affected=0 not_affected=0 candidate=1 under_investigation=9 static_reachable=0 static_not_reached=5 scanner_only=0
 report	v1.36.5/kubelet	affected=0 not_affected=2 candidate=0 under_investigation=15 static_reachable=0 static_not_reached=10 scanner_only=0
 trigger	GO-2026-6609/shipped	triggered

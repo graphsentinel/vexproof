@@ -215,7 +215,9 @@ def codeql():
     out = os.path.join(OUT, "codeql")
     shutil.rmtree(out, ignore_errors=True)
     sh(sys.executable, os.path.join(ROOT, "lab", "codeql", "sinkgen", "batch.py"), "--mode", "all-args", "--report", rep,
-       "--vendor", os.path.join(SRC, "vendor"), "--goroot", os.path.join(goroot, "src"), "--db", db, "--out", out, cwd=work)
+       "--vendor", os.path.join(SRC, "vendor"), "--goroot", os.path.join(goroot, "src"), "--db", db, "--out", out,
+       "--pclnsym", os.path.join(work, "evidence", "c9-autochain-metrics-server-v0.9.0", "pclnsym-all-metrics-server.txt"),
+       cwd=work)
     res = json.load(open(os.path.join(out, "index.json")))["results"]
     meas = json.load(open(os.path.join(ROOT, "lab", ".runtime", "in", "evidence", "c11-codeql-batch",
                                        "metrics-server-v0.9.0--metrics-server-all-args", "index.json")))["results"]

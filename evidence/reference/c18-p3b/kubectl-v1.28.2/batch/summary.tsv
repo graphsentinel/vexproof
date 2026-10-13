@@ -1,0 +1,62 @@
+osv	severity	compiled	sink_sites_outside_pkg	taint_results	sinks_in_binary	taint_sinks_by_source	unstable_proposals	error
+GO-2023-2102	high	True	2	0		{}	0	
+GO-2023-2186	medium	True	0	0		{}	0	
+GO-2023-2382	medium	True	0	0		{}	0	
+GO-2024-2598	medium	True	0	0		{}	0	
+GO-2024-2599	medium	True	0	0		{}	0	
+GO-2024-2600	medium	True	20	0		{}	0	
+GO-2024-2687	medium	True	396	54		{'request': 53, 'response': 1}	0	
+GO-2024-2887	critical	True	0	0		{}	0	
+GO-2024-2888	medium	True	6	0		{}	0	
+GO-2024-2963	medium	True	20	0		{}	0	
+GO-2025-3373	medium	True	19	3		{'response': 3}	0	
+GO-2025-3420	medium	True	20	0		{}	0	
+GO-2025-3447	high	True	0	0		{}	0	
+GO-2025-3503	medium	True	0	0		{}	0	
+GO-2025-3563	critical	True	0	0		{}	0	
+GO-2025-3595	medium	True	1	1		{'response': 1}	0	
+GO-2025-3751	medium	True	20	0		{}	0	
+GO-2025-3956	medium	True	5	0		{}	0	
+GO-2025-4007	medium	True	19	3		{'response': 3}	0	
+GO-2025-4008	medium	True	16	1		{'request': 1}	0	
+GO-2025-4009	medium	True	7	3		{'response': 3}	0	
+GO-2025-4010	medium	True	30	4		{'response': 4}	0	
+GO-2025-4011	medium	True	0	0		{}	0	
+GO-2025-4012	medium	True	20	0		{}	0	
+GO-2025-4013	high	True	0	0		{}	0	
+GO-2025-4014	low	True	1	0		{}	0	
+GO-2025-4155	high	True	0	0		{}	0	
+GO-2025-4175	medium	True	0	0		{}	0	
+GO-2026-4337	medium	True	16	1		{'request': 1}	0	
+GO-2026-4340	medium	True	16	1		{'request': 1}	0	
+GO-2026-4341	high	True	7	3		{'request': 2, 'response': 1}	0	
+GO-2026-4601	high	True	30	4		{'response': 4}	0	
+GO-2026-4602	low	True	7	1		{'response': 1}	0	
+GO-2026-4869	medium	True	1	0		{}	0	
+GO-2026-4870	high	True	16	1		{'request': 1}	0	
+GO-2026-4918	high	True	20	0		{}	0	
+GO-2026-4946	high	True	0	0		{}	0	
+GO-2026-4947	high	True	0	0		{}	0	
+GO-2026-4958	high	True	6	0		{}	0	
+GO-2026-4971	high	True	14	1		{'request': 1}	0	
+GO-2026-4976	medium	True	3	1		{'response': 1}	0	
+GO-2026-5026	critical	True	21	0		{}	0	
+GO-2026-5037	medium	True	0	0		{}	0	
+GO-2026-5038	high	True	2	0		{}	0	
+GO-2026-5039	medium	True	0	0		{}	0	
+GO-2026-5856	medium	True	16	1		{'request': 1}	0	
+GO-2026-5970	high	True	12	0		{}	0	
+GO-2026-5972	high	True	0	0		{}	0	
+GO-2026-6089	high	True	2	0		{}	0	
+GO-2026-6090	high	True	16	1		{'request': 1}	0	
+GO-2026-6218	medium	True	0	0		{}	0	
+GO-2026-6603	unknown	True	405	54		{'request': 53, 'response': 1}	0	
+GO-2026-6605	unknown	True	23	1		{'response': 1}	0	
+GO-2026-6607	unknown	True	16	1		{'request': 1}	0	
+GO-2026-6608	unknown	True	0	0		{}	0	
+GO-2026-6609	unknown	True	0	0		{}	0	
+GO-2026-6610	unknown	True	20	0		{}	0	
+GO-2026-6611	unknown	True	405	54		{'request': 53, 'response': 1}	0	
+GO-2026-6612	unknown	True	405	54		{'request': 53, 'response': 1}	0	
+GO-2026-6613	unknown	True	444	54		{'request': 53, 'response': 1}	0	
+GO-2026-6617	unknown	True	405	54		{'request': 53, 'response': 1}	0	

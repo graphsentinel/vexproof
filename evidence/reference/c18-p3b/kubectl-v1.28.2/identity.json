@@ -1,0 +1,33 @@
+{
+ "target": "kubectl",
+ "release": "v1.28.2",
+ "codeql": "2.25.2",
+ "go_version": "go version go1.20.8 linux/amd64",
+ "go_env": {
+  "GOOS": "linux",
+  "GOARCH": "amd64",
+  "CGO_ENABLED": "0",
+  "GOFLAGS": "-mod=vendor",
+  "GOTOOLCHAIN": "local"
+ },
+ "tags": "selinux,notest",
+ "source": {
+  "ref": "v1.28.2",
+  "tree": "eea3a771d730ec4bef7bcfe958c1328415f518b0"
+ },
+ "vendor_modules_sha256": "87e8940e579b4f9d134566ee082f337388a3d013dbbfe34ac04b129807f5b3a3",
+ "shipped_go": "1.20.8",
+ "shipped_sha256": "c922440b043e5de1afa3c1382f8c663a25f055978cbc6e8423493ec157579ec5",
+ "extract_vendor_dirs": true,
+ "command": "go build -tags selinux,notest -o /dev/null ./cmd/kubectl",
+ "db_seconds": 421,
+ "report": "lab/.runtime/work/run-1/results/report/v1.28.2--kubectl.json",
+ "batch_rc": 0,
+ "template_sha256": "3d95417cc2e82ba1d87e1447dd0e40d25466e366151acdb7ea032dc1b2ce8697",
+ "batch_sha256": "993f6e670c6431d9a621c5a0ee972f6d1b5d0438b153e377bfcbb1b24248d466",
+ "osvs": 61,
+ "compiled": 61,
+ "with_sink_sites": 41,
+ "with_path": 24,
+ "db_kept": false
+}
