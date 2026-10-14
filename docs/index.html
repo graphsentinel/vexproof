@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vexproof: evidence for VEX claims</title>
+<meta name="description" content="vexproof turns each vulnerability finding in a Go binary into an evidence chain and derives one OpenVEX status from it. Missing evidence never becomes not_affected.">
+<style>
+:root {
+  --bg: #fbfbf9; --fg: #1d2125; --muted: #5b636b; --line: #dfe2e5; --card: #ffffff;
+  --accent: #1f5fae; --code: #f1f3f5;
+  --affected: #b42318; --na: #1a7f4b; --ui: #9a6700;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111417; --fg: #e6e8ea; --muted: #9aa3ab; --line: #2a3036; --card: #171b1f;
+    --accent: #7fb0ee; --code: #1e2328;
+    --affected: #ff8b7e; --na: #6fd19b; --ui: #e3b341;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111417; --fg: #e6e8ea; --muted: #9aa3ab; --line: #2a3036; --card: #171b1f;
+  --accent: #7fb0ee; --code: #1e2328;
+  --affected: #ff8b7e; --na: #6fd19b; --ui: #e3b341;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 8px; }
+h2 { font-size: 1.35rem; margin: 44px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.05rem; margin: 24px 0 8px; }
+p, li { color: var(--fg); }
+.lede { font-size: 1.15rem; color: var(--muted); margin: 0 0 20px; }
+a { color: var(--accent); }
+nav.links { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; }
+nav.links a { padding: 7px 14px; border: 1px solid var(--line); border-radius: 6px; text-decoration: none;
+  background: var(--card); }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code); padding: 14px 16px; border-radius: 6px; overflow-x: auto; line-height: 1.45; }
+pre code { background: none; padding: 0; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-size: 0.95rem; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 16px 0; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.stat b { display: block; font-size: 1.8rem; line-height: 1.1; }
+.stat span { color: var(--muted); font-size: 0.9rem; }
+.affected b { color: var(--affected); } .na b { color: var(--na); } .ui b { color: var(--ui); }
+.bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--line); margin: 6px 0 4px; }
+.bar i { display: block; height: 100%; }
+.legend { color: var(--muted); font-size: 0.85rem; }
+.layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.layer { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.layer h3 { margin: 0 0 6px; }
+.layer p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+.note { color: var(--muted); font-size: 0.92rem; }
+footer { margin-top: 56px; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>vexproof</h1>
+<p class="lede">Evidence chains for VEX statements. For every vulnerability a scanner reports in a Go binary, vexproof
+collects what each tool can actually show and derives one OpenVEX status. Missing or contradictory evidence never
+becomes <code>not_affected</code>.</p>
+
+<nav class="links" aria-label="Project links">
+  <a href="https://github.com/graphsentinel/vexproof">Repository</a>
+  <a href="https://github.com/graphsentinel/vexproof#run-it-in-your-own-environment">Run it</a>
+  <a href="https://github.com/graphsentinel/vexproof#use-it-on-your-own-go-service">Use it on your service</a>
+  <a href="https://github.com/graphsentinel/vexproof#how-to">How-to</a>
+</nav>
+<p class="note">Apache-2.0. A lab that reproduces the measurements and the decision rules, not a production scanner.</p>
+
+<h2 id="problem">The problem</h2>
+<p>A scanner lists dozens of CVEs; the developer says "we never call that code". VEX statements are meant to settle
+this, and a Kubernetes KEP (KEP-6377) proposes signed <code>not_affected</code> statements for Kubernetes' Go
+dependencies. But a VEX statement is an assessment, not evidence, and each <code>not_affected</code> justification
+needs a different kind of proof.</p>
+<p>Go makes this harder. A Go program is usually one statically linked file, so the scanner reports every advisory of
+every module in it, and runtime relevancy that works per file marks every module as "in use" once the binary starts.
+The question that matters is narrower: is the vulnerable <em>function</em> in the binary, can untrusted input reach it,
+and did it run?</p>
+
+<h2 id="how">How it works</h2>
+<p>One chain per (binary, advisory). Each layer answers one question:</p>
+<div class="layers">
+  <div class="layer"><h3>In the shipped binary?</h3><p>The function table (<code>.gopclntab</code>) of the official
+  binary, which survives stripping, with a positive control from the same package.</p></div>
+  <div class="layer"><h3>Can input reach it?</h3><p>govulncheck call paths and CodeQL data-flow paths from untrusted
+  input to the vulnerable function. Static: a path that <em>can</em> exist, not an execution.</p></div>
+  <div class="layer"><h3>Did it run?</h3><p>Coverage counters of a rebuild of the same source, and kernel uprobes on
+  the official binary.</p></div>
+  <div class="layer"><h3>Both in one request?</h3><p>The exercise gate: a marked client request arrives as the
+  vulnerable function's argument, and the trigger separates the last vulnerable build from the first fixed one in
+  every pre-registered run.</p></div>
+</div>
+
+<h3>Decision rules</h3>
+<ul>
+  <li><b>affected</b>: executed, an input path to the vulnerable function, and (for automatic chains) a passed exercise
+  gate cited by sha256 in a review file. Static layers alone never produce <code>affected</code>.</li>
+  <li><b>not_affected</b> (automatic chains): the vulnerable functions are missing from the shipped binary's full
+  listing, a positive control from the same package is present, and the names occur nowhere in the binary's bytes (Go
+  keeps the names of inlined functions there).</li>
+  <li><b>under_investigation</b>: everything else, with a sub-state that names the missing evidence. "Not observed"
+  alone never becomes <code>not_affected</code>.</li>
+</ul>
+
+<h2 id="results">Results</h2>
+<p>Kubernetes is the public test case: its binaries are official and anyone can check them, and its maintainers'
+decisions on these CVEs are documented. Six official binaries: kube-apiserver and kubectl at v1.28.2 and v1.36.5,
+kubelet v1.36.5, metrics-server v0.9.0.</p>
+
+<div class="stats">
+  <div class="stat"><b>6 / 6</b><span>hand-built chains matched the status of the documented maintainer decisions
+  (four CVEs, two releases)</span></div>
+  <div class="stat affected"><b>2</b><span>affected: the exercise gate passed 5/5 (GO-2026-6609, GO-2025-4009)</span></div>
+  <div class="stat na"><b>5</b><span>not_affected: the vulnerable code is not in the binary</span></div>
+  <div class="stat ui"><b>186</b><span>under_investigation, each naming what is missing</span></div>
+</div>
+
+<p>The 186 open chains of 193 automatic chains, by sub-state:</p>
+<div class="bar" role="img" aria-label="Sub-states of 186 under_investigation chains">
+  <i style="width:20.4%;background:#8c9aa8" title="not observed in three valid runs: 38"></i>
+  <i style="width:17.2%;background:#b07d2c" title="executed, no input path found despite sink sites: 32"></i>
+  <i style="width:15.1%;background:#6f7f8f" title="OSV symbols too coarse: 28"></i>
+  <i style="width:12.9%;background:#a0a9b2" title="executed, input path not analysed: 24"></i>
+  <i style="width:11.3%;background:#c7cdd3" title="not measured: 21"></i>
+  <i style="width:8.6%;background:#d39e4a" title="path only from upstream responses: 16"></i>
+  <i style="width:8.1%;background:#c4542f" title="request-side input path, no gate yet: 15"></i>
+  <i style="width:5.4%;background:#55606b" title="rejected in review: 10"></i>
+  <i style="width:1.0%;background:#3a4450" title="other: 2"></i>
+</div>
+<div class="table-wrap">
+<table>
+  <tr><th>Sub-state</th><th>Chains</th><th>What it needs next</th></tr>
+  <tr><td>not observed in three valid runs</td><td>38</td><td>a workload that reaches the code</td></tr>
+  <tr><td>executed, no input path found although CodeQL sees sink sites</td><td>32</td><td>review of the source model</td></tr>
+  <tr><td>OSV symbols too coarse</td><td>28</td><td>a more precise advisory</td></tr>
+  <tr><td>executed, input path not analysed</td><td>24</td><td>a CodeQL database with sink sites</td></tr>
+  <tr><td>not measured</td><td>21</td><td>a run on the target (15 are kubelet)</td></tr>
+  <tr><td>path only from upstream responses</td><td>16</td><td>a decision on the upstream it trusts</td></tr>
+  <tr><td>request-side input path, no gate yet</td><td>15</td><td>an exercise gate, or an upgrade</td></tr>
+  <tr><td>rejected in review</td><td>10</td><td>stays open with the reason</td></tr>
+  <tr><td>path outside the binary's packages / failed gate</td><td>1 / 1</td><td>review / stays inconclusive</td></tr>
+</table>
+</div>
+
+<h3>Traps found by cross-checking the layers</h3>
+<ul>
+  <li>CodeQL skips <code>vendor/</code> by default: 0 instead of 3 call sites, so its "no taint path" means nothing.</li>
+  <li>govulncheck shows one example path; for HTTP/2 rapid reset it ran through a debug socket, while uprobes showed the
+  real listener.</li>
+  <li>A go1.20 coverage build with <code>-coverpkg</code> but without the main package writes no counters at all.</li>
+  <li>vexproof's own symbol mapper ignored build tags and counted Linux code as execution of two Windows-only advisories,
+  until the shipped-binary layer contradicted it. Fixed and disclosed.</li>
+</ul>
+
+<h2 id="run">Run it</h2>
+<p>On an amd64 Ubuntu 24.04 or 26.04 machine with sudo (8 vCPUs, 16 GB RAM, 60 GB disk recommended). A throwaway VM
+keeps your workstation unchanged:</p>
+<pre><code>multipass launch 26.04 --name vexproof --cpus 8 --memory 16G --disk 60G
+multipass shell vexproof
+git clone https://github.com/graphsentinel/vexproof.git
+cd vexproof
+scripts/platform.sh install
+scripts/platform.sh cluster-up
+scripts/lab.sh all</code></pre>
+<p><code>lab.sh all</code> downloads the six official binaries (sha256-checked), regenerates their symbol listings,
+runs the fast path five times and compares every result with the expected ones. It ends with
+<code>Result: OK</code>. The report is <code>results/run-1/report/vex-report.html</code>.
+<a href="https://github.com/graphsentinel/vexproof#run-it-in-your-own-environment">Details, full path and clean-up</a>.</p>
+
+<h2 id="own">Use it on your own Go service</h2>
+<p>The CI recipe builds your service with coverage, deploys your own manifest into a throwaway k3d cluster, runs your
+workload commands and writes one chain and an OpenVEX document per symbol-level finding:</p>
+<pre><code>cp ci/metrics-server.json mysvc.json     # edit: Go image, main package, manifest, workload
+python3 ci/vexproof.py mysvc-run.json    # exit 1 if a status in fail_on (default: affected)</code></pre>
+<p><a href="https://github.com/graphsentinel/vexproof#use-it-on-your-own-go-service">Step by step, with every field
+explained</a>. It has been run on Kubernetes components and metrics-server; your service needs its own workload
+profile.</p>
+
+<h2 id="limits">Limits</h2>
+<ul>
+  <li>Go binaries only.</li>
+  <li>Execution evidence is only as broad as the workload. "Not observed" is not "unreachable", and "executed" is not
+  "exploitable".</li>
+  <li>Exercise gates are written per advisory and were run on an authenticated request path in a lab configuration.</li>
+  <li>No new vulnerability: every CVE here is known and fixed.</li>
+</ul>
+
+<footer>
+vexproof, Apache-2.0 · <a href="https://github.com/graphsentinel/vexproof">github.com/graphsentinel/vexproof</a>
+</footer>
+
+</main>
+</body>
+</html>

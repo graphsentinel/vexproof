@@ -5,14 +5,30 @@ each tool can actually show (the module is listed, the vulnerable symbols surviv
 reaches them, untrusted input reaches them, they executed under a workload) and derives one OpenVEX status from the
 chain. Missing or contradictory evidence never becomes `not_affected`.
 
-Measured on Kubernetes components (kube-apiserver, kubectl, kubelet at v1.28.2 and v1.36.5) and metrics-server
-v0.9.0. This is a lab: it reproduces the measurements and the decision rules, it is not a production scanner.
+The method is for any Go application that ships a binary. Kubernetes is the public test case: its binaries are
+official and anyone can download and check them, and its maintainers' decisions on these CVEs are documented, so the
+results can be compared with a public ground truth. Measured on six official binaries: kube-apiserver and kubectl at
+v1.28.2 and v1.36.5, kubelet v1.36.5, and metrics-server v0.9.0. This is a lab: it reproduces the measurements and the
+decision rules, it is not a production scanner.
+
+Project page: <https://graphsentinel.github.io/vexproof/>
+
+**At a glance**
+
+- Hand-built chains matched the status of all six documented Kubernetes maintainer decisions (four CVEs, two releases).
+- 193 automatic chains on six official binaries: 2 `affected` (an exercise gate passed), 5 `not_affected` (the
+  vulnerable code is not in the binary), 186 `under_investigation`, each with a sub-state that names the missing
+  evidence. Nothing defaults to `not_affected`.
+- Cross-checking the layers exposed silent traps in common tools (and one in vexproof itself), listed under
+  [Results](#results).
 
 - [The problem](#the-problem)
 - [How it works](#how-it-works)
 - [Results](#results)
 - [Quickstart](#quickstart)
+- [Run it in your own environment](#run-it-in-your-own-environment)
 - [How-to](#how-to)
+- [Use it on your own Go service](#use-it-on-your-own-go-service)
 - [Lab-only trigger tests](#lab-only-trigger-tests)
 - [Troubleshooting](#troubleshooting)
 - [Versions](#versions)
@@ -34,6 +50,24 @@ justifications each need a different kind of proof:
 
 Today's tools each answer one of these questions, with defaults that can silently give the wrong answer. vexproof
 joins them per finding and records which layer said what.
+
+**Why Go needs function-level evidence.** A Go program is usually one statically linked file. A scanner reads the
+module list embedded in it and reports every advisory of every module. Runtime relevancy that works per file cannot
+help: in a Syft 1.54.1 SBOM of the metrics-server v0.8.0 image, all 97 Go modules are recorded against the single
+executable `/metrics-server`, so once it starts, every module looks "in use" (reproduce with
+`docker run --rm docker.io/anchore/syft:v1.54.1 registry.k8s.io/metrics-server/metrics-server:v0.8.0 -o syft-json`
+and look at the `evident-by` relationships). The question that matters is narrower: is the vulnerable *function* in
+the binary, can untrusted input reach it, and did it run? vexproof answers each of these separately:
+
+- **static**: the function table of the shipped binary (`.gopclntab`, which survives stripping), govulncheck's call
+  paths, and CodeQL data-flow paths from untrusted input to the vulnerable function (a path that *can* exist, not an
+  execution);
+- **runtime**: coverage counters of a rebuild of the same source, and kernel uprobes on the official binary (the
+  function *did* run);
+- **both in one request**: the exercise gate, where a marked client request arrives as the vulnerable function's
+  argument in the shipped binary and the trigger separates the last vulnerable build from the first fixed one.
+
+Static layers alone never produce `affected`.
 
 ## How it works
 
@@ -113,6 +147,10 @@ Traps that the cross-checking layers exposed (each with its evidence in `evidenc
    runner).
 6. **Scanner freshness:** five x/net advisories published at 22:31 UTC were missed by a Trivy database updated at
    15:33 UTC the same day.
+7. **vexproof's own symbol mapper ignored build tags.** `lab/symcov.py` matched OSV symbols by name and counted Linux
+   functions as execution of two Windows-only advisories, which turned two `not_affected` chains into
+   `layers_disagree`. The shipped-binary layer contradicted it; `--goos` is now required and the original rows are
+   kept next to the corrected ones (c17).
 
 Not claimed:
 
@@ -147,6 +185,68 @@ Measured in multipass VMs with 8 vCPUs, 16 GB RAM and a 60 GB disk: `platform.sh
 `lab.sh all` with 5 runs 9.3 min on Ubuntu 26.04 (about 75–90 s per run after the first install) and 3.4 min with
 1 run on Ubuntu 24.04. `FULL=1` adds 29 min (CodeQL database 20 min of it); after it the VM used 14 GB of disk
 (4.9 GB under `lab/.runtime/`).
+
+## Run it in your own environment
+
+**What you need.** An amd64 machine with Ubuntu 24.04 or 26.04, sudo and internet access (the official binaries,
+container images and reference inputs are downloaded and sha256-checked). Recommended: 8 vCPUs, 16 GB RAM, 60 GB disk.
+The measured binaries are linux/amd64, so arm64 hosts (including Apple silicon) need an amd64 VM.
+
+**What `scripts/platform.sh install` changes on the host.** It installs only what is missing: Ubuntu packages
+(`docker.io`, `docker-buildx`, `python3-yaml`, `python3-pytest`, git, openssl, curl, unzip), Go into `/usr/local/go`,
+kubectl and k3d into `/usr/local/bin`, and adds your user to the `docker` group. An existing Docker engine or tool is
+left as it is. If you do not want this on your workstation, use a throwaway VM (option A).
+
+**Option A: a throwaway multipass VM (recommended).** From any machine with [multipass](https://multipass.run):
+
+```sh
+multipass launch 26.04 --name vexproof --cpus 8 --memory 16G --disk 60G
+multipass shell vexproof
+# inside the VM:
+git clone https://github.com/graphsentinel/vexproof.git
+cd vexproof
+scripts/platform.sh install
+scripts/platform.sh cluster-up
+scripts/lab.sh all              # about 10 minutes with 5 runs; RUNS=1 scripts/lab.sh all for one run
+```
+
+The repository's own end-to-end check does exactly this from a clean VM and writes a report:
+`scripts/multipass-e2e.sh` (Ubuntu 26.04, 5 runs), `UBUNTU=24.04 RUNS=1 scripts/multipass-e2e.sh`, or
+`FULL=1 RUNS=1 scripts/multipass-e2e.sh` for the full path. Run it from a clone on the host; it deletes the VM when
+the run succeeds and keeps it when it fails.
+
+**Option B: directly on an Ubuntu host.** The same four commands as the Quickstart. If `docker` is not usable right
+after `install`, open a new shell (new group membership) or run `newgrp docker`.
+
+**Read the results.**
+
+| File | What it shows |
+|---|---|
+| `lab/.runtime/summary.md` | `Result: OK` or the rows that differ from `lab/expected.tsv`, per run |
+| `results/run-<n>/report/vex-report.html` | every finding of every binary, grouped by evidence strength; open it in a browser |
+| `results/run-<n>/chains-v1.28.2/`, `chains-v1.36.5/`, `chains-ci-…/` | hand-configured chains: `openvex.json`, and `index.json` listing one JSON file per chain with each layer's evidence |
+| `results/run-<n>/chains-auto/<release>/<target>/` | automatic chains of one binary: `openvex.json`, `index.json`, one JSON per (binary, OSV) with `status`, `justification` or `substate` and `substate_dimensions` |
+| `results/run-<n>/decisions.tsv` | the hand-built chains next to the maintainers' decisions |
+
+An `under_investigation` chain's `substate` is its to-do item: `not_observed` needs a workload that reaches the code,
+`unevaluated` (a request-side input path, no gate yet) needs an exercise gate, `observed_upstream_input_only` needs a
+look at the upstream it trusts, `symbols_too_coarse` needs a more precise OSV entry, and so on (the full list is
+`HEADLINE_ORDER` in `lab/autochain.py`).
+
+**Full path (optional).** `FULL=1 scripts/platform.sh install` adds govulncheck and the CodeQL CLI; then
+`FULL=1 RUNS=1 scripts/lab.sh test` re-measures metrics-server v0.9.0 from source (CI recipe, Mode B uprobes, CodeQL
+database). About 30 more minutes and 14 GB of disk.
+
+**Clean up.**
+
+```sh
+scripts/lab.sh uninstall          # what lab.sh install created; PURGE=1 also removes the download cache
+scripts/platform.sh cluster-down  # the k3d cluster
+multipass delete --purge vexproof # option A: the whole VM
+```
+
+`platform.sh` never removes the tools it installed; remove them with apt and `sudo rm -rf /usr/local/go
+/usr/local/bin/{go,gofmt,kubectl,k3d}` if you ran option B and want them gone.
 
 ## How-to
 
@@ -188,8 +288,8 @@ compared. Results in `results/full/`.
 **OpenVEX output.** Each chains directory has `openvex.json` and one JSON per chain with every layer's evidence;
 `results/run-<n>/report/vex-report.html` groups every finding of every binary by evidence strength.
 
-**CI recipe for your own Go service.** `ci/vexproof.py CONFIG.json` with the fields of `ci/metrics-server.json`
-(source, manifest, workload commands, gate); `ci/github-actions.yaml` is a draft workflow. It needs no secrets.
+**CI recipe for your own Go service.** `ci/vexproof.py CONFIG.json` with the fields of `ci/metrics-server.json`;
+step by step in [Use it on your own Go service](#use-it-on-your-own-go-service).
 
 **LLM sink proposals (optional).** `lab/codeql/sinkgen/` can ask an LLM where untrusted data enters a vulnerable
 symbol; the query text always comes from a fixed template. It uses any model on an Ollama endpoint:
@@ -201,6 +301,69 @@ LLM proposed.
 **Custom resources.** `deploy/crds/`: `TriggerTest` (runs a known vulnerability's trigger against the shipped binary
 and fix-only rebuilds; the local runner `lab/trigger/runner.py` patches its status) and `VexScan` (schema only).
 There is no in-cluster controller.
+
+## Use it on your own Go service
+
+The CI recipe (`ci/vexproof.py`) runs the evidence chain on your own Go service in a throwaway k3d cluster: govulncheck
+on your source, a coverage build of your main package, your own Kubernetes manifest, your workload commands, Trivy on
+the built binary, then one chain and an OpenVEX document per symbol-level finding. It has been run on Kubernetes
+components and metrics-server; another service needs its own config and workload, below.
+
+**What your service needs.**
+
+- Go source with a `main` package that builds with `CGO_ENABLED=0` and runs as a single binary (the recipe packs it into
+  a small Alpine image).
+- A Kubernetes manifest with a Deployment for it (the recipe patches the image, args and a coverage volume in).
+- A clean exit on SIGTERM. Go writes coverage counters only when the program exits through `main` or `os.Exit`; the
+  recipe scales the Deployment to 0 to trigger that. A process that is killed by the signal leaves no counters, and its
+  findings stay `not_measured`.
+- Commands that exercise it the way your users do. Execution evidence is only as broad as these commands.
+
+**Steps** (on the host or VM from [Run it in your own environment](#run-it-in-your-own-environment), after
+`scripts/platform.sh install`; `jq` from apt):
+
+```sh
+# 1. your source, with vendored modules (the recipe maps symbols to vendor/)
+git clone <your repository> ~/work/mysvc && (cd ~/work/mysvc && go mod vendor)
+
+# 2. caches and govulncheck, built with the Go image the recipe uses
+mkdir -p ~/.cache/vexproof/{go,gomod,gobin,trivy}
+docker run --rm -v ~/.cache/vexproof/gobin:/gobin -e GOBIN=/gobin golang:1.26.8 \
+  go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+
+# 3. a config: start from the metrics-server one and change the service fields (table below)
+cp ci/metrics-server.json ~/work/mysvc.json && $EDITOR ~/work/mysvc.json
+jq --arg src ~/work/mysvc --arg out ~/work/mysvc-out --arg c ~/.cache/vexproof \
+   --arg m ~/work/mysvc/deploy/deployment.yaml --arg cov ~/work/mysvc-cov \
+   '.src=$src | .out=$out | .gocache=($c+"/go") | .gomod=($c+"/gomod") | .gobin=($c+"/gobin")
+    | .trivycache=($c+"/trivy") | .manifest=$m | .covdir=$cov | .engine="docker"' \
+   ~/work/mysvc.json > ~/work/mysvc-run.json
+
+# 4. run
+python3 ci/vexproof.py ~/work/mysvc-run.json; echo "exit $?"
+```
+
+| Field | Set it to |
+|---|---|
+| `go_image` | the Go version your release is built with (pin the digest); a different Go hides or invents standard-library findings |
+| `main_dir`, `main_pkg`, `binary` | your main package directory, its import path, the binary name |
+| `image` | any local tag; it never leaves the machine |
+| `k3s_image`, `k3d_args` | the k3s version to test against; extra k3d flags |
+| `namespace`, `deployment`, `container`, `selector` | where your Deployment and container are in the manifest |
+| `args` | your container's arguments |
+| `exercise` | shell commands run in order; `KC` is replaced by `kubectl --context k3d-<cluster>` |
+| `purl`, `vex_id` | the product identifier and document id written into the OpenVEX output |
+| `fail_on` | statuses that fail the run (default `["affected"]`); exit 1 then, 0 otherwise |
+| `untrusted_by_rule` (optional) | `{OSV: {"entry": <function on the govulncheck call path>, "reason": "..."}}`: your decision that this entry point takes untrusted input |
+| `delete_cluster` | `true` removes the k3d cluster at the end |
+
+**Output** in `out`: `summary.json` (statuses and the gate result), `ci.log` (every command with its output),
+`govulncheck.json`, `cov.txt`, `trivy.json`, `openvex.json`, and one JSON per chain in `chains/`. `ci/github-actions.yaml` runs the
+same steps in a pull request (a draft workflow; it needs no secrets).
+
+What the recipe does not do: the CodeQL batch (`lab/codeql/`), uprobes on your released binary (Mode B,
+`ci/modeB-daemonset.yaml`, needs a privileged node) and exercise gates (`lab/trigger/`). Without them a finding can
+reach `executed`, but not `affected`, unless you declare an `untrusted_by_rule`.
 
 ## Lab-only trigger tests
 
@@ -270,6 +433,7 @@ runs, reinstall + one more run, uninstall, platform check), outputs in `evidence
 | `ci/` | CI recipe, its metrics-server config, Mode B DaemonSet, draft GitHub workflow |
 | `deploy/crds/`, `examples/` | custom resources and example objects |
 | `evidence/reference/` | reference inputs and run outputs, one per run type (c0–c18), and the exercise-layer gates (`gates/`) |
+| `docs/` | the project page (`index.html`, published with GitHub Pages) |
 
 ## Licence
 
