@@ -379,7 +379,7 @@ python3 ci/vexproof.py ~/work/mysvc-run.json; echo "exit $?"
 | `delete_cluster` | `true` removes the k3d cluster at the end |
 
 **Output** in `out`: `summary.json` (statuses and the gate result), `ci.log` (every command with its output),
-`govulncheck.json`, `cov.txt`, `trivy.json`, `openvex.json`, and one JSON per chain in `chains/`. `ci/github-actions.yaml` runs the
+`govulncheck.json`, `cov.txt`, `trivy.json`, `openvex.json`, and one JSON per chain in `chains/`. The pod runs as root, so the coverage files under `covdir` and `out/covdata/` belong to root: remove them with `sudo rm -rf`. `ci/github-actions.yaml` runs the
 same steps in a pull request (a draft workflow; it needs no secrets).
 
 What the recipe does not do: the CodeQL batch (`lab/codeql/`), uprobes on your released binary (Mode B,
