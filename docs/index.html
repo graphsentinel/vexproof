@@ -179,8 +179,13 @@ runs the fast path five times and compares every result with the expected ones. 
 <h2 id="own">Use it on your own Go service</h2>
 <p>The CI recipe builds your service with coverage, deploys your own manifest into a throwaway k3d cluster, runs your
 workload commands and writes one chain and an OpenVEX document per symbol-level finding:</p>
-<pre><code>cp ci/metrics-server.json mysvc.json     # edit: Go image, main package, manifest, workload
-python3 ci/vexproof.py mysvc-run.json    # exit 1 if a status in fail_on (default: affected)</code></pre>
+<p>Two repositories are involved: your vexproof clone (the recipe) and the source of the service you test. From the
+vexproof clone, with your service's source cloned and vendored:</p>
+<pre><code>cp ci/metrics-server.json ~/work/mysvc.json   # edit: Go image, main package, manifest, workload
+# fill src, out, manifest and cache paths with jq (README, step 3)
+python3 ci/vexproof.py ~/work/mysvc-run.json  # exit 1 if a status in fail_on (default: affected)</code></pre>
+<p>The README first walks through metrics-server v0.9.0 with real URLs; those commands run as written (about 5
+minutes).</p>
 <p><a href="https://github.com/graphsentinel/vexproof#use-it-on-your-own-go-service">Step by step, with every field
 explained</a>. It has been run on Kubernetes components and metrics-server; your service needs its own workload
 profile.</p>

@@ -319,27 +319,48 @@ components and metrics-server; another service needs its own config and workload
   findings stay `not_measured`.
 - Commands that exercise it the way your users do. Execution evidence is only as broad as these commands.
 
-**Steps** (on the host or VM from [Run it in your own environment](#run-it-in-your-own-environment), after
-`scripts/platform.sh install`; `jq` from apt):
+**Steps.** Two repositories are involved: the vexproof clone (the recipe) and the source of the service you test.
+Run everything from the vexproof clone, on the host or VM from
+[Run it in your own environment](#run-it-in-your-own-environment), after `scripts/platform.sh install`
+(`sudo apt-get install -y jq` for step 3).
+
+First try it on metrics-server v0.9.0, the service the shipped config describes; every command below runs as is:
 
 ```sh
-# 1. your source, with vendored modules (the recipe maps symbols to vendor/)
-git clone <your repository> ~/work/mysvc && (cd ~/work/mysvc && go mod vendor)
+cd ~/vexproof                       # your vexproof clone
 
-# 2. caches and govulncheck, built with the Go image the recipe uses
+# 1. the service's source at the release you test, with vendored modules (the recipe maps symbols to vendor/),
+#    and its Kubernetes manifest
+git clone --depth 1 --branch v0.9.0 https://github.com/kubernetes-sigs/metrics-server.git ~/work/metrics-server
+(cd ~/work/metrics-server && go mod vendor)
+curl -fsSLo ~/work/metrics-server.yaml \
+  https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
+
+# 2. caches and govulncheck, built with the Go image of the config (go_image)
 mkdir -p ~/.cache/vexproof/{go,gomod,gobin,trivy}
 docker run --rm -v ~/.cache/vexproof/gobin:/gobin -e GOBIN=/gobin golang:1.26.8 \
   go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
 
-# 3. a config: start from the metrics-server one and change the service fields (table below)
-cp ci/metrics-server.json ~/work/mysvc.json && $EDITOR ~/work/mysvc.json
-jq --arg src ~/work/mysvc --arg out ~/work/mysvc-out --arg c ~/.cache/vexproof \
-   --arg m ~/work/mysvc/deploy/deployment.yaml --arg cov ~/work/mysvc-cov \
+# 3. fill the machine-specific paths of the config
+jq --arg src ~/work/metrics-server --arg out ~/work/metrics-server-out --arg c ~/.cache/vexproof \
+   --arg m ~/work/metrics-server.yaml --arg cov ~/work/metrics-server-cov \
    '.src=$src | .out=$out | .gocache=($c+"/go") | .gomod=($c+"/gomod") | .gobin=($c+"/gobin")
     | .trivycache=($c+"/trivy") | .manifest=$m | .covdir=$cov | .engine="docker"' \
-   ~/work/mysvc.json > ~/work/mysvc-run.json
+   ci/metrics-server.json > ~/work/metrics-server-run.json
 
-# 4. run
+# 4. run (about 5 minutes; exit 1 only if a status in fail_on occurs)
+python3 ci/vexproof.py ~/work/metrics-server-run.json; echo "exit $?"
+```
+
+Then for your own service, the same four steps with your names: clone **your service's repository** (not
+vexproof) at the release you ship and vendor it; use your own Deployment manifest; copy the config and change the
+service fields in the table below; fill the paths with `jq` as in step 3; run.
+
+```sh
+git clone --branch <your release tag> https://github.com/<your-org>/<your-service>.git ~/work/mysvc
+(cd ~/work/mysvc && go mod vendor)
+cp ci/metrics-server.json ~/work/mysvc.json && $EDITOR ~/work/mysvc.json   # the service fields
+# step 3 with --arg src ~/work/mysvc --arg m <your manifest> ... ~/work/mysvc.json > ~/work/mysvc-run.json
 python3 ci/vexproof.py ~/work/mysvc-run.json; echo "exit $?"
 ```
 
